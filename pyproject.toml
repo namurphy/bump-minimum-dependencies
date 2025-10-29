@@ -23,5 +23,8 @@ scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
 
 [dependency-groups]
 dev = [
+  "mypy>=1.18.2",
   "nox>=2025.10.16",
+  "prek>=0.2.12",
+  "ty>=0.0.1a25",
 ]
