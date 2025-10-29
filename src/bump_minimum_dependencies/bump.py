@@ -9,7 +9,6 @@ import pyproject_parser
 from dep_logic.specifiers import parse_version_specifier
 
 
-
 def _get_oldest_allowed_version_specifier(package_name: str, n_months: int = 24) -> str:
     """
     Find the specifier (i.e., `">=1.26"`) corresponding to the oldest
@@ -46,7 +45,6 @@ def _update_requirement(dep: Requirement) -> str:
     return f"{dep.name}{combined_specifier}"
 
 
-
 def bump_minimum_requirements() -> None:
     """
     Update the minimum allowed versions of dependencies to be consistent
@@ -57,16 +55,8 @@ def bump_minimum_requirements() -> None:
     dependencies that were made in the past 24 months, and minor
     releases of Python that were made in the past 36 months.
     """
-
-    # keep NumPy minimum version at >=1.26 until perhaps mid-2026 or
-    # when https://github.com/nasa/Kamodo/issues/154 and
-    # https://github.com/heliophysicsPy/pyhc-core/issues/6 are resolved
-
-    excluded_deps: set[str] = {"numpy"}
-
     pyproject = pyproject_parser.PyProject.load("pyproject.toml")
     deps = pyproject.project["dependencies"]
     deps_to_update = (dep for dep in deps if dep.name not in excluded_deps)
     updated_requirements = [_update_requirement(dep) for dep in deps_to_update]
     session.run("uv", "add", "--no-sync", *updated_requirements)
-
