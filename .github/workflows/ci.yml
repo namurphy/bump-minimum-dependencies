@@ -52,8 +52,11 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
+        activate-environment: true
         enable-cache: true
         cache-suffix: ${{ matrix.nox_session }}
 
+    - run: uv pip install .[dev]
+
     - name: Run the check
-      run: uvx nox -s '${{ matrix.nox_session }}'
+      run: nox -s '${{ matrix.nox_session }}'
