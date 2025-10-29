@@ -27,14 +27,14 @@ def test(session: nox.Session) -> None:
 
 @nox.session(python=MAXPYTHON)
 def mypy(session: nox.Session) -> None:
-    session.install(".[dev]")
+    session.install(".[dev]", "nox")
     session.run("mypy", ".", "--strict")
 
 
 @nox.session(python=MAXPYTHON)
 def ty(session: nox.Session) -> None:
     session.install(".[dev]")
-    session.run("ty", "check", ".")
+    session.run("ty", "check", ".", "--strict")
 
 
 @nox.session(python=MAXPYTHON)
