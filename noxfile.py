@@ -10,22 +10,31 @@ nox.options.default_venv_backend = "uv"
 
 _HERE = pathlib.Path(__file__).parent
 
+MAXPYTHON = "3.14"
 
-@nox.session
+
+@nox.session(python=MAXPYTHON)
 def lint(session: nox.Session) -> None:
-    session.run("uvx", "prek", "run", "--all-files", "--quiet")
+    session.install(".[dev]")
+    session.run("prek", "run", "--all-files", "--quiet")
 
 
-@nox.session
+@nox.session(python=MAXPYTHON)
 def test(session):
     session.install(".")
-    session.run("uvx", "pytest", "tests")
+    session.run("pytest", "tests")
 
 
-@nox.session
-def ty(session):
+@nox.session(python=MAXPYTHON)
+def mypy(session):
     session.install(".[dev]")
-    session.run("uvx", "ty", "check")
+    session.run("mypy", ".")
+
+
+@nox.session(python=MAXPYTHON)
+def run(session) -> None:
+    session.install(".")
+    session.run("bump-minimum-dependencies", "--help")
 
 
 if __name__ == "__main__":
