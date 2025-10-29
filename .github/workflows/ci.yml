@@ -24,7 +24,7 @@ permissions: {}
 
 jobs:
 
-  tests:
+  checks:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
