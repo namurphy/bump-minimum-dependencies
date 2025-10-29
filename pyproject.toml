@@ -1,0 +1,17 @@
+[project]
+name = "bump-minimum-dependencies"
+version = "0.1.0"
+description = "Command line tool to bump minimum dependencies in pyproject.toml"
+readme = "README.md"
+authors = [
+    { name = "Nick Murphy", email = "namurphy@cfa.harvard.edu" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+bump-minimum-dependencies = "bump_minimum_dependencies:main"
+
+[build-system]
+requires = ["uv_build>=0.9.5,<0.10.0"]
+build-backend = "uv_build"
