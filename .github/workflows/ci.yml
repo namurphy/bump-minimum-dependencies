@@ -35,23 +35,23 @@ jobs:
       matrix:
         include:
 
-        - name: ${{ matrix.nox_session }}
+        - name: lint
           os: ubuntu-latest
           nox_session: lint
 
-        - name: ${{ matrix.nox_session }}
+        - name: test
           os: macos-latest
           nox_session: test
 
-        - name: ${{ matrix.nox_session }}
+        - name: mypy
           os: ubuntu-latest
           nox_session: mypy
 
-        - name: ${{ matrix.nox_session }}
+        - name: ty
           os: windows-latest
           nox_session: ty
 
-        - name: ${{ matrix.nox_session }}
+        - name: run
           os: ubuntu-latest
           nox_session: run
 
