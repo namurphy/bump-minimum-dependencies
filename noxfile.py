@@ -21,7 +21,7 @@ def lint(session: nox.Session) -> None:
 
 @nox.session(python=MAXPYTHON)
 def test(session: nox.Session) -> None:
-    session.install(".")
+    session.install(".[dev]")
     session.run("pytest", "tests")
 
 
