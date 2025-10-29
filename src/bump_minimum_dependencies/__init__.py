@@ -1,5 +1,7 @@
 import click
 
+from . import bump
+
 
 @click.command()
 @click.option(
@@ -28,4 +30,10 @@ def main(
     python_months: int,
     date: str,
 ) -> None:
-    pass
+    bump_minimum_dependencies(
+        pyproject_file=pyproject_file,
+        months=months,
+        buffer=buffer,
+        python_months=python_months,
+        date=date,
+    )
