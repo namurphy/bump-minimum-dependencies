@@ -34,7 +34,7 @@ def mypy(session: nox.Session) -> None:
 @nox.session(python=MAXPYTHON)
 def ty(session: nox.Session) -> None:
     session.install(".[dev]")
-    session.run("ty", "check", ".", "--strict")
+    session.run("ty", "check", ".")
 
 
 @nox.session(python=MAXPYTHON)
