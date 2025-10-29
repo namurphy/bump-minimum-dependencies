@@ -56,7 +56,7 @@ jobs:
         enable-cache: true
         cache-suffix: ${{ matrix.nox_session }}
 
-    - run: uv pip install .[dev]
+    - run: uv pip install . --group dev
 
     - name: Run the check
       run: nox -s '${{ matrix.nox_session }}'
