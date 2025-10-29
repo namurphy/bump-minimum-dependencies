@@ -20,19 +20,25 @@ def lint(session: nox.Session) -> None:
 
 
 @nox.session(python=MAXPYTHON)
-def test(session):
+def test(session: nox.Session) -> None:
     session.install(".")
     session.run("pytest", "tests")
 
 
 @nox.session(python=MAXPYTHON)
-def mypy(session):
+def mypy(session: nox.Session) -> None:
     session.install(".[dev]")
-    session.run("mypy", ".")
+    session.run("mypy", ".", "--strict")
 
 
 @nox.session(python=MAXPYTHON)
-def run(session) -> None:
+def ty(session: nox.Session) -> None:
+    session.install(".[dev]")
+    session.run("ty", "check", ".")
+
+
+@nox.session(python=MAXPYTHON)
+def run(session: nox.Session) -> None:
     session.install(".")
     session.run("bump-minimum-dependencies", "--help")
 
