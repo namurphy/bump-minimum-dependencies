@@ -1,0 +1,73 @@
+# Define continuous integration (CI) checks to be performed during
+# pull requests, such as running tests and building documentation.
+#
+# The checks are defined in noxfile.py. After installing uv, the checks
+# can be run locally with
+#
+#    uvx nox -s '<nox_session>'
+#
+# where <nox_session> is replaced by the name of the session. Quotes are
+# necessary around <nox_session> when it contains parentheses.
+
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - *
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+
+  tests:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+
+        - name: ${{ matrix.nox_session }}
+          os: ubuntu-latest
+          nox_session: lint
+
+        - name: ${{ matrix.nox_session }}
+          os: macos-latest
+          nox_session: test
+
+        - name: ${{ matrix.nox_session }}
+          os: ubuntu-latest
+          nox_session: mypy
+
+        - name: ${{ matrix.nox_session }}
+          os: windows-latest
+          nox_session: ty
+
+        - name: ${{ matrix.nox_session }}
+          os: ubuntu-latest
+          nox_session: run
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        persist-credentials: false
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        python-version: ${{ matrix.python }}
+        enable-cache: true
+        cache-suffix: ${{ matrix.nox_session }}-${{ matrix.python }}-${{ runner.os }}
+
+    - name: Run the check
+      run: uvx nox -s '${{ matrix.nox_session }}'
