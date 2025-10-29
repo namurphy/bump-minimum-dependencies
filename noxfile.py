@@ -38,6 +38,11 @@ def ty(session: nox.Session) -> None:
 
 
 @nox.session(python=MAXPYTHON)
+def build(session: nox.Session) -> None:
+    session.run("uv", "build")
+
+
+@nox.session(python=MAXPYTHON)
 def run(session: nox.Session) -> None:
     session.install(".")
     session.run("bump-minimum-dependencies", "--help")
