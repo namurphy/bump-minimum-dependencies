@@ -45,7 +45,7 @@ def build(session: nox.Session) -> None:
 @nox.session(python=MAXPYTHON)
 def run(session: nox.Session) -> None:
     session.install(".")
-    session.run("bump-minimum-dependencies", "--help")
+    session.run("bump-minimum-dependencies")
 
 
 if __name__ == "__main__":
