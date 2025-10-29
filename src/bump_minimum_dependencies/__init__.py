@@ -30,7 +30,7 @@ def main(
     python_months: int,
     date: str,
 ) -> None:
-    bump_minimum_dependencies(
+    bump.bump_minimum_dependencies(
         pyproject_file=pyproject_file,
         months=months,
         buffer=buffer,
