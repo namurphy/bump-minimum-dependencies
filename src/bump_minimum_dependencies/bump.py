@@ -10,34 +10,6 @@ import pyproject_parser
 # from dep_logic.specifiers import parse_version_specifier
 # import subprocess
 
-class _Releases:
-    def __init__(self, package):
-        url = f"https://pypi.org/pypi/{package}/json"
-        response = requests.get(url)
-        data = response.json()
-
-        self.releases = {}
-
-
-def query_pypi(package: str):
-    url = f"https://pypi.org/pypi/{package}/json"
-    response = requests.get(url)
-    data = response.json()
-
-    releases = {}
-
-
-
-def _update_dependency(requirement: Requirement) -> None:
-    print(requirement.name)
-#    print(requirement.specifier)
-#    print(requirement.extras)
-#    print(requirement.url)
-#    print(requirement.marker)
-#    print(type(requirement.specifier))
-#    print(dir(requirement.specifier))
-    query_pypi(requirement.name)
-
 
 def bump_minimum_dependencies(
     pyproject_file: str,
@@ -54,14 +26,16 @@ def bump_minimum_dependencies(
 
     requirements: list[Requirement] = pyproject.project["dependencies"]
     dependency_groups: dict[str, list[Requirement]] = pyproject.dependency_groups
-    requires_python: packaging.specifiers.SpecifierSet = pyproject.project["requires-python"]
+    requires_python: packaging.specifiers.SpecifierSet = pyproject.project[
+        "requires-python"
+    ]
 
     for requirement in requirements[:1]:
         _update_dependency(requirement)
 
-    #print(f"{requirements = }")
-    #print(f"{dependency_groups = }")
-    #print(f"{requires_python = }")
+    # print(f"{requirements = }")
+    # print(f"{dependency_groups = }")
+    # print(f"{requires_python = }")
 
 
 # def _get_oldest_allowed_version_specifier(package_name: str, n_months: int = 24) -> str:
@@ -126,3 +100,4 @@ def bump_minimum_dependencies(
 #        check=True,
 #    )
 #
+
