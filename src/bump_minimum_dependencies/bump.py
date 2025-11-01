@@ -104,7 +104,13 @@ class Package:
         self,
         months: float | int = 24,
         buffer: float | int = 3,
-    ) -> Version:
+    ) -> str:
+
+        if months < 0:
+            raise ValueError("months must be ≥ 0")
+        if not (0 <= buffer < months):
+            raise ValueError("need 0 ≤ buffer < months")
+
         releases = list(self.months_since_minor_release.keys())
         months_since_release = np.array(list(self.months_since_minor_release.values()))
 
