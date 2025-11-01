@@ -81,8 +81,14 @@ class Package:
     def minor_releases(self) -> list[Version]:
         """The first release of each major/minor pair."""
         minor_releases = []
-        for (epoch, major, minor), micros in self._epoch_major_minor_dict.items():
-            minor_releases.append(Version(f"{epoch}!{major}.{minor}.{min(micros)}"))
+        minor_releases.extend(
+            Version(f"{epoch}!{major}.{minor}.{min(micros)}")
+            for (
+                epoch,
+                major,
+                minor,
+            ), micros in self._epoch_major_minor_dict.items()
+        )
         return sorted(minor_releases)
 
     @functools.cached_property
