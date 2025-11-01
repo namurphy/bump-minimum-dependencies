@@ -58,7 +58,7 @@ class Package:
         Dictionary where the key is a tuple of the major and minor version numbers,
         and
         """
-        epoch_major_minor_dict = {}
+        epoch_major_minor_to_set_of_micro = {}
 
         for version in self.releases:
             epoch = version.epoch
@@ -66,12 +66,12 @@ class Package:
             minor = version.minor
             micro = version.micro
 
-            if (epoch, major, minor) not in epoch_major_minor_dict:
-                epoch_major_minor_dict[(epoch, major, minor)] = {micro}
+            if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
+                epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
             else:
-                epoch_major_minor_dict[(epoch, major, minor)] |= {micro}
+                epoch_major_minor_to_set_of_micro[(epoch, major, minor)] |= {micro}
 
-        return epoch_major_minor_dict
+        return epoch_major_minor_to_set_of_micro
 
     @functools.cached_property
     def minor_releases(self) -> list[Version]:
