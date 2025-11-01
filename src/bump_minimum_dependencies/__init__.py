@@ -10,7 +10,7 @@ from . import bump
 @click.option("--months", default=24, help="Drop releases from this many months ago.")
 @click.option(
     "--buffer",
-    default=6,
+    default=0,
     help="Ensure that there is at least one release this many months old.",
 )
 def main(
