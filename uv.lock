@@ -80,7 +80,6 @@ source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "dep-logic" },
-    { name = "nep29" },
     { name = "plasmapy" },
     { name = "pyproject-parser" },
 ]
@@ -98,9 +97,8 @@ dev = [
 requires-dist = [
     { name = "click", specifier = "==8.3" },
     { name = "dep-logic", specifier = ">=0.5.2" },
-    { name = "nep29", specifier = ">=0.0.17" },
     { name = "plasmapy" },
-    { name = "pyproject-parser", specifier = ">=0.13.0" },
+    { name = "pyproject-parser", specifier = ">=0.13" },
 ]
 
 [package.metadata.requires-dev]
@@ -522,20 +520,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nep29"
-version = "0.0.17"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-    { name = "prettytable" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/be/0d/a2784af4b7dc122dbc99e2bc7ed0cf169585c6758de2bb434076de868a44/nep29-0.0.17.tar.gz", hash = "sha256:4a4a23c963199895d4d94211bae8c9e64b28e4fa243dfbddc7f23cdd88f541d7", size = 11563, upload-time = "2022-11-30T04:53:06.07Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/01/83acd4b050e58363fe07bda680ac698eeee8e52430f06654928c90ab1eea/nep29-0.0.17-py2.py3-none-any.whl", hash = "sha256:2416be7573a218a0fd2027ad195b04040cd92bb3a178f7444860d6808dd67f18", size = 10576, upload-time = "2022-11-30T04:53:04.727Z" },
-]
-
-[[package]]
 name = "nox"
 version = "2025.10.16"
 source = { registry = "https://pypi.org/simple" }
@@ -727,18 +711,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/33/39/5f9cbfe0190e4f0618b4d76c48744d1a75fb18ae8376d1f1f42f0e0bbd66/prek-0.2.12-py3-none-win32.whl", hash = "sha256:491b50f1686ade8472edc67fc6cd088fbb7cee416ee8d974649fc4f7f9357660", size = 4274195, upload-time = "2025-10-27T12:22:57.25Z" },
     { url = "https://files.pythonhosted.org/packages/dd/c4/0e4c03c96ee3530053aa77b37361cc9d0e23e15a90017b81838a45cf54a8/prek-0.2.12-py3-none-win_amd64.whl", hash = "sha256:aecb61e06636c90dcfd14dd02901474a6d77dbafd930a0ab136d256800d8f8e1", size = 4845173, upload-time = "2025-10-27T12:22:58.916Z" },
     { url = "https://files.pythonhosted.org/packages/f0/c3/6b40262600bf7daeaa65a9ded17244c2f4b0f6d032119495ec28326a6978/prek-0.2.12-py3-none-win_arm64.whl", hash = "sha256:8f203c05afa4e7126d86d16ad1916b9676cbed127e95dcb230a06299bc5bcf6b", size = 4528164, upload-time = "2025-10-27T12:23:01.219Z" },
-]
-
-[[package]]
-name = "prettytable"
-version = "3.16.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "wcwidth" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/99/b1/85e18ac92afd08c533603e3393977b6bc1443043115a47bb094f3b98f94f/prettytable-3.16.0.tar.gz", hash = "sha256:3c64b31719d961bf69c9a7e03d0c1e477320906a98da63952bc6698d6164ff57", size = 66276, upload-time = "2025-03-24T19:39:04.008Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/02/c7/5613524e606ea1688b3bdbf48aa64bafb6d0a4ac3750274c43b6158a390f/prettytable-3.16.0-py3-none-any.whl", hash = "sha256:b5eccfabb82222f5aa46b798ff02a8452cf530a352c31bddfa29be41242863aa", size = 33863, upload-time = "2025-03-24T19:39:02.359Z" },
 ]
 
 [[package]]
@@ -1015,15 +987,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/20/28/e6f1a6f655d620846bd9df527390ecc26b3805a0c5989048c210e22c5ca9/virtualenv-20.35.4.tar.gz", hash = "sha256:643d3914d73d3eeb0c552cbb12d7e82adf0e504dbf86a3182f8771a153a1971c", size = 6028799, upload-time = "2025-10-29T06:57:40.511Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/0c/c05523fa3181fdf0c9c52a6ba91a23fbf3246cc095f26f6516f9c60e6771/virtualenv-20.35.4-py3-none-any.whl", hash = "sha256:c21c9cede36c9753eeade68ba7d523529f228a403463376cf821eaae2b650f1b", size = 6005095, upload-time = "2025-10-29T06:57:37.598Z" },
-]
-
-[[package]]
-name = "wcwidth"
-version = "0.2.14"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/24/30/6b0809f4510673dc723187aeaf24c7f5459922d01e2f794277a3dfb90345/wcwidth-0.2.14.tar.gz", hash = "sha256:4d478375d31bc5395a3c55c40ccdf3354688364cd61c4f6adacaa9215d0b3605", size = 102293, upload-time = "2025-09-22T16:29:53.023Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/b5/123f13c975e9f27ab9c0770f514345bd406d0e8d3b7a0723af9d43f710af/wcwidth-0.2.14-py2.py3-none-any.whl", hash = "sha256:a7bb560c8aee30f9957e5f9895805edd20602f2d7f720186dfd906e82b4982e1", size = 37286, upload-time = "2025-09-22T16:29:51.641Z" },
 ]
 
 [[package]]

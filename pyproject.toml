@@ -18,7 +18,6 @@ classifiers = [
 dependencies = [
   "click==8.3",
   "dep-logic>=0.5.2",
-  "nep29>=0.0.17",
   "plasmapy",
   "pyproject-parser>=0.13",
 ]
@@ -32,4 +31,9 @@ dev = [
   "prek>=0.2.12",
   "pytest>=8.4.2",
   "ty>=0.0.1a25",
+]
+
+[tool.uv.workspace]
+members = [
+    "tests/data/temporary",
 ]
