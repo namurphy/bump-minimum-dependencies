@@ -35,5 +35,5 @@ dev = [
 
 [tool.uv.workspace]
 members = [
-    "tests/data/temporary",
+  "tests/data/temporary",
 ]
