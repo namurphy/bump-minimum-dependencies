@@ -127,7 +127,7 @@ class Package:
         if months_since_release[index] < buffer and index > 0:
             index -= 1
 
-        return releases[index]
+        return str(releases[index]).removesuffix(".0").removesuffix(".0")
 
 
 def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
