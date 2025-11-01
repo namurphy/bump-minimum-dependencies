@@ -51,10 +51,12 @@ class Package:
 
     @functools.cached_property
     def release_times(self) -> dict[Version, Time]:
-        return {
-            release: Time(self.data[str(release)][0]["upload_time"])
-            for release in self.releases
-        }
+
+        def get_upload_time(release):
+            time = Time(self.data[str(release)][0]["upload_time"])
+            return time
+
+        return {release: get_upload_time(release) for release in self.releases}
 
     @functools.cached_property
     def _epoch_major_minor_dict(self) -> dict[tuple[int, int, int], set[int]]:
@@ -93,12 +95,18 @@ class Package:
 
     @functools.cached_property
     def months_since_minor_release(self):
-        return {
-            release: float(
-                (self.now - self.release_times[release]).to_value("jd") / 30.25
-            )
-            for release in self.minor_releases
-        }
+        months_ago = {}
+        for release in self.minor_releases:
+            release_time = self.release_times[release]
+            months_ago[release] = (self.now - release_time).to_value("jd") / 30.25
+
+        # months_ago = {
+        #     release: float(
+        #         (self.now - self.release_times[release]).to_value("jd") / 30.25
+        #     )
+        #     for release in self.minor_releases
+        # }
+        return months_ago
 
     def last_supported_release(
         self,
@@ -150,7 +158,8 @@ def _update_dependency(
         months=months, buffer=buffer
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    return _combine_specifiers(original_requirement, time_based_requirement)
+    new_specifiers = _combine_specifiers(original_requirement, time_based_requirement)
+    return new_specifiers
 
 
 def bump_minimum_dependencies(
@@ -168,19 +177,15 @@ def bump_minimum_dependencies(
     requirements: list[Requirement] = pyproject.project["dependencies"]
     dependency_groups: dict[str, list] = pyproject.dependency_groups
 
-    # requires_python: packaging.specifiers.SpecifierSet = pyproject.project[
-    #     "requires-python"
-    # ]
-
     new_requirements = []
 
     for requirement in requirements:
         try:
             new = _update_dependency(requirement, months=months, buffer=buffer)
             new_requirements.append(f"{requirement.name}{new}")
-        except Exception:
-            msg = f"Unable to update package '{requirement.name}'; skipping."
-            warnings.warn(msg)
+        except Exception as e:
+            msg = f"Unable to update package '{requirement.name}'; skipping. "
+            raise RuntimeError(msg) from e
 
     subprocess.run(["uv", "add", "--no-sync", *new_requirements])
 
