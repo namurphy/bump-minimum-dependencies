@@ -21,12 +21,16 @@ import functools
 
 
 class Package:
-    def __init__(self, name: str):
+    def __init__(self, name: str, url: str | None =None):
         self.name = name
-        url = f"https://pypi.org/pypi/{self.name}/json"
+        self.get_package_data(url=url)
+        self.now = Time.now()
+
+    def get_package_data(self, url: str | None = None):
+        if url is None:
+            url = f"https://pypi.org/pypi/{self.name}/json"
         response = requests.get(url)
         self.data = response.json()["releases"]
-        self.now = Time.now()
 
     @functools.cached_property
     def releases(self) -> list[Version]:
