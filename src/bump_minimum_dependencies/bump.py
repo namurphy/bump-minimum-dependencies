@@ -21,7 +21,7 @@ import functools
 
 
 class Package:
-    def __init__(self, name: str, url: str | None =None):
+    def __init__(self, name: str, url: str | None = None):
         self.name = name
         self.get_package_data(url=url)
         self.now = Time.now()
@@ -182,9 +182,7 @@ def bump_minimum_dependencies(
             msg = f"Unable to update package '{requirement.name}'; skipping."
             warnings.warn(msg)
 
-    # show output
-    result = subprocess.run(["uv", "add", "--no-sync", *new_requirements])
-
+    subprocess.run(["uv", "add", "--no-sync", *new_requirements])
 
 # def bump_minimum_dependencies() -> None:
 #    """
