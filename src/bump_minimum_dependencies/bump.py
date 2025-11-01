@@ -1,22 +1,147 @@
 __all__ = ["bump_minimum_dependencies"]
 
-import packaging.specifiers
-import requests
-from packaging.requirements import Requirement
-# import nep29  # type: ignore[import-untyped]
+import warnings
 
 import pyproject_parser
+import requests
+from packaging.requirements import Requirement
 
-# from dep_logic.specifiers import parse_version_specifier
-# import subprocess
+from dep_logic.specifiers import parse_version_specifier
+
+
+from packaging.version import Version
+
+from astropy.time import Time
+import numpy as np
+
+import subprocess
+
+
+import functools
+
+
+class Package:
+    def __init__(self, name: str):
+        self.name = name
+        url = f"https://pypi.org/pypi/{self.name}/json"
+        response = requests.get(url)
+        self.data = response.json()["releases"]
+        self.now = Time.now()
+
+    @functools.cached_property
+    def releases(self) -> list[Version]:
+        """All releases of the package, excluding prereleases."""
+        # epochs are included in the version string, e.g., "1!2025.9.0" to "2!1.0.0".
+        # `Version` is able to handle these rare cases, so we do not need to do anything
+        # special.  The `cabinet` package is an example on PyPI where epochs are used.
+
+        all_releases: list[str] = sorted(self.data.keys())
+
+        return sorted(
+            [
+                Version(release)
+                for release in all_releases
+                if not Version(release).is_prerelease
+            ]
+        )
+
+    @functools.cached_property
+    def release_times(self) -> dict[Version, Time]:
+        return {
+            release: Time(self.data[str(release)][0]["upload_time"])
+            for release in self.releases
+        }
+
+    @functools.cached_property
+    def _epoch_major_minor_dict(self) -> dict[tuple[int, int, int], set[int]]:
+        """
+        Dictionary where the key is a tuple of the major and minor version numbers,
+        and
+        """
+        epoch_major_minor_dict = {}
+
+        for version in self.releases:
+            epoch = version.epoch
+            major = version.major
+            minor = version.minor
+            micro = version.micro
+
+            if (epoch, major, minor) not in epoch_major_minor_dict:
+                epoch_major_minor_dict[(epoch, major, minor)] = {micro}
+            else:
+                epoch_major_minor_dict[(epoch, major, minor)] |= {micro}
+
+        return epoch_major_minor_dict
+
+    @functools.cached_property
+    def minor_releases(self) -> list[Version]:
+        """The first release of each major/minor pair."""
+        minor_releases = []
+        for (epoch, major, minor), micros in self._epoch_major_minor_dict.items():
+            minor_releases.append(Version(f"{epoch}!{major}.{minor}.{min(micros)}"))
+        return sorted(minor_releases)
+
+    @functools.cached_property
+    def months_since_minor_release(self):
+        return {
+            release: float(
+                (self.now - self.release_times[release]).to_value("jd") / 30.25
+            )
+            for release in self.minor_releases
+        }
+
+    def last_supported_release(
+        self,
+        months: float | int = 24,
+        buffer: float | int = 3,
+    ) -> Version:
+        releases = list(self.months_since_minor_release.keys())
+        months_since_release = np.array(list(self.months_since_minor_release.values()))
+
+        # get index of the first minor release that occurred in the last `months` months
+        index = next(
+            (
+                i
+                for i, months_ago in enumerate(months_since_release)
+                if months_ago < months
+            ),
+            -1,
+        )
+
+        if months_since_release[index] < buffer and index > 0:
+            index -= 1
+
+        return releases[index]
+
+
+def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
+    """
+    Combine two version specifiers, falling back to `original` if the
+    two specifiers are mutually incompatible.
+    """
+    parsed_original = parse_version_specifier(str(original))
+    parsed_new = parse_version_specifier(str(new))
+    combined = parsed_original & parsed_new
+    return str(original) if combined.is_empty() else str(combined)
+
+
+def _update_dependency(
+    requirement: Requirement, months: float | int, buffer: float | int
+):
+    package = Package(requirement.name)
+    original_requirement = requirement.specifier
+    calculated_minimum_version = package.last_supported_release(
+        months=months, buffer=buffer
+    )
+    time_based_requirement = f">={calculated_minimum_version}"
+    return _combine_specifiers(original_requirement, time_based_requirement)
 
 
 def bump_minimum_dependencies(
-    pyproject_file: str,
-    months: int,
-    buffer: int,
-    python_months: int,
-    date: str,
+    pyproject_file: str = "pyproject.toml",
+    *,
+    months: float | int,
+    buffer: float | int,
 ) -> None:
     """..."""
 
@@ -25,55 +150,26 @@ def bump_minimum_dependencies(
     )
 
     requirements: list[Requirement] = pyproject.project["dependencies"]
-    dependency_groups: dict[str, list[Requirement]] = pyproject.dependency_groups
-    requires_python: packaging.specifiers.SpecifierSet = pyproject.project[
-        "requires-python"
-    ]
+    dependency_groups: dict[str, list] = pyproject.dependency_groups
 
-    for requirement in requirements[:1]:
-        _update_dependency(requirement)
+    # requires_python: packaging.specifiers.SpecifierSet = pyproject.project[
+    #     "requires-python"
+    # ]
 
-    # print(f"{requirements = }")
-    # print(f"{dependency_groups = }")
-    # print(f"{requires_python = }")
+    new_requirements = []
+
+    for requirement in requirements:
+        try:
+            new = _update_dependency(requirement, months=months, buffer=buffer)
+            new_requirements.append(f"{requirement.name}{new}")
+        except Exception:
+            msg = f"Unable to update package '{requirement.name}'; skipping."
+            warnings.warn(msg)
+
+    # show output
+    result = subprocess.run(["uv", "add", "--no-sync", *new_requirements])
 
 
-# def _get_oldest_allowed_version_specifier(package_name: str, n_months: int = 24) -> str:
-#    """
-#    Find the specifier (i.e., `">=1.26"`) corresponding to the oldest
-#    allowed dependency as per SPEC 0.
-#    """
-#    oldest_version = str(nep29.nep29_versions(package_name, n_months=n_months)[-1][0])
-##    while oldest_version.endswith(".0"):  # for consistency with pyproject-fmt
-##        oldest_version = oldest_version.removesuffix(".0")
-#    return f">={oldest_version}"
-#
-#
-# def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
-#    """
-#    Combine two version specifiers, falling back to `original` if the
-#    two specifiers are mutually incompatible.
-#    """
-#    parsed_original = parse_version_specifier(str(original))
-#    parsed_new = parse_version_specifier(str(new))
-#    combined = parsed_original & parsed_new
-#    return str(original) if combined.is_empty() else str(combined)
-#
-#
-# def _update_requirement(dep: Requirement) -> str:
-#    """
-#    Provide a requirement that combines the existing requirement along
-#    with new requirements.
-#
-#    For example,
-#    Provide the new requirement (i.e., `"numpy>=1.26"`) that combines
-#    pre-existing requirements and
-#    """
-#    new_specifier = _get_oldest_allowed_version_specifier(dep.name)
-#    combined_specifier = _combine_specifiers(dep.specifier, new_specifier)
-#    return f"{dep.name}{combined_specifier}"
-#
-#
 # def bump_minimum_dependencies() -> None:
 #    """
 #    Update the minimum allowed versions of dependencies to be consistent
@@ -100,4 +196,3 @@ def bump_minimum_dependencies(
 #        check=True,
 #    )
 #
-
