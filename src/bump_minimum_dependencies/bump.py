@@ -29,6 +29,7 @@ import functools
 
 DAYS_PER_MONTH = 30.436875
 
+
 class Package:
     def __init__(self, name, today: date | None = None):
         self.name = name
@@ -38,7 +39,6 @@ class Package:
             self.today = datetime.now().date()
 
     def get_release_dates(self) -> None:
-
         response = requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
@@ -50,11 +50,15 @@ class Package:
             try:
                 version = Version(ver)
             except InvalidVersion as e:
-                logging.debug(f"'{ver}' is an invalid version for '{self.name}'. Reason: {e}")
+                logging.debug(
+                    f"'{ver}' is an invalid version for '{self.name}'. Reason: {e}"
+                )
                 continue
 
             if version.is_prerelease:
-                logging.debug(f"Excluding {ver} for {self.name} since it is a prerelease")
+                logging.debug(
+                    f"Excluding {ver} for {self.name} since it is a prerelease"
+                )
                 continue
 
             release_date = None
@@ -86,7 +90,9 @@ class Package:
         return sorted(self.release_dates.keys())
 
     @functools.cached_property
-    def _epoch_major_minor_to_set_of_micro(self) -> dict[tuple[int, int, int], set[int]]:
+    def _epoch_major_minor_to_set_of_micro(
+        self,
+    ) -> dict[tuple[int, int, int], set[int]]:
         """
         Dictionary where the key is a tuple of the major and minor version numbers,
         and
@@ -143,8 +149,8 @@ class Package:
         if not (0 <= cooldown_months <= drop_months):
             raise ValueError("need 0 ≤ cooldown_months ≤ drop_months")
 
-        support_window = timedelta(days = math.ceil(drop_months * DAYS_PER_MONTH))
-        cooldown_period = timedelta(days = math.ceil(cooldown_months * DAYS_PER_MONTH))
+        support_window = timedelta(days=math.ceil(drop_months * DAYS_PER_MONTH))
+        cooldown_period = timedelta(days=math.ceil(cooldown_months * DAYS_PER_MONTH))
 
         drop_date: date = self.today - support_window
         cooldown_date: date = self.today - cooldown_period
@@ -169,7 +175,8 @@ class Package:
             default=max(releases_before_drop_date),
         )
 
-#def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
+
+# def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
 #    """
 #    Combine two version specifiers, falling back to `original` if the
 #    two specifiers are mutually incompatible.
@@ -180,9 +187,9 @@ class Package:
 #    return str(original) if combined.is_empty() else str(combined)
 #
 #
-#def _update_dependency(
+# def _update_dependency(
 #    requirement: Requirement, months: float | int, buffer: float | int
-#) -> str:
+# ) -> str:
 #    package = Package(requirement.name)
 #    original_requirement = requirement.specifier
 #    calculated_minimum_version = package.last_supported_release(
@@ -192,12 +199,12 @@ class Package:
 #    return _combine_specifiers(original_requirement, time_based_requirement)
 #
 #
-#def bump_minimum_dependencies(
+# def bump_minimum_dependencies(
 #    pyproject_file: str = "pyproject.toml",
 #    *,
 #    months: float | int,
 #    buffer: float | int,
-#) -> None:
+# ) -> None:
 #    """..."""
 #
 #    pyproject: pyproject_parser.PyProject = pyproject_parser.PyProject.load(
