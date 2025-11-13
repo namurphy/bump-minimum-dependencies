@@ -1,3 +1,5 @@
+__all__ = ["bump", "main"]
+
 import click
 
 from . import bump

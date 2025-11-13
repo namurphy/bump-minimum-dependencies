@@ -1,4 +1,4 @@
-#__all__ = ["bump_minimum_dependencies"]
+__all__ = ["Package"]
 
 import warnings
 
