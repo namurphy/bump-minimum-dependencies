@@ -3,7 +3,6 @@ import shutil
 from bump_minimum_dependencies import bump
 from astropy.time import Time
 import pytest
-import filecmp
 
 from pathlib import Path
 
@@ -41,14 +40,14 @@ start_of_2026 = Time("2026-01-01 00:00:01.000000")
         ("plasmapy", 1, 0, "2025.10"),
         ("numpy", 24, 0, "2"),
         ("numpy", 24, 23, "1.26"),
-    ]
+    ],
 )
 def test_plasmapy(name, months, buffer, expected):
-
     package = bump.Package(name=name, url=f"{baseurl}{name}.json")
     package.now = start_of_2026
     release = package.last_supported_release(months=months, buffer=buffer)
     assert str(release) == expected
+
 
 #
 # @pytest.mark.parametrize(
@@ -74,7 +73,6 @@ def test_months_exceeds_buffer(months, buffer):
         package.last_supported_release(months=months, buffer=buffer)
 
 
-
 @pytest.mark.xfail
 def test_pyproject(tmp_path, monkeypatch):
     data_dir = Path(__file__).parent / "data"
@@ -87,8 +85,8 @@ def test_pyproject(tmp_path, monkeypatch):
 
     bump.bump_minimum_dependencies(months=24, buffer=6)
 
-#    if filecmp.cmp(pyproject, expected_pyproject, shallow=False):
-#        return
+    # if filecmp.cmp(pyproject, expected_pyproject, shallow=False):
+    #     return
 
     with open(pyproject) as f1:
         actual = f1.readlines()
