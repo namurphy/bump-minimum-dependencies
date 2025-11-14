@@ -18,9 +18,7 @@ classifiers = [
 dependencies = [
   "click==8.3",
   "dep-logic>=0.5.2",
-  "plasmapy",
   "pyproject-parser>=0.13",
-  "pytest",
 ]
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
@@ -31,6 +29,7 @@ dev = [
   "nox>=2025.10.16",
   "prek>=0.2.12",
   "pytest>=8.4.2",
+  "pytest-freezer>=0.4.9",
   "ty>=0.0.1a25",
 ]
 
