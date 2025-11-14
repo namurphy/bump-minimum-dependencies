@@ -1,10 +1,7 @@
 __all__ = ["Package"]
 
-import warnings
 
-import pyproject_parser
 import requests
-from matplotlib.dates import DAYS_PER_MONTH
 from packaging.requirements import Requirement
 
 from dep_logic.specifiers import parse_version_specifier
@@ -14,16 +11,13 @@ from datetime import datetime, timedelta, date
 
 from packaging.version import Version, InvalidVersion
 
+from pyproject_parser import PyProject
+
 import logging
 
 import math
 
-from astropy.time import Time
-import numpy as np
-
 import subprocess
-
-
 import functools
 
 
@@ -87,7 +81,7 @@ class Package:
     @functools.cached_property
     def releases(self) -> list[Version]:
         """..."""
-        return sorted(self.release_dates.keys())
+        return sorted(self.release_dates)
 
     @functools.cached_property
     def _epoch_major_minor_to_set_of_micro(
@@ -146,7 +140,7 @@ class Package:
             least
         """
 
-        if not (0 <= cooldown_months <= drop_months):
+        if not (0 <= cooldown_months < drop_months):
             raise ValueError("need 0 ≤ cooldown_months ≤ drop_months")
 
         support_window = timedelta(days=math.ceil(drop_months * DAYS_PER_MONTH))
@@ -170,62 +164,77 @@ class Package:
         if not supported_releases_before_cooldown and not releases_before_drop_date:
             return min(self.releases)
 
-        return min(
-            supported_releases_before_cooldown,
-            default=max(releases_before_drop_date),
+        return (
+            str(
+                min(
+                    supported_releases_before_cooldown,
+                    default=max(releases_before_drop_date),
+                )
+            )
+            .removesuffix(".0")
+            .removesuffix(".0")
+            .removesuffix(".0")
         )
 
 
-# def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
-#    """
-#    Combine two version specifiers, falling back to `original` if the
-#    two specifiers are mutually incompatible.
-#    """
-#    parsed_original = parse_version_specifier(str(original))
-#    parsed_new = parse_version_specifier(str(new))
-#    combined = parsed_original & parsed_new
-#    return str(original) if combined.is_empty() else str(combined)
+def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
+    """
+    Combine two version specifiers, falling back to `original` if the
+    two specifiers are mutually incompatible.
+    """
+    parsed_original = parse_version_specifier(str(original))
+    parsed_new = parse_version_specifier(str(new))
+    combined = parsed_original & parsed_new
+    new_specifier = str(original) if combined.is_empty() else str(combined)
+
+    return new_specifier.strip().removesuffix(".0").removesuffix(".0")
+
+
+def _update_dependency(
+    requirement: Requirement,
+    drop_months: float | int,
+    cooldown_months: float | int,
+) -> str:
+    package = Package(requirement.name)
+    original_requirement = requirement.specifier
+    calculated_minimum_version = package.last_supported_release(
+        drop_months=drop_months,
+        cooldown_months=cooldown_months,
+    )
+    time_based_requirement = f">={calculated_minimum_version}"
+    return _combine_specifiers(original_requirement, time_based_requirement)
+
+
 #
 #
-# def _update_dependency(
-#    requirement: Requirement, months: float | int, buffer: float | int
-# ) -> str:
-#    package = Package(requirement.name)
-#    original_requirement = requirement.specifier
-#    calculated_minimum_version = package.last_supported_release(
-#        months=months, buffer=buffer
-#    )
-#    time_based_requirement = f">={calculated_minimum_version}"
-#    return _combine_specifiers(original_requirement, time_based_requirement)
-#
-#
-# def bump_minimum_dependencies(
-#    pyproject_file: str = "pyproject.toml",
-#    *,
-#    months: float | int,
-#    buffer: float | int,
-# ) -> None:
-#    """..."""
-#
-#    pyproject: pyproject_parser.PyProject = pyproject_parser.PyProject.load(
-#        "pyproject.toml"
-#    )
-#
-#    requirements: list[Requirement] = pyproject.project["dependencies"]
-#    dependency_groups: dict[str, list] = pyproject.dependency_groups
-#
-#    new_requirements = []
-#
-#    for requirement in requirements:
-#        try:
-#            new = _update_dependency(requirement, months=months, buffer=buffer)
-#            new_requirements.append(f"{requirement.name}{new}")
-#        except Exception as e:
-#            msg = f"Unable to update package '{requirement.name}'; skipping. "
-#            raise RuntimeError(msg) from e
-#
-#    subprocess.run(["uv", "add", "--no-sync", *new_requirements])
-#
+def bump_minimum_dependencies(
+    pyproject_file: str = "pyproject.toml",
+    *,
+    drop_months: float | int,
+    cooldown_months: float | int,
+) -> None:
+    """..."""
+
+    pyproject: PyProject = PyProject.load(pyproject_file)
+
+    requirements: list[Requirement] = pyproject.project["dependencies"]
+    # dependency_groups: dict[str, list] = pyproject.dependency_groups
+
+    new_requirements = []
+
+    for requirement in requirements:
+        try:
+            new = _update_dependency(
+                requirement, drop_months=drop_months, cooldown_months=cooldown_months
+            )
+            new_requirements.append(f"{requirement.name}{new}")
+        except Exception as e:
+            msg = f"Unable to update package '{requirement.name}'; skipping. "
+            raise RuntimeError(msg) from e
+
+    subprocess.run(["uv", "add", "--no-sync", *new_requirements])
+
+
 ## def bump_minimum_dependencies() -> None:
 ##    """
 ##    Update the minimum allowed versions of dependencies to be consistent
