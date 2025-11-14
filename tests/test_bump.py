@@ -68,7 +68,9 @@ def test_pyproject(tmp_path, monkeypatch, freezer):
         if actual_line != expected_line:
             actual_line = actual_line.strip('" ,\n')
             expected_line = expected_line.strip('" ,\n')
-            error_messages.append(f"Expected '{expected_line}' but got '{actual_line}'.")
+            error_messages.append(
+                f"Expected '{expected_line}' but got '{actual_line}'."
+            )
 
     if msg := " ".join(error_messages):
         pytest.fail(msg)
