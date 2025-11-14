@@ -230,4 +230,3 @@ def bump_minimum_dependencies(
             raise RuntimeError(msg) from e
 
     subprocess.run(["uv", "add", "--no-sync", *new_requirements])
-
