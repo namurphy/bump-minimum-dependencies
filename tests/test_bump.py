@@ -2,12 +2,10 @@ import shutil
 
 
 from bump_minimum_dependencies import bump
-from datetime import date
 import pytest
 
 from pathlib import Path
 
-baseurl = "https://raw.githubusercontent.com/namurphy/bump-minimum-dependencies/refs/heads/main/tests/data/"
 
 @pytest.mark.parametrize(
     "name, drop_months, cooldown_months, expected",
@@ -33,9 +31,7 @@ def test_bump(name, drop_months, cooldown_months, expected, freezer):
     assert str(release) == expected
 
 
-@pytest.mark.parametrize(
-    "drop_months, cooldown_months", [(4, 5), (-1, 0), (0, -1)]
-)
+@pytest.mark.parametrize("drop_months, cooldown_months", [(4, 5), (-1, 0), (0, -1)])
 def test_drop_months_ge_cooldown_months(drop_months, cooldown_months):
     package = bump.Package(name="plasmapy")
     with pytest.raises(ValueError):
@@ -44,9 +40,7 @@ def test_drop_months_ge_cooldown_months(drop_months, cooldown_months):
         )
 
 
-#@pytest.mark.xfail
 def test_pyproject(tmp_path, monkeypatch, freezer):
-
     freezer.move_to("2026-01-01")
 
     data_dir = Path(__file__).parent / "data"
