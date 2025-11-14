@@ -20,6 +20,7 @@ dependencies = [
   "dep-logic>=0.5.2",
   "plasmapy",
   "pyproject-parser>=0.13",
+  "pytest",
 ]
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
