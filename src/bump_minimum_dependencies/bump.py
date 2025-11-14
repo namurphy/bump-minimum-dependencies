@@ -140,7 +140,7 @@ class Package:
             least
         """
 
-        if not (0 <= cooldown_months < drop_months):
+        if not (0 <= cooldown_months <= drop_months):
             raise ValueError("need 0 ≤ cooldown_months ≤ drop_months")
 
         support_window = timedelta(days=math.ceil(drop_months * DAYS_PER_MONTH))
@@ -162,7 +162,7 @@ class Package:
 
         # for very new packages
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            return min(self.releases)
+            return str(min(self.releases)).removesuffix(".0").removesuffix(".0")
 
         return (
             str(
@@ -186,7 +186,6 @@ def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> 
     parsed_new = parse_version_specifier(str(new))
     combined = parsed_original & parsed_new
     new_specifier = str(original) if combined.is_empty() else str(combined)
-
     return new_specifier.strip().removesuffix(".0").removesuffix(".0")
 
 
@@ -197,7 +196,7 @@ def _update_dependency(
 ) -> str:
     package = Package(requirement.name)
     original_requirement = requirement.specifier
-    calculated_minimum_version = package.last_supported_release(
+    calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
@@ -205,8 +204,6 @@ def _update_dependency(
     return _combine_specifiers(original_requirement, time_based_requirement)
 
 
-#
-#
 def bump_minimum_dependencies(
     pyproject_file: str = "pyproject.toml",
     *,
@@ -234,31 +231,3 @@ def bump_minimum_dependencies(
 
     subprocess.run(["uv", "add", "--no-sync", *new_requirements])
 
-
-## def bump_minimum_dependencies() -> None:
-##    """
-##    Update the minimum allowed versions of dependencies to be consistent
-##    with SPEC 0.
-##
-##    Scientific Python Ecosystem Coordination (SPEC) document 0
-##    recommends that packages support all minor releases of core
-##    dependencies that were made in the past 24 months, and minor
-##    releases of Python that were made in the past 36 months.
-##    """
-##    excluded_deps = {}
-##
-##    pyproject = pyproject_parser.PyProject.load("pyproject.toml")
-##    deps = pyproject.project["dependencies"]
-##    deps_to_update = (dep for dep in deps if dep.name not in excluded_deps)
-##    updated_requirements = [_update_requirement(dep) for dep in deps_to_update]
-##    #    session.run("uv", "add", "--no-sync", *updated_requirements)
-##
-##    subprocess.run(
-##        ["uv", "add", "--no-sync"],
-##        *updated_requirements,
-##        capture_output=True,
-##        text=True,
-##        check=True,
-##    )
-##
-#
