@@ -25,12 +25,10 @@ DAYS_PER_MONTH = 30.436875
 
 
 class Package:
-    def __init__(self, name, today: date | None = None):
+    def __init__(self, name):
         self.name = name
         self.get_release_dates()
-
-        if today is None:  # for testing purposes
-            self.today = datetime.now().date()
+        self.today = datetime.now().date()
 
     def get_release_dates(self) -> None:
         response = requests.get(
@@ -177,7 +175,7 @@ class Package:
         )
 
 
-def _combine_specifiers(original: Requirement | str, new: Requirement | str) -> str:
+def combine_requirements(original: Requirement | str, new: Requirement | str) -> str:
     """
     Combine two version specifiers, falling back to `original` if the
     two specifiers are mutually incompatible.
@@ -201,7 +199,7 @@ def _update_dependency(
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    return _combine_specifiers(original_requirement, time_based_requirement)
+    return combine_requirements(original_requirement, time_based_requirement)
 
 
 def bump_minimum_dependencies(
