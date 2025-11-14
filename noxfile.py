@@ -22,7 +22,7 @@ def lint(session: nox.Session) -> None:
 @nox.session(python=MAXPYTHON)
 def test(session: nox.Session) -> None:
     session.install(".[dev]")
-    session.run("pytest", "tests", "--showlocals")
+    session.run("pytest", "tests", "--tb=short")
 
 
 @nox.session(python=MAXPYTHON)
