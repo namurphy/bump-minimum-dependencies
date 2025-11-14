@@ -6,6 +6,7 @@ from packaging.requirements import Requirement
 
 from dep_logic.specifiers import parse_version_specifier
 import collections
+import warnings
 
 from datetime import datetime, timedelta, date
 
@@ -184,6 +185,9 @@ def combine_requirements(original: Requirement | str, new: Requirement | str) ->
     parsed_new = parse_version_specifier(str(new))
     combined = parsed_original & parsed_new
     new_specifier = str(original) if combined.is_empty() else str(combined)
+    if "||" in new_specifier:
+        warnings.warn("Cannot update versions with != in supported range; skipping.")
+        return original
     return new_specifier.strip().removesuffix(".0").removesuffix(".0")
 
 
