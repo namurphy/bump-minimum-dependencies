@@ -1,18 +1,18 @@
+[build-system]
+build-backend = "uv_build"
+requires = [ "uv-build>=0.9.7,<0.10" ]
+
 [project]
 name = "temporary-package"
 version = "0.1.0"
 
 requires-python = ">=3.14"
 dependencies = [
-    "astropy>=6",
-    "plasmapy>=2024.2",
-    "nox>=2025.10.16",
-    "numpy>=2",
-    "sunpy>=3",
-#    "cabinet>=2023.4.30.1,!=2024.7.17.1,!=1!2.1.1",
-    "requests>=2.19.1",
+  "astropy>=6",
+  "nox>=2025.10.16",
+  "numpy>=1.26",
+  "plasmapy>=2024.2",
+  "requests>=2.31",
+  "sunpy>=5.1",
+  "xarray>=2024.1",
 ]
-
-[build-system]
-requires = ["uv_build>=0.9.7,<0.10.0"]
-build-backend = "uv_build"
