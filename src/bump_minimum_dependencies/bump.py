@@ -1,4 +1,4 @@
-__all__ = ["Package"]
+__all__ = ["_Package"]
 
 
 import requests
@@ -10,6 +10,7 @@ import warnings
 
 from datetime import datetime, timedelta, date
 
+from packaging.specifiers import SpecifierSet
 from packaging.version import Version, InvalidVersion
 
 from pyproject_parser import PyProject
@@ -25,15 +26,22 @@ import functools
 DAYS_PER_MONTH = 30.436875
 
 
-def format_version(version: Version | str) -> str:
+def _format_version(version: Version | str) -> str:
     """Make the version a string and remove '.0' suffixes."""
     v = str(version).strip()
-    while v.endswith(".0"):
-        v.removesuffix(".0")
-    return v
+    return v.removesuffix(".0").removesuffix(".0").removesuffix(".0")
 
 
-class Package:
+class _Package:
+    """
+    A class used to bump minimum dependencies for a Python package.
+
+    Parameters
+    ----------
+    name : str
+        The name of the package.
+    """
+
     def __init__(self, name):
         self.name = name
         self.get_release_dates()
@@ -95,8 +103,11 @@ class Package:
         self,
     ) -> dict[tuple[int, int, int], set[int]]:
         """
-        Dictionary where the key is a tuple of the major and minor version numbers,
-        and
+        Dictionary to help determine the lowest micro release of each
+
+        Each key is a tuple containing the epoch, major, and minor
+        version numbers and the corresponding value is a set containing
+        the micro or patch version numbers.
         """
         epoch_major_minor_to_set_of_micro = {}
 
@@ -116,7 +127,7 @@ class Package:
     @functools.cached_property
     def minor_releases(self) -> list[Version]:
         """The first release of each major/minor pair."""
-        minor_releases = []
+        minor_releases: list[Version] = []
         minor_releases.extend(
             Version(f"{epoch}!{major}.{minor}.{min(micros)}")
             for (
@@ -131,7 +142,7 @@ class Package:
         self,
         drop_months: int = 24,
         cooldown_months: int = 18,
-    ) -> Version:
+    ) -> str:
         """
         Get the oldest supported minor release of the package.
 
@@ -167,24 +178,18 @@ class Package:
             elif release_date < drop_date:
                 releases_before_drop_date.append(release)
 
-        # for very new packages
+        # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            return str(min(self.releases)).removesuffix(".0").removesuffix(".0")
+            return _format_version(min(self.releases))
 
-        return (
-            str(
+        return _format_version(
                 min(
                     supported_releases_before_cooldown,
                     default=max(releases_before_drop_date),
-                )
-            )
-            .removesuffix(".0")
-            .removesuffix(".0")
-            .removesuffix(".0")
-        )
+                ))
 
 
-def combine_requirements(original: Requirement | str, new: Requirement | str) -> str:
+def combine_requirements(original: SpecifierSet, new: Requirement | str) -> str:
     """
     Combine two version specifiers, falling back to `original` if the
     two specifiers are mutually incompatible.
@@ -195,16 +200,16 @@ def combine_requirements(original: Requirement | str, new: Requirement | str) ->
     new_specifier = str(original) if combined.is_empty() else str(combined)
     if "||" in new_specifier:
         warnings.warn("Cannot update versions with != in supported range; skipping.")
-        return original
+        return str(original)
     return new_specifier.strip().removesuffix(".0").removesuffix(".0")
 
 
-def _update_dependency(
+def _get_new_requirement_for_package(
     requirement: Requirement,
     drop_months: float | int,
     cooldown_months: float | int,
 ) -> str:
-    package = Package(requirement.name)
+    package = _Package(requirement.name)
     original_requirement = requirement.specifier
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
@@ -217,26 +222,40 @@ def _update_dependency(
 def bump_minimum_dependencies(
     pyproject_file: str = "pyproject.toml",
     *,
-    drop_months: float | int,
-    cooldown_months: float | int,
+    drop_months: int = 24,
+    cooldown_months: int = 18,
 ) -> None:
-    """..."""
+    """
+    Bump the minimum core dependencies in `pyproject.toml`.
+
+    Parameters
+    ----------
+    drop_months: int, default: 24
+        The preferred number of months after which a minor release is
+        no longer supported.
+
+    cooldown_months: int, default: 18
+        The number of months since a package's release before it can
+        become the minimum version.
+
+    Notes
+    -----
+    This function does not yet work when the combined requirements
+    include a `!=` dependency or multiple ranges of dependencies.
+    """
 
     pyproject: PyProject = PyProject.load(pyproject_file)
-
     requirements: list[Requirement] = pyproject.project["dependencies"]
-    # dependency_groups: dict[str, list] = pyproject.dependency_groups
 
     new_requirements = []
-
     for requirement in requirements:
         try:
-            new = _update_dependency(
+            new = _get_new_requirement_for_package(
                 requirement, drop_months=drop_months, cooldown_months=cooldown_months
             )
             new_requirements.append(f"{requirement.name}{new}")
-        except Exception as e:
+        except Exception:
             msg = f"Unable to update package '{requirement.name}'; skipping. "
-            raise RuntimeError(msg) from e
+            warnings.warn(msg)
 
     subprocess.run(["uv", "add", "--no-sync", *new_requirements])

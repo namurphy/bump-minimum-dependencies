@@ -24,7 +24,7 @@ from pathlib import Path
 )
 def test_bump(name: str, drop_months: int, cooldown_months: int, expected: str, freezer) -> None:
     freezer.move_to("2026-01-01")
-    package = bump.Package(name=name)
+    package = bump._Package(name=name)
     release = package.oldest_supported_minor_release(
         drop_months=drop_months, cooldown_months=cooldown_months
     )
@@ -33,7 +33,7 @@ def test_bump(name: str, drop_months: int, cooldown_months: int, expected: str, 
 
 @pytest.mark.parametrize("drop_months, cooldown_months", [(4, 5), (-1, 0), (0, -1)])
 def test_drop_months_ge_cooldown_months(drop_months: int, cooldown_months: int) -> None:
-    package = bump.Package(name="plasmapy")
+    package = bump._Package(name="plasmapy")
     with pytest.raises(ValueError):
         package.oldest_supported_minor_release(
             drop_months=drop_months, cooldown_months=cooldown_months
