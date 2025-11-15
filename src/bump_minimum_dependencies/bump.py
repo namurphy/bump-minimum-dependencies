@@ -25,6 +25,14 @@ import functools
 DAYS_PER_MONTH = 30.436875
 
 
+def format_version(version: Version | str) -> str:
+    """Make the version a string and remove '.0' suffixes."""
+    v = str(version).strip()
+    while v.endswith(".0"):
+        v.removesuffix(".0")
+    return v
+
+
 class Package:
     def __init__(self, name):
         self.name = name
