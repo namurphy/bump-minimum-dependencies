@@ -15,25 +15,25 @@ MAXPYTHON = "3.14"
 
 @nox.session(python=MAXPYTHON)
 def lint(session: nox.Session) -> None:
-    session.install(".[dev]")
+    session.install(".[test]")
     session.run("prek", "run", "--all-files", "--quiet")
 
 
 @nox.session(python=MAXPYTHON)
 def test(session: nox.Session) -> None:
-    session.install(".[dev]")
+    session.install(".", ".[test]")
     session.run("pytest", "tests", "--tb=short")
 
 
 @nox.session(python=MAXPYTHON)
 def mypy(session: nox.Session) -> None:
-    session.install(".[dev]", "nox")
+    session.install(".[test]")
     session.run("mypy", ".", "--strict")
 
 
 @nox.session(python=MAXPYTHON)
 def ty(session: nox.Session) -> None:
-    session.install(".[dev]", "nox")
+    session.install(".[test]", "nox")
     session.run("ty", "check", ".")
 
 
