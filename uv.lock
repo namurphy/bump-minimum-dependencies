@@ -44,7 +44,7 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-dev = [
+test = [
     { name = "mypy" },
     { name = "nox" },
     { name = "prek" },
@@ -57,15 +57,15 @@ dev = [
 requires-dist = [
     { name = "click", specifier = "==8.3" },
     { name = "dep-logic", specifier = ">=0.5.2" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.18.2" },
-    { name = "nox", marker = "extra == 'dev'", specifier = ">=2025.10.16" },
-    { name = "prek", marker = "extra == 'dev'", specifier = ">=0.2.12" },
+    { name = "mypy", marker = "extra == 'test'", specifier = ">=1.18.2" },
+    { name = "nox", marker = "extra == 'test'", specifier = ">=2025.10.16" },
+    { name = "prek", marker = "extra == 'test'", specifier = ">=0.2.12" },
     { name = "pyproject-parser", specifier = ">=0.13" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9" },
-    { name = "pytest-freezer", marker = "extra == 'dev'", specifier = ">=0.4.9" },
-    { name = "ty", marker = "extra == 'dev'", specifier = ">=0.0.1a25" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=9" },
+    { name = "pytest-freezer", marker = "extra == 'test'", specifier = ">=0.4.9" },
+    { name = "ty", marker = "extra == 'test'", specifier = ">=0.0.1a25" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["test"]
 
 [[package]]
 name = "click"
