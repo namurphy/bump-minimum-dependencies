@@ -22,7 +22,7 @@ from pathlib import Path
         ("pyproject-fmt", 100, 100, "0.1"),
     ],
 )
-def test_bump(name, drop_months, cooldown_months, expected, freezer):
+def test_bump(name: str, drop_months: int, cooldown_months: int, expected: str, freezer) -> None:
     freezer.move_to("2026-01-01")
     package = bump.Package(name=name)
     release = package.oldest_supported_minor_release(
@@ -32,7 +32,7 @@ def test_bump(name, drop_months, cooldown_months, expected, freezer):
 
 
 @pytest.mark.parametrize("drop_months, cooldown_months", [(4, 5), (-1, 0), (0, -1)])
-def test_drop_months_ge_cooldown_months(drop_months, cooldown_months):
+def test_drop_months_ge_cooldown_months(drop_months: int, cooldown_months: int) -> None:
     package = bump.Package(name="plasmapy")
     with pytest.raises(ValueError):
         package.oldest_supported_minor_release(
@@ -40,7 +40,7 @@ def test_drop_months_ge_cooldown_months(drop_months, cooldown_months):
         )
 
 
-def test_pyproject(tmp_path, monkeypatch, freezer):
+def test_pyproject(tmp_path, monkeypatch, freezer) -> None:  # type: ignore
     freezer.move_to("2026-01-01")
 
     data_dir = Path(__file__).parent / "data"
