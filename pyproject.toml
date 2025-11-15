@@ -20,11 +20,7 @@ dependencies = [
   "dep-logic>=0.5.2",
   "pyproject-parser>=0.13",
 ]
-
-scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
-
-[dependency-groups]
-dev = [
+optional-dependencies.tests = [
   "mypy>=1.18.2",
   "nox>=2025.10.16",
   "prek>=0.2.12",
@@ -32,6 +28,9 @@ dev = [
   "pytest-freezer>=0.4.9",
   "ty>=0.0.1a25",
 ]
+
+scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
+
 
 [tool.uv.workspace]
 members = [
