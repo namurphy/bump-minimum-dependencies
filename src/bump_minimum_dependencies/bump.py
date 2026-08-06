@@ -26,7 +26,9 @@ import functools
 DAYS_PER_MONTH = 30.436875
 
 
-def _format_version(version: packaging.version.Version | str) -> str:
+def make_string_and_remove_dot_zero_suffixes(
+    version: packaging.version.Version | str,
+) -> str:
     """
     Convert the version into a string and remove '.0' suffixes.
 
@@ -39,9 +41,9 @@ def _format_version(version: packaging.version.Version | str) -> str:
     --------
     >>> import packaging
     >>> version = packaging.version.Version(version="1.5.0")
-    >>> _format_version(version)
+    >>> make_string_and_remove_dot_zero_suffixes(version)
     "1.5"
-    >>> _format_version("1.0.0")
+    >>> make_string_and_remove_dot_zero_suffixes("1.0.0")
     "1"
     """
     v = str(version).strip()
@@ -198,9 +200,9 @@ class _Package:
 
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            return _format_version(min(self.releases))
+            return make_string_and_remove_dot_zero_suffixes(min(self.releases))
 
-        return _format_version(
+        return make_string_and_remove_dot_zero_suffixes(
             min(
                 supported_releases_before_cooldown,
                 default=max(releases_before_drop_date),
