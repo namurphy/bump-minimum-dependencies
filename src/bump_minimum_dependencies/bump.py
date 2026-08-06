@@ -162,26 +162,23 @@ class BumpPackage:
 
     def oldest_supported_minor_release(
         self,
-        drop_months: int = 24,
-        cooldown_months: int = 18,
+        drop_months: float = 24,
+        cooldown_months: float = 18,
     ) -> str:
         """
         Get the oldest supported minor release of the package.
 
         Parameters
         ----------
-        drop_months: int
+        drop_months: float
             The expected support window for dependencies. All minor
             releases in the last ``drop_months`` will be supported.
 
-        cooldown_months: int
+        cooldown_months: float
             The number of months to use as a grace period for minor
             releases.  If possible, the oldest supported minor release
             will be at least `cooldown_months` old.
         """
-
-        if not (0 <= cooldown_months <= drop_months):
-            raise ValueError("need 0 ≤ cooldown_months ≤ drop_months")
 
         support_window = datetime.timedelta(
             days=math.ceil(drop_months * DAYS_PER_MONTH)
@@ -334,6 +331,9 @@ def bump_minimum_dependencies(
     This function does not yet work when the combined requirements
     include a `!=` dependency or multiple ranges of dependencies.
     """
+    if not (0 <= cooldown_months <= drop_months):
+        raise ValueError("need 0 ≤ cooldown_months ≤ drop_months")
+
     if group and all_groups:
         raise TypeError("only one of group and all_groups can be provided.")
 
@@ -376,7 +376,8 @@ def bump_minimum_dependencies(
         for dependency_group in dependency_groups:
             new_dependency_group_requirements: list[str] = []
             for requirement in pyproject.dependency_groups[dependency_group]:
-                requirement = packaging.requirements.Requirement(requirement)
+                if not isinstance(requirement, packaging.requirements.Requirement):
+                    requirement = packaging.requirements.Requirement(requirement)
                 try:
                     new = get_new_requirement_for_package(
                         requirement,
@@ -395,6 +396,7 @@ def bump_minimum_dependencies(
                 [
                     "uv",
                     "add",
+                    "--no-sync",
                     f"--group={dependency_group}",
                     *new_dependency_group_requirements,
                 ]
@@ -425,6 +427,7 @@ def bump_minimum_dependencies(
                 [
                     "uv",
                     "add",
+                    "--no-sync",
                     f"--optional={optional_dependency}",
                     *new_extra_requirements,
                 ]
