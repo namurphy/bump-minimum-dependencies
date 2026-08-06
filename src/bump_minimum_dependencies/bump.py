@@ -1,14 +1,13 @@
-__all__ = ["_Package"]
+__all__ = ["BumpPackage"]
 
 
 import requests
-from packaging.requirements import Requirement
 
 from dep_logic.specifiers import parse_version_specifier
 import collections
 import warnings
 
-from datetime import datetime, timedelta, date
+import datetime
 
 import packaging.specifiers
 import packaging.version
@@ -42,9 +41,9 @@ def make_string_and_remove_dot_zero_suffixes(
     >>> import packaging
     >>> version = packaging.version.Version(version="1.5.0")
     >>> make_string_and_remove_dot_zero_suffixes(version)
-    "1.5"
+    '1.5'
     >>> make_string_and_remove_dot_zero_suffixes("1.0.0")
-    "1"
+    '1'
     """
     v = str(version).strip()
     while v.endswith(".0"):
@@ -52,7 +51,7 @@ def make_string_and_remove_dot_zero_suffixes(
     return v
 
 
-class _Package:
+class BumpPackage:
     """
     A class used to bump minimum dependencies for a Python package.
 
@@ -65,7 +64,7 @@ class _Package:
     def __init__(self, name):
         self.name = name
         self.get_release_dates()
-        self.today = datetime.now().date()
+        self.today = datetime.datetime.now().date()
 
     def get_release_dates(self) -> None:
         response = requests.get(
@@ -93,7 +92,9 @@ class _Package:
             release_date = None
             for format_ in ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]:
                 try:
-                    release_date = datetime.strptime(file["upload-time"], format_)
+                    release_date = datetime.datetime.strptime(
+                        file["upload-time"], format_
+                    )
                 except ValueError as e:
                     logging.debug(f"Invalid date: {e}")
 
@@ -104,18 +105,18 @@ class _Package:
 
         release_date = {version: min(file_date[version]) for version in file_date}
 
-        self._release_dates: dict[packaging.version.Version, date] = {}
+        self._release_dates: dict[packaging.version.Version, datetime.date] = {}
         for version, release_date in release_date.items():
             self._release_dates[version] = release_date
 
     @property
-    def release_dates(self) -> dict[packaging.version.Version, date]:
-        """..."""
+    def release_dates(self) -> dict[packaging.version.Version, datetime.date]:
+        """A dictionary mapping the version to the date it was released."""
         return self._release_dates
 
     @functools.cached_property
     def releases(self) -> list[packaging.version.Version]:
-        """..."""
+        """The dates of all releases."""
         return sorted(self.release_dates)
 
     @functools.cached_property
@@ -174,24 +175,28 @@ class _Package:
 
         cooldown_months: int
             The number of months to use as a grace period for minor
-            releases. The oldest supported minor release will be at
-            least
+            releases.  If possible, the oldest supported minor release
+            will be at least `cooldown_months` old.
         """
 
         if not (0 <= cooldown_months <= drop_months):
             raise ValueError("need 0 ≤ cooldown_months ≤ drop_months")
 
-        support_window = timedelta(days=math.ceil(drop_months * DAYS_PER_MONTH))
-        cooldown_period = timedelta(days=math.ceil(cooldown_months * DAYS_PER_MONTH))
+        support_window = datetime.timedelta(
+            days=math.ceil(drop_months * DAYS_PER_MONTH)
+        )
+        cooldown_period = datetime.timedelta(
+            days=math.ceil(cooldown_months * DAYS_PER_MONTH)
+        )
 
-        drop_date: date = self.today - support_window
-        cooldown_date: date = self.today - cooldown_period
+        drop_date: datetime.date = self.today - support_window
+        cooldown_date: datetime.date = self.today - cooldown_period
 
         supported_releases_before_cooldown: list[packaging.version.Version] = []
         releases_before_drop_date: list[packaging.version.Version] = []
 
         for release in self.minor_releases:
-            release_date: date = self.release_dates[release]
+            release_date: datetime.date = self.release_dates[release]
 
             if drop_date <= release_date < cooldown_date:
                 supported_releases_before_cooldown.append(release)
@@ -212,7 +217,7 @@ class _Package:
 
 def combine_requirements(
     original: packaging.specifiers.SpecifierSet,
-    new: Requirement | str,
+    new: packaging.requirements.Requirement | str,
 ) -> str:
     """
     Combine two version specifiers, falling back to `original` if the
@@ -228,12 +233,12 @@ def combine_requirements(
     return new_specifier.strip().removesuffix(".0").removesuffix(".0")
 
 
-def _get_new_requirement_for_package(
-    requirement: Requirement,
+def get_new_requirement_for_package(
+    requirement: packaging.requirements.Requirement,
     drop_months: float | int,
     cooldown_months: float | int,
 ) -> str:
-    package = _Package(requirement.name)
+    package = BumpPackage(requirement.name)
     original_requirement = requirement.specifier
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
@@ -247,7 +252,7 @@ def bump_minimum_dependencies(
     pyproject_file: str = "pyproject.toml",
     *,
     drop_months: int = 24,
-    cooldown_months: int = 18,
+    cooldown_months: int = 12,
 ) -> None:
     """
     Bump the minimum core dependencies in `pyproject.toml`.
@@ -258,7 +263,7 @@ def bump_minimum_dependencies(
         The preferred number of months after which a minor release is
         no longer supported.
 
-    cooldown_months: int, default: 18
+    cooldown_months: int, default: 12
         The number of months since a package's release before it can
         become the minimum version.
 
@@ -269,12 +274,14 @@ def bump_minimum_dependencies(
     """
 
     pyproject: PyProject = PyProject.load(pyproject_file)
-    requirements: list[Requirement] = pyproject.project["dependencies"]  # ty: ignore[invalid-assignment, not-subscriptable]
+    requirements: list[packaging.requirements.Requirement] = pyproject.project[
+        "dependencies"
+    ]  # ty: ignore[invalid-assignment, not-subscriptable]
 
     new_requirements = []
     for requirement in requirements:
         try:
-            new = _get_new_requirement_for_package(
+            new = get_new_requirement_for_package(
                 requirement, drop_months=drop_months, cooldown_months=cooldown_months
             )
             new_requirements.append(f"{requirement.name}{new}")
