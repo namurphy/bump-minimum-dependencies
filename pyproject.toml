@@ -20,18 +20,32 @@ dependencies = [
   "dep-logic>=0.5.2",
   "pyproject-parser>=0.13",
 ]
-optional-dependencies.test = [
-  "mypy>=1.18.2",
-  "nox>=2025.10.16",
-  "prek>=0.2.12",
-  "pytest>=9",
-  "pytest-freezer>=0.4.9",
-  "ty>=0.0.1a25",
-]
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
 
 [tool.uv.workspace]
 members = [
   "tests/data/temporary",
+]
+
+[dependency-groups]
+dev = [
+  { include-group = "lint" },
+  { include-group = "nox" },
+  { include-group = "test" },
+  { include-group = "ty" },
+]
+lint = [
+    "prek>=0.2.14",
+]
+nox = [
+    "nox>=2026.7.11",
+    "nox-uv>=0.8.0",
+]
+test = [
+    "pytest>=9.1",
+    "pytest-freezer>=0.4.9",
+]
+ty = [
+    "ty>=0.0.69",
 ]
