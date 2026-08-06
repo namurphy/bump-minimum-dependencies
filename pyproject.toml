@@ -23,11 +23,6 @@ dependencies = [
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
 
-[tool.uv.workspace]
-members = [
-  "tests/data/temporary",
-]
-
 [dependency-groups]
 dev = [
   { include-group = "lint" },
@@ -35,17 +30,22 @@ dev = [
   { include-group = "test" },
   { include-group = "ty" },
 ]
+test = [
+  "pytest>=9.1",
+  "pytest-freezer>=0.4.9",
+]
 lint = [
-    "prek>=0.2.14",
+  "prek>=0.2.14",
 ]
 nox = [
-    "nox>=2026.7.11",
-    "nox-uv>=0.8.0",
-]
-test = [
-    "pytest>=9.1",
-    "pytest-freezer>=0.4.9",
+  "nox>=2026.7.11",
+  "nox-uv>=0.8",
 ]
 ty = [
-    "ty>=0.0.69",
+  "ty>=0.0.69",
+]
+
+[tool.uv.workspace]
+members = [
+  "tests/data/temporary",
 ]
