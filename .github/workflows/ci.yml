@@ -37,7 +37,6 @@ jobs:
 
         - nox_session: lint
         - nox_session: test
-        - nox_session: mypy
         - nox_session: ty
         - nox_session: build
         - nox_session: run
