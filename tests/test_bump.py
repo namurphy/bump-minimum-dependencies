@@ -22,7 +22,9 @@ from pathlib import Path
         ("pyproject-fmt", 100, 100, "0.1"),
     ],
 )
-def test_bump(name: str, drop_months: int, cooldown_months: int, expected: str, freezer) -> None:
+def test_bump(
+    name: str, drop_months: int, cooldown_months: int, expected: str, freezer
+) -> None:
     freezer.move_to("2026-01-01")
     package = bump._Package(name=name)
     release = package.oldest_supported_minor_release(
@@ -40,7 +42,7 @@ def test_drop_months_ge_cooldown_months(drop_months: int, cooldown_months: int) 
         )
 
 
-def test_pyproject(tmp_path, monkeypatch, freezer) -> None:  # type: ignore
+def test_pyproject(tmp_path, monkeypatch, freezer) -> None:
     freezer.move_to("2026-01-01")
 
     data_dir = Path(__file__).parent / "data"
