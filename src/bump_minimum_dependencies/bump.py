@@ -28,7 +28,7 @@ DAYS_PER_MONTH = 30.436875
 
 def _format_version(version: packaging.version.Version | str) -> str:
     """
-    Make the version a string and remove '.0' suffixes.
+    Convert the version into a string and remove '.0' suffixes.
 
     Arguments
     ---------
@@ -38,11 +38,11 @@ def _format_version(version: packaging.version.Version | str) -> str:
     Examples
     --------
     >>> import packaging
-    >>> v1 = packaging.version.Version("1.5.0")
-    >>> _format_version(v1)
+    >>> version = packaging.version.Version(version="1.5.0")
+    >>> _format_version(version)
     "1.5"
-    >>> _format_version("1.2.0")
-    "1.2"
+    >>> _format_version("1.0.0")
+    "1"
     """
     v = str(version).strip()
     while v.endswith(".0"):
