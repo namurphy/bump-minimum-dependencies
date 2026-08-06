@@ -42,10 +42,11 @@ def test_drop_months_ge_cooldown_months(drop_months: int, cooldown_months: int) 
         )
 
 
-def test_pyproject(tmp_path, monkeypatch, freezer) -> None:
+@pytest.mark.parametrize("subdir", ["case1"])
+def test_pyproject(tmp_path, monkeypatch, freezer, subdir) -> None:
     freezer.move_to("2026-01-01")
 
-    data_dir = Path(__file__).parent / "data"
+    data_dir = Path(__file__).parent / "data" / subdir
     original_pyproject = data_dir / "pyproject.toml"
     expected_pyproject = data_dir / "pyproject.expected.toml"
     pyproject = tmp_path / "pyproject.toml"
