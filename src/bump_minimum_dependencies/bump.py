@@ -183,10 +183,11 @@ class _Package:
             return _format_version(min(self.releases))
 
         return _format_version(
-                min(
-                    supported_releases_before_cooldown,
-                    default=max(releases_before_drop_date),
-                ))
+            min(
+                supported_releases_before_cooldown,
+                default=max(releases_before_drop_date),
+            )
+        )
 
 
 def combine_requirements(original: SpecifierSet, new: Requirement | str) -> str:
