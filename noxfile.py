@@ -24,7 +24,13 @@ def lint(session: nox.Session) -> None:
 @nox_uv.session(python=supported_python_versions, uv_groups=["dev"])
 def test(session: nox.Session) -> None:
     """Run tests."""
-    session.run("pytest", "tests", "--tb=short")
+    session.run(
+        "pytest",
+        ".",
+        "--tb=short",
+        "--doctest-modules",
+        "--doctest-continue-on-failure",
+    )
 
 
 @nox_uv.session(python=maxpython, uv_groups=["dev"])
