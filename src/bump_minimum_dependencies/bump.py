@@ -11,6 +11,7 @@ import datetime
 
 import packaging.specifiers
 import packaging.version
+import packaging.requirements
 
 from pyproject_parser import PyProject
 
@@ -248,41 +249,121 @@ def get_new_requirement_for_package(
     return combine_requirements(original_requirement, time_based_requirement)
 
 
+def get_dependency_groups_to_update(
+    *,
+    group: list[str] | tuple[str, ...],
+    all_groups: bool,
+    pyproject: PyProject,
+) -> list[str]:
+    if pyproject.dependency_groups:
+        all_dependency_groups: list[str] = sorted(pyproject.dependency_groups)
+    else:
+        all_dependency_groups: list[str] = []
+
+    if undefined := set(group) - set(all_dependency_groups):
+        raise ValueError(
+            f"the following dependency groups are not defined: {undefined}"
+        )
+
+    return all_dependency_groups if all_groups else sorted(group)
+
+
+def get_optional_dependencies_to_update(
+    *,
+    extra: list[str] | tuple[str, ...],
+    all_extras: bool,
+    pyproject: PyProject,
+) -> list[str]:
+    if pyproject.project and pyproject.project.get("optional-dependencies"):
+        all_extra_categories: list[str] = sorted(
+            pyproject.project["optional-dependencies"]
+        )
+    else:
+        all_extra_categories: list[str] = []
+
+    if undefined := set(extra) - set(all_extra_categories):
+        raise ValueError(
+            f"the following optional dependency categories are not defined: {undefined}"
+        )
+
+    return all_extra_categories if all_extras else sorted(extra)
+
+
 def bump_minimum_dependencies(
     pyproject_file: str = "pyproject.toml",
     *,
-    drop_months: int = 24,
+    all_extras: bool = False,
+    all_groups: bool = False,
     cooldown_months: int = 12,
+    drop_months: int = 24,
+    extra: tuple[str, ...] | list[str] = (),
+    group: tuple[str, ...] | list[str] = (),
 ) -> None:
     """
     Bump the minimum core dependencies in `pyproject.toml`.
 
     Parameters
     ----------
-    drop_months: int, default: 24
+    pyproject_file: str, default: "pyproject.toml"
+        The path to the pyproject.toml file to be updated.
+
+    all_extras: bool, keyword-only, default: False
+        Update all optional dependencies.
+
+    all_groups: bool, keyword-only, default: False
+        Update all dependency groups.
+
+    cooldown_months: int, keyword-only, default: 12
+        The number of months since a package's release before it can
+        become the minimum version, when possible.
+
+    drop_months: int, keyword-only, default: 24
         The preferred number of months after which a minor release is
         no longer supported.
 
-    cooldown_months: int, default: 12
-        The number of months since a package's release before it can
-        become the minimum version.
+    extra: tuple[str, ...] | list[str], keyword-only, optional
+        The name of the optional dependencies category to be updated.
+        Not yet implemented.
+
+    group: tuple[str, ...] | list[str], keyword-only, optional
+        The name of the dependency group to be updated. Not yet
+        implemented.
 
     Notes
     -----
     This function does not yet work when the combined requirements
     include a `!=` dependency or multiple ranges of dependencies.
     """
+    if group and all_groups:
+        raise TypeError("only one of group and all_groups can be provided.")
+
+    if extra and all_extras:
+        raise TypeError("only one of extra and all_extras can be provided.")
 
     pyproject: PyProject = PyProject.load(pyproject_file)
     requirements: list[packaging.requirements.Requirement] = pyproject.project[
         "dependencies"
     ]  # ty: ignore[invalid-assignment, not-subscriptable]
 
+    dependency_groups: list[str] = get_dependency_groups_to_update(
+        group=group,
+        all_groups=all_groups,
+        pyproject=pyproject,
+    )
+
+    optional_dependencies: list[str] = get_optional_dependencies_to_update(
+        extra=extra,
+        all_extras=all_extras,
+        pyproject=pyproject,
+    )
+
     new_requirements = []
     for requirement in requirements:
         try:
             new = get_new_requirement_for_package(
-                requirement, drop_months=drop_months, cooldown_months=cooldown_months
+                requirement,
+                drop_months=drop_months,
+                cooldown_months=cooldown_months,
             )
             new_requirements.append(f"{requirement.name}{new}")
         except Exception:
@@ -290,3 +371,61 @@ def bump_minimum_dependencies(
             warnings.warn(msg)
 
     subprocess.run(["uv", "add", "--no-sync", *new_requirements])
+
+    if pyproject.dependency_groups:
+        for dependency_group in dependency_groups:
+            new_dependency_group_requirements: list[str] = []
+            for requirement in pyproject.dependency_groups[dependency_group]:
+                requirement = packaging.requirements.Requirement(requirement)
+                try:
+                    new = get_new_requirement_for_package(
+                        requirement,
+                        drop_months=drop_months,
+                        cooldown_months=cooldown_months,
+                    )
+                    new_dependency_group_requirements.append(f"{requirement.name}{new}")
+                except Exception:
+                    msg = (
+                        f"Unable to update package '{requirement.name}' for "
+                        f"{dependency_group = }; skipping."
+                    )
+                    warnings.warn(msg)
+
+            subprocess.run(
+                [
+                    "uv",
+                    "add",
+                    f"--group={dependency_group}",
+                    *new_dependency_group_requirements,
+                ]
+            )
+
+    if pyproject.project and pyproject.project.get("optional-dependencies"):
+        for optional_dependency in optional_dependencies:
+            new_extra_requirements: list[str] = []
+            for requirement in pyproject.project["optional-dependencies"][
+                optional_dependency
+            ]:
+                # requirement = packaging.requirements.Requirement(requirement)
+                try:
+                    new = get_new_requirement_for_package(
+                        requirement,
+                        drop_months=drop_months,
+                        cooldown_months=cooldown_months,
+                    )
+                    new_extra_requirements.append(f"{requirement.name}{new}")
+                except Exception:
+                    msg = (
+                        f"Unable to update package '{requirement.name}' for "
+                        f"{extra = }; skipping."
+                    )
+                    warnings.warn(msg)
+
+            subprocess.run(
+                [
+                    "uv",
+                    "add",
+                    f"--optional={optional_dependency}",
+                    *new_extra_requirements,
+                ]
+            )
