@@ -17,9 +17,10 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-  "click==8.3",
+  "click>=8.3",
   "dep-logic>=0.5.2",
   "pyproject-parser>=0.13",
+  "requests>=2.34.2",
 ]
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
