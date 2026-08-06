@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "uv_build"
-requires = [ "uv-build>=0.9.5,<0.10" ]
+requires = [ "uv-build>=0.12.2" ]
 
 [project]
 name = "bump-minimum-dependencies"
@@ -21,6 +21,7 @@ dependencies = [
   "dep-logic>=0.5.2",
   "pyproject-parser>=0.13",
   "requests>=2.34.2",
+  "uv>=0.12.2",
 ]
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
