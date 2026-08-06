@@ -10,8 +10,8 @@ import warnings
 
 from datetime import datetime, timedelta, date
 
-from packaging.specifiers import SpecifierSet
-from packaging.version import Version, InvalidVersion
+import packaging.specifiers
+import packaging.version
 
 from pyproject_parser import PyProject
 
@@ -26,10 +26,28 @@ import functools
 DAYS_PER_MONTH = 30.436875
 
 
-def _format_version(version: Version | str) -> str:
-    """Make the version a string and remove '.0' suffixes."""
+def _format_version(version: packaging.version.Version | str) -> str:
+    """
+    Make the version a string and remove '.0' suffixes.
+
+    Arguments
+    ---------
+    version : packaging.version.Version | str
+        The version to be formatted.
+
+    Examples
+    --------
+    >>> import packaging
+    >>> v1 = packaging.version.Version("1.5.0")
+    >>> _format_version(v1)
+    "1.5"
+    >>> _format_version("1.2.0")
+    "1.2"
+    """
     v = str(version).strip()
-    return v.removesuffix(".0").removesuffix(".0").removesuffix(".0")
+    while v.endswith(".0"):
+        v = v.removesuffix(".0")
+    return v
 
 
 class _Package:
@@ -57,8 +75,8 @@ class _Package:
         for file in response["files"]:
             ver = file["filename"].split("-")[1]
             try:
-                version = Version(ver)
-            except InvalidVersion as e:
+                version = packaging.version.Version(ver)
+            except packaging.version.InvalidVersion as e:
                 logging.debug(
                     f"'{ver}' is an invalid version for '{self.name}'. Reason: {e}"
                 )
@@ -84,17 +102,17 @@ class _Package:
 
         release_date = {version: min(file_date[version]) for version in file_date}
 
-        self._release_dates: dict[Version, date] = {}
+        self._release_dates: dict[packaging.version.Version, date] = {}
         for version, release_date in release_date.items():
             self._release_dates[version] = release_date
 
     @property
-    def release_dates(self) -> dict[Version, date]:
+    def release_dates(self) -> dict[packaging.version.Version, date]:
         """..."""
         return self._release_dates
 
     @functools.cached_property
-    def releases(self) -> list[Version]:
+    def releases(self) -> list[packaging.version.Version]:
         """..."""
         return sorted(self.release_dates)
 
@@ -125,11 +143,11 @@ class _Package:
         return epoch_major_minor_to_set_of_micro
 
     @functools.cached_property
-    def minor_releases(self) -> list[Version]:
+    def minor_releases(self) -> list[packaging.version.Version]:
         """The first release of each major/minor pair."""
-        minor_releases: list[Version] = []
+        minor_releases: list[packaging.version.Version] = []
         minor_releases.extend(
-            Version(f"{epoch}!{major}.{minor}.{min(micros)}")
+            packaging.version.Version(f"{epoch}!{major}.{minor}.{min(micros)}")
             for (
                 epoch,
                 major,
@@ -167,8 +185,8 @@ class _Package:
         drop_date: date = self.today - support_window
         cooldown_date: date = self.today - cooldown_period
 
-        supported_releases_before_cooldown: list[Version] = []
-        releases_before_drop_date: list[Version] = []
+        supported_releases_before_cooldown: list[packaging.version.Version] = []
+        releases_before_drop_date: list[packaging.version.Version] = []
 
         for release in self.minor_releases:
             release_date: date = self.release_dates[release]
@@ -190,7 +208,7 @@ class _Package:
         )
 
 
-def combine_requirements(original: SpecifierSet, new: Requirement | str) -> str:
+def combine_requirements(original: packaging.specifiers.SpecifierSet, new: Requirement | str) -> str:
     """
     Combine two version specifiers, falling back to `original` if the
     two specifiers are mutually incompatible.
@@ -246,7 +264,7 @@ def bump_minimum_dependencies(
     """
 
     pyproject: PyProject = PyProject.load(pyproject_file)
-    requirements: list[Requirement] = pyproject.project["dependencies"]
+    requirements: list[Requirement] = pyproject.project["dependencies"]  # ty: ignore[invalid-assignment, not-subscriptable]
 
     new_requirements = []
     for requirement in requirements:
