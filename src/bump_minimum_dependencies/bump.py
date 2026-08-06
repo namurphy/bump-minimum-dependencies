@@ -208,7 +208,10 @@ class _Package:
         )
 
 
-def combine_requirements(original: packaging.specifiers.SpecifierSet, new: Requirement | str) -> str:
+def combine_requirements(
+    original: packaging.specifiers.SpecifierSet,
+    new: Requirement | str,
+) -> str:
     """
     Combine two version specifiers, falling back to `original` if the
     two specifiers are mutually incompatible.

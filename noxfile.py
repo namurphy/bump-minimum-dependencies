@@ -29,7 +29,7 @@ def test(session: nox.Session) -> None:
 
 @nox_uv.session(python=maxpython, uv_groups=["dev"])
 def ty(session: nox.Session) -> None:
-    """Perform static type checking with ty. """
+    """Perform static type checking with ty."""
     args = session.posargs or ["--fix"]
     session.run("ty", "check", ".", *args)
 
