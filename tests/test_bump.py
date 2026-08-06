@@ -1,3 +1,5 @@
+import warnings
+
 import shutil
 
 
@@ -33,29 +35,7 @@ def test_bump(
     assert str(release) == expected
 
 
-@pytest.mark.parametrize("drop_months, cooldown_months", [(4, 5), (-1, 0), (0, -1)])
-def test_drop_months_ge_cooldown_months(drop_months: int, cooldown_months: int) -> None:
-    package = bump.BumpPackage(name="plasmapy")
-    with pytest.raises(ValueError):
-        package.oldest_supported_minor_release(
-            drop_months=drop_months, cooldown_months=cooldown_months
-        )
-
-
-@pytest.mark.parametrize("subdir", ["case1"])
-def test_pyproject(tmp_path, monkeypatch, freezer, subdir) -> None:
-    freezer.move_to("2026-01-01")
-
-    data_dir = Path(__file__).parent / "data" / subdir
-    original_pyproject = data_dir / "pyproject.toml"
-    expected_pyproject = data_dir / "pyproject.expected.toml"
-    pyproject = tmp_path / "pyproject.toml"
-
-    shutil.copy(original_pyproject, pyproject)
-    monkeypatch.chdir(tmp_path)
-
-    bump.bump_minimum_dependencies(drop_months=24, cooldown_months=21)
-
+def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
     with open(pyproject) as f1:
         actual = f1.readlines()
 
@@ -75,5 +55,52 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir) -> None:
                 f"Expected '{expected_line}' but got '{actual_line}'."
             )
 
-    if msg := " ".join(error_messages):
-        pytest.fail(msg)
+    return " ".join(error_messages)
+
+
+@pytest.mark.parametrize(
+    "subdir,kwargs",
+    [
+        ("base_case", {"drop_months": 24, "cooldown_months": 21}),
+        ("bump_all_dependency_groups", {"drop_months": 24, "cooldown_months": 21, "all_groups": True}),
+    ],
+)
+def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs) -> None:
+    freezer.move_to("2026-01-01")
+
+    data_dir = Path(__file__).parent / "data" / subdir
+    original_pyproject = data_dir / "pyproject.toml"
+    expected_pyproject = data_dir / "pyproject.expected.toml"
+    pyproject = tmp_path / "pyproject.toml"
+
+    shutil.copy(original_pyproject, pyproject)
+    monkeypatch.chdir(tmp_path)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        bump.bump_minimum_dependencies(**kwargs)
+
+    if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject):
+        pytest.fail(reason=errmsg)
+
+
+@pytest.mark.parametrize(
+    "subdir,kwargs,exception",
+    [
+        ("base_case", {"drop_months": 12, "cooldown_months": 24}, ValueError),
+        ("base_case", {"drop_months": -1, "cooldown_months": 24}, ValueError),
+        ("base_case", {"drop_months": -1, "cooldown_months": -1}, ValueError),
+    ],
+)
+def test_exceptions(tmp_path, monkeypatch, freezer, subdir, kwargs, exception) -> None:
+    freezer.move_to("2026-01-01")
+
+    data_dir = Path(__file__).parent / "data" / subdir
+    original_pyproject = data_dir / "pyproject.toml"
+    pyproject = tmp_path / "pyproject.toml"
+
+    shutil.copy(original_pyproject, pyproject)
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(exception):
+        bump.bump_minimum_dependencies(**kwargs)
