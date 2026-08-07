@@ -1,6 +1,8 @@
 # bump-minimum-dependencies
 
-Automagically updates the minimum supported dependencies of a Python package, including dependency groups and optional dependencies.
+Automatically updates the minimum supported dependencies of a Python package, including dependency groups and optional dependencies.
+
+Updates to `pyproject.toml` are made with [uv](https://docs.astral.sh/uv).
 
 > [!NOTE]
 > This tool is in the early stages of procrastination-driven development (PDD). If you find bugs, please raise an issue!
@@ -36,9 +38,15 @@ SPEC 0 recommends that support for core package dependencies be dropped 2 years 
 
 ## Limitations
 
-- By making use of [`dep-logic`](https://github.com/pdm-project/dep-logic), `bump-minimum-dependencies` is able to handle a wide variety of requirements. When a requirement is unable to be updated, `bump-minimum-dependencies` issues a warning and skips making changes to that requirement.
-- Lockfiles are not updated by `bump-minimum-dependencies`, so files like `uv.lock` will need to be updated manually.
 - This tool does not upgrade the minimum required version of Python.
+
+- By making use of [`dep-logic`](https://github.com/pdm-project/dep-logic), `bump-minimum-dependencies` is able to handle a wide variety of requirements. When a requirement is unable to be updated, `bump-minimum-dependencies` issues a warning and skips making changes to that requirement.
+
+- This tool does not automatically update lockfiles or sync virtual environments. These commands would need to be performed automatically.
+
+- This tool removes `.0` suffixes when updating requirements for consistency with [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html).
+
+- The locations of comments may be changed when uv updates `pyproject.toml`, so changes should be reviewed before being accepted.
 
 ## Related projects
 
