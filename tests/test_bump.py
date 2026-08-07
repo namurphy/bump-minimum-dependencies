@@ -89,7 +89,8 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs) -> None:
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        bump.bump_minimum_dependencies(**kwargs)
+        bumper = bump.BumpMinimumDependencies(**kwargs)
+        bumper.run()
 
     if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject):
         pytest.fail(reason=errmsg)
@@ -114,4 +115,5 @@ def test_exceptions(tmp_path, monkeypatch, freezer, subdir, kwargs, exception) -
     monkeypatch.chdir(tmp_path)
 
     with pytest.raises(exception):
-        bump.bump_minimum_dependencies(**kwargs)
+        bumper = bump.BumpMinimumDependencies(**kwargs)
+        bumper.run()
