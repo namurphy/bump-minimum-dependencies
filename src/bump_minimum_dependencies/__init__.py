@@ -43,7 +43,13 @@ from . import bump
     multiple=True,
 )
 @click.option(
-    "--skip",
+    "--skip-core",
+    default=False,
+    is_flag=True,
+    help="Skip updating core project dependencies.",
+)
+@click.option(
+    "--skip-package",
     default=[],
     help="Name of a package to skip when performing updates. May be provided more than once.",
     multiple=True,
@@ -54,12 +60,14 @@ def main(
     cooldown_months: int,
     all_extras: bool,
     all_groups: bool,
+    skip_core: bool,
     extra: tuple[str, ...] | list[str],
     group: tuple[str, ...] | list[str],
-    skip: tuple[str, ...] | list[str],
+    skip_package: tuple[str, ...] | list[str],
 ) -> None:
     """Bump the minimum allowed versions of package dependencies."""
-    bump.bump_minimum_dependencies(
+
+    bump_minimum_dependencies = bump.BumpMinimumDependencies(
         pyproject_file=pyproject_file,
         drop_months=drop_months,
         cooldown_months=cooldown_months,
@@ -67,5 +75,8 @@ def main(
         all_groups=all_groups,
         extra=extra,
         group=group,
-        skip=skip,
+        skip_package=skip_package,
+        skip_core=skip_core,
     )
+
+    bump_minimum_dependencies.run()

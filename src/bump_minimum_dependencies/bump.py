@@ -286,16 +286,214 @@ def get_optional_dependencies_to_update(
     return all_extra_categories if all_extras else sorted(extra)
 
 
+def run_subprocess(command: list[str]):
+    print(" ".join(command))
+    subprocess.run(command)
+
+
+class BumpMinimumDependencies:
+    def __init__(
+        self,
+        pyproject_file: str = "pyproject.toml",
+        *,
+        all_extras: bool = False,
+        all_groups: bool = False,
+        skip_core: bool = False,
+        cooldown_months: int = 12,
+        drop_months: int = 24,
+        extra: tuple[str, ...] | list[str] = (),
+        group: tuple[str, ...] | list[str] = (),
+        skip_package: tuple[str, ...] | list[str] = (),
+    ):
+        self.pyproject_file = pyproject_file
+        self.update_all_optionals: bool = all_extras
+        self.update_all_dependency_groups: bool = all_groups
+        self.skip_core_requirements: bool = skip_core
+        self.cooldown_months: int = cooldown_months
+        self.drop_months = drop_months
+        self.optional_categories = list(extra)
+        self.dependency_groups = list(group)
+        self.packages_to_skip = list(skip_package)
+
+        self.pyproject: PyProject = PyProject.load(pyproject_file)
+
+        if not self.pyproject.project:
+            raise RuntimeError("project table not defined")
+
+    @property
+    def project_name(self) -> str | None:
+        return self.pyproject.project.get("name", None)  # ty: ignore[unresolved-attribute]
+
+    @property
+    def core_requirements_to_update(self) -> list[packaging.requirements.Requirement]:
+        if self.skip_core_requirements:
+            return []
+
+        try:
+            all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable, invalid-return-type]
+        except (TypeError, AttributeError, KeyError) as exc:
+            errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
+            raise RuntimeError(errmsg) from exc
+
+        core_requirements_to_update: list[packaging.requirements.Requirement] = []
+        for requirement in all_requirements:
+            if requirement.name in self.packages_to_skip:
+                continue
+            if requirement.name == self.project_name:
+                continue
+            core_requirements_to_update.append(requirement)
+
+        return core_requirements_to_update
+
+    @property
+    def dependency_groups_to_update(self) -> list[str]:
+        if not self.pyproject.dependency_groups:
+            return []
+
+        all_dependency_groups: list[str] = sorted(self.pyproject.dependency_groups)
+
+        if undefined := set(self.dependency_groups) - set(all_dependency_groups):
+            msg = f"the following dependency groups are not defined: {undefined}"
+            raise ValueError(msg)
+
+        if self.update_all_dependency_groups:
+            return all_dependency_groups
+        return self.dependency_groups
+
+    @property
+    def optional_categories_to_update(self) -> list[str]:
+        all_optionals: list[str] = sorted(
+            self.pyproject.project.get("optional-dependencies", [])  # ty: ignore[unresolved-attribute]
+        )
+        if undefined := set(self.optional_categories) - set(all_optionals):
+            raise ValueError(
+                f"the following optional dependency categories are not "
+                f"defined: {undefined}"
+            )
+        return all_optionals if self.update_all_optionals else self.optional_categories
+
+    def bump_core_requirements(self):
+        if self.skip_core_requirements:
+            return
+
+        new_requirements: list[str] = []
+        for requirement in self.core_requirements_to_update:
+            try:
+                new: str = get_new_requirement_for_package(
+                    requirement=requirement,
+                    drop_months=self.drop_months,
+                    cooldown_months=self.cooldown_months,
+                )
+                new_requirements.append(f"{requirement.name}{new}")
+            except Exception:  # be more specific about the exception
+                msg = f"Unable to core dependency {requirement.name!r}; skipping."
+                warnings.warn(message=msg)
+
+        if new_requirements:
+            command = ["uv", "add", "--frozen", "-q", *new_requirements]
+            run_subprocess(command)
+
+    def bump_dependency_groups(self):
+        if not self.update_all_dependency_groups and not self.dependency_groups:
+            return
+
+        for dependency_group in self.dependency_groups_to_update:
+            requirements = self.pyproject.dependency_groups[dependency_group]  # ty: ignore[not-subscriptable]
+            new_dependency_group_requirements: list[str] = []
+            for requirement in requirements:
+                if requirement in self.packages_to_skip:
+                    continue
+                if isinstance(requirement, str):
+                    requirement = packaging.requirements.Requirement(requirement)
+                if not isinstance(requirement, packaging.requirements.Requirement):
+                    continue
+                if requirement.name == self.project_name:
+                    continue
+
+                try:
+                    new = get_new_requirement_for_package(
+                        requirement,
+                        drop_months=self.drop_months,
+                        cooldown_months=self.cooldown_months,
+                    )
+                    new_dependency_group_requirements.append(f"{requirement.name}{new}")
+                except Exception:
+                    msg = (
+                        f"Unable to update package '{requirement.name}' for "
+                        f"{dependency_group = }; skipping."
+                    )
+                    warnings.warn(msg)
+
+            if not new_dependency_group_requirements:
+                continue
+
+            command = [
+                "uv",
+                "add",
+                "--frozen",
+                "--quiet",
+                f"--group={dependency_group}",
+                *new_dependency_group_requirements,
+            ]
+            run_subprocess(command)
+
+    def bump_optional_dependencies(self):
+        print(self.optional_categories_to_update)
+
+        for category in self.optional_categories_to_update:
+            new_requirements: list[str] = []
+
+            optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
+            for requirement in optionals[category]:  # ty: ignore[not-subscriptable]
+                if requirement in self.packages_to_skip:
+                    continue
+                if isinstance(requirement, str):
+                    requirement = packaging.requirements.Requirement(requirement)
+                if not isinstance(requirement, packaging.requirements.Requirement):
+                    continue
+                try:
+                    new = get_new_requirement_for_package(
+                        requirement,
+                        drop_months=self.drop_months,
+                        cooldown_months=self.cooldown_months,
+                    )
+                    new_requirements.append(f"{requirement.name}{new}")
+                except Exception:
+                    msg = (
+                        f"Unable to update package {requirement.name!r} in "
+                        f"the {category!r} optional dependencies category. Skipping."
+                    )
+            print(new_requirements)
+
+            if new_requirements:
+                command: list[str] = [
+                    "uv",
+                    "add",
+                    "--frozen",
+                    "-q",
+                    f"--optional={category}",
+                    *new_requirements,
+                ]
+                run_subprocess(command)
+
+    def run(self):
+        """Perform updates."""
+        self.bump_core_requirements()
+        self.bump_dependency_groups()
+        self.bump_optional_dependencies()
+
+
 def bump_minimum_dependencies(
     pyproject_file: str = "pyproject.toml",
     *,
     all_extras: bool = False,
     all_groups: bool = False,
+    skip_core: bool = False,
     cooldown_months: int = 12,
     drop_months: int = 24,
     extra: tuple[str, ...] | list[str] = (),
     group: tuple[str, ...] | list[str] = (),
-    skip: tuple[str, ...] | list[str] = (),
+    skip_package: tuple[str, ...] | list[str] = (),
 ) -> None:
     """
     Bump the minimum core dependencies in `pyproject.toml`.
@@ -325,7 +523,10 @@ def bump_minimum_dependencies(
     group: tuple[str, ...] | list[str], keyword-only, optional
         The names of the dependency groups to be updated.
 
-    skip: tuple[str, ...] | list[str], keyword-only, optional
+    skip_core: bool, default: False
+        If `True`, skip updating core project dependencies.
+
+    skip_package: tuple[str, ...] | list[str], keyword-only, optional
         The names of packages to skip when bumping requirements.
 
     Notes
@@ -343,6 +544,8 @@ def bump_minimum_dependencies(
         raise TypeError("only one of extra and all_extras can be provided.")
 
     pyproject: PyProject = PyProject.load(pyproject_file)
+    name: str | None = pyproject.project.get("name")
+
     requirements: list[packaging.requirements.Requirement] = pyproject.project[
         "dependencies"
     ]  # ty: ignore[invalid-assignment, not-subscriptable]
@@ -365,22 +568,26 @@ def bump_minimum_dependencies(
 
     # update package requirements
 
-    new_requirements = []
-    for requirement in requirements:
-        if requirement in skip:
-            continue
-        try:
-            new = get_new_requirement_for_package(
-                requirement,
-                drop_months=drop_months,
-                cooldown_months=cooldown_months,
-            )
-            new_requirements.append(f"{requirement.name}{new}")
-        except Exception:
-            msg = f"Unable to update package '{requirement.name}'; skipping. "
-            warnings.warn(msg)
+    if not skip_core:
+        new_requirements = []
+        for requirement in requirements:
+            if requirement in skip_package:
+                continue
+            print(requirement, type(requirement))
+            try:
+                new = get_new_requirement_for_package(
+                    requirement,
+                    drop_months=drop_months,
+                    cooldown_months=cooldown_months,
+                )
+                new_requirements.append(f"{requirement.name}{new}")
+            except Exception:
+                msg = f"Unable to update package '{requirement.name}'; skipping. "
+                warnings.warn(msg)
 
-    subprocess.run(["uv", "add", "--frozen", *new_requirements])
+        command = ["uv", "add", "--frozen", "-q", *new_requirements]
+        print(" ".join(command))
+        subprocess.run(command)
 
     # update dependency groups
 
@@ -388,10 +595,14 @@ def bump_minimum_dependencies(
         for dependency_group in dependency_groups:
             new_dependency_group_requirements: list[str] = []
             for requirement in pyproject.dependency_groups[dependency_group]:
-                if requirement in skip:
+                if requirement in skip_package or isinstance(requirement, dict):
+                    continue
+                if isinstance(requirement, str) and requirement.startswith(f"{name}["):
                     continue
                 if not isinstance(requirement, packaging.requirements.Requirement):
                     requirement = packaging.requirements.Requirement(requirement)
+                print(f"{requirement = }")
+
                 try:
                     new = get_new_requirement_for_package(
                         requirement,
@@ -406,15 +617,20 @@ def bump_minimum_dependencies(
                     )
                     warnings.warn(msg)
 
-            subprocess.run(
-                [
-                    "uv",
-                    "add",
-                    "--frozen",
-                    f"--group={dependency_group}",
-                    *new_dependency_group_requirements,
-                ]
-            )
+            if not new_dependency_group_requirements:
+                print(f"Skipping dependency group {dependency_group!r}")
+                continue
+
+            command = [
+                "uv",
+                "add",
+                "--frozen",
+                "-q",
+                f"--group={dependency_group}",
+                *new_dependency_group_requirements,
+            ]
+            print(" ".join(command))
+            subprocess.run(command)
 
     # update optional dependencies
 
@@ -424,7 +640,7 @@ def bump_minimum_dependencies(
             for requirement in pyproject.project["optional-dependencies"][
                 optional_dependency
             ]:
-                if requirement in skip:
+                if requirement in skip_package:
                     continue
                 # requirement = packaging.requirements.Requirement(requirement)
                 try:
@@ -441,12 +657,13 @@ def bump_minimum_dependencies(
                     )
                     warnings.warn(msg)
 
-            subprocess.run(
-                [
-                    "uv",
-                    "add",
-                    "--frozen",
-                    f"--optional={optional_dependency}",
-                    *new_extra_requirements,
-                ]
-            )
+            command = [
+                "uv",
+                "add",
+                "--frozen",
+                "-q",
+                f"--optional={optional_dependency}",
+                *new_extra_requirements,
+            ]
+            print(" ".join(command))
+            subprocess.run(command)
