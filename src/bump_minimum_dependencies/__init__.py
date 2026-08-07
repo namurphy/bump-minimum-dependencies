@@ -42,6 +42,12 @@ from . import bump
     help="Name of a dependency group to update. May be provided more than once.",
     multiple=True,
 )
+@click.option(
+    "--skip",
+    default=[],
+    help="Name of a package to skip when performing updates. May be provided more than once.",
+    multiple=True,
+)
 def main(
     pyproject_file: str,
     drop_months: int,
@@ -50,6 +56,7 @@ def main(
     all_groups: bool,
     extra: tuple[str, ...] | list[str],
     group: tuple[str, ...] | list[str],
+    skip: tuple[str, ...] | list[str],
 ) -> None:
     bump.bump_minimum_dependencies(
         pyproject_file=pyproject_file,
@@ -59,4 +66,5 @@ def main(
         all_groups=all_groups,
         extra=extra,
         group=group,
+        skip=skip,
     )

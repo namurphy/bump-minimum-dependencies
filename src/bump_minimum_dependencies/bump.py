@@ -295,6 +295,7 @@ def bump_minimum_dependencies(
     drop_months: int = 24,
     extra: tuple[str, ...] | list[str] = (),
     group: tuple[str, ...] | list[str] = (),
+    skip: tuple[str, ...] | list[str] = (),
 ) -> None:
     """
     Bump the minimum core dependencies in `pyproject.toml`.
@@ -319,12 +320,13 @@ def bump_minimum_dependencies(
         no longer supported.
 
     extra: tuple[str, ...] | list[str], keyword-only, optional
-        The name of the optional dependencies category to be updated.
-        Not yet implemented.
+        The names of the optional dependencies categories to be updated.
 
     group: tuple[str, ...] | list[str], keyword-only, optional
-        The name of the dependency group to be updated. Not yet
-        implemented.
+        The names of the dependency groups to be updated.
+
+    skip: tuple[str, ...] | list[str], keyword-only, optional
+        The names of packages to skip when bumping requirements.
 
     Notes
     -----
@@ -359,6 +361,8 @@ def bump_minimum_dependencies(
 
     new_requirements = []
     for requirement in requirements:
+        if requirement in skip:
+            continue
         try:
             new = get_new_requirement_for_package(
                 requirement,
@@ -376,6 +380,8 @@ def bump_minimum_dependencies(
         for dependency_group in dependency_groups:
             new_dependency_group_requirements: list[str] = []
             for requirement in pyproject.dependency_groups[dependency_group]:
+                if requirement in skip:
+                    continue
                 if not isinstance(requirement, packaging.requirements.Requirement):
                     requirement = packaging.requirements.Requirement(requirement)
                 try:
@@ -408,6 +414,8 @@ def bump_minimum_dependencies(
             for requirement in pyproject.project["optional-dependencies"][
                 optional_dependency
             ]:
+                if requirement in skip:
+                    continue
                 # requirement = packaging.requirements.Requirement(requirement)
                 try:
                     new = get_new_requirement_for_package(
