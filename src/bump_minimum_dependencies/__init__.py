@@ -58,6 +58,7 @@ def main(
     group: tuple[str, ...] | list[str],
     skip: tuple[str, ...] | list[str],
 ) -> None:
+    """Bump the minimum allowed versions of package dependencies."""
     bump.bump_minimum_dependencies(
         pyproject_file=pyproject_file,
         drop_months=drop_months,
