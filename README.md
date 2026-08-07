@@ -5,6 +5,30 @@ Automagically updates the minimum supported dependencies of a Python package, in
 > [!NOTE]
 > This tool is in the early stages of procrastination-driven development (PDD). If you find bugs, please raise an issue!
 
+## Usage
+
+```groff
+Usage: bump-minimum-dependencies [OPTIONS]
+
+  Bump the minimum allowed versions of package dependencies.
+
+Options:
+  --pyproject_file TEXT      Path to pyproject.toml
+  --drop-months INTEGER      Drop minor releases from this many months
+                             ago.
+  --cooldown-months INTEGER  Ensure that there is at least one release
+                             this many months old.
+  --all-extras               Update all optional dependencies.
+  --all-groups               Update all dependency groups.
+  --extra TEXT               Name of an optional dependencies category.
+                             May be provided more than once.
+  --group TEXT               Name of a dependency group to update. May be
+                             provided more than once.
+  --skip TEXT                Name of a package to skip when performing
+                             updates. May be provided more than once.
+  --help                     Show this message and exit.
+```
+
 ## Background
 
 This tool was inspired by [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000), which recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping dependencies.
