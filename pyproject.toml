@@ -7,6 +7,7 @@ name = "bump-minimum-dependencies"
 version = "0.1.0"
 description = "Command line tool to bump minimum dependencies in pyproject.toml"
 readme = "README.md"
+license-files = [ "LICENSE" ]
 authors = [
   { name = "Nick Murphy", email = "namurphy@cfa.harvard.edu" },
 ]
@@ -23,6 +24,7 @@ dependencies = [
   "requests>=2.34.2",
   "uv>=0.12.2",
 ]
+urls.Source = "https://github.com/namurphy/bump-minimum-dependencies"
 
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
 
