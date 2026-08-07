@@ -380,7 +380,7 @@ def bump_minimum_dependencies(
             msg = f"Unable to update package '{requirement.name}'; skipping. "
             warnings.warn(msg)
 
-    subprocess.run(["uv", "add", "--no-sync", *new_requirements])
+    subprocess.run(["uv", "add", "--frozen", *new_requirements])
 
     # update dependency groups
 
@@ -410,7 +410,7 @@ def bump_minimum_dependencies(
                 [
                     "uv",
                     "add",
-                    "--no-sync",
+                    "--frozen",
                     f"--group={dependency_group}",
                     *new_dependency_group_requirements,
                 ]
@@ -445,7 +445,7 @@ def bump_minimum_dependencies(
                 [
                     "uv",
                     "add",
-                    "--no-sync",
+                    "--frozen",
                     f"--optional={optional_dependency}",
                     *new_extra_requirements,
                 ]
