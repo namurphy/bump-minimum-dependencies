@@ -316,11 +316,17 @@ class BumpMinimumDependencies:
             raise RuntimeError("project table not defined")
 
     @property
+    def uv_base_command(self) -> list[str]:
+        return ["uv", "add", "--frozen", "--quiet"]
+
+    @property
     def project_name(self) -> str | None:
+        """The name of the project, if available."""
         return self.pyproject.project.get("name", None)  # ty: ignore[unresolved-attribute]
 
     @property
     def core_requirements_to_update(self) -> list[packaging.requirements.Requirement]:
+        """Core project dependencies to be updated if necessary."""
         if self.skip_core_requirements:
             return []
 
@@ -342,6 +348,7 @@ class BumpMinimumDependencies:
 
     @property
     def dependency_groups_to_update(self) -> list[str]:
+        """Names of dependency groups to be updated if necessary."""
         if not self.pyproject.dependency_groups:
             return []
 
@@ -357,6 +364,7 @@ class BumpMinimumDependencies:
 
     @property
     def optional_categories_to_update(self) -> list[str]:
+        """Names of catories of optional dependencies to be updated if necessary."""
         all_optionals: list[str] = sorted(
             self.pyproject.project.get("optional-dependencies", [])  # ty: ignore[unresolved-attribute]
         )
@@ -368,6 +376,7 @@ class BumpMinimumDependencies:
         return all_optionals if self.update_all_optionals else self.optional_categories
 
     def bump_core_requirements(self):
+        """Bump the core package requirements."""
         if self.skip_core_requirements:
             return
 
@@ -385,10 +394,11 @@ class BumpMinimumDependencies:
                 warnings.warn(message=msg)
 
         if new_requirements:
-            command = ["uv", "add", "--frozen", "-q", *new_requirements]
-            run_subprocess(command)
+            command = [*self.uv_base_command, *new_requirements]
+            subprocess.run(command)
 
     def bump_dependency_groups(self):
+        """Bump requirements in dependency groups."""
         if not self.update_all_dependency_groups and not self.dependency_groups:
             return
 
@@ -423,16 +433,14 @@ class BumpMinimumDependencies:
                 continue
 
             command = [
-                "uv",
-                "add",
-                "--frozen",
-                "--quiet",
+                *self.uv_base_command,
                 f"--group={dependency_group}",
                 *new_dependency_group_requirements,
             ]
-            run_subprocess(command)
+            subprocess.run(command)
 
     def bump_optional_dependencies(self):
+        """Bump requirements in optional dependencies."""
         print(self.optional_categories_to_update)
 
         for category in self.optional_categories_to_update:
@@ -458,21 +466,18 @@ class BumpMinimumDependencies:
                         f"Unable to update package {requirement.name!r} in "
                         f"the {category!r} optional dependencies category. Skipping."
                     )
-            print(new_requirements)
+                    warnings.warn(msg)
 
             if new_requirements:
                 command: list[str] = [
-                    "uv",
-                    "add",
-                    "--frozen",
-                    "-q",
+                    *self.uv_base_command,
                     f"--optional={category}",
                     *new_requirements,
                 ]
-                run_subprocess(command)
+                subprocess.run(command)
 
     def run(self):
-        """Perform updates."""
+        """Perform all of the requested and necessary updates."""
         self.bump_core_requirements()
         self.bump_dependency_groups()
         self.bump_optional_dependencies()
