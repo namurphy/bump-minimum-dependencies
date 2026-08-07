@@ -359,6 +359,12 @@ def bump_minimum_dependencies(
         pyproject=pyproject,
     )
 
+    # The next three blocks of code have a lot of repetition, but there
+    # are a few differences that make consolidation trickier. It would
+    # be worth cleaning it up if it ends up being a maintenance burden.
+
+    # update package requirements
+
     new_requirements = []
     for requirement in requirements:
         if requirement in skip:
@@ -375,6 +381,8 @@ def bump_minimum_dependencies(
             warnings.warn(msg)
 
     subprocess.run(["uv", "add", "--no-sync", *new_requirements])
+
+    # update dependency groups
 
     if pyproject.dependency_groups:
         for dependency_group in dependency_groups:
@@ -407,6 +415,8 @@ def bump_minimum_dependencies(
                     *new_dependency_group_requirements,
                 ]
             )
+
+    # update optional dependencies
 
     if pyproject.project and pyproject.project.get("optional-dependencies"):
         for optional_dependency in optional_dependencies:
