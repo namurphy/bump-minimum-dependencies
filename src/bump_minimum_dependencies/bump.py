@@ -246,51 +246,6 @@ def get_new_requirement_for_package(
     return combine_requirements(original_requirement, time_based_requirement)
 
 
-def get_dependency_groups_to_update(
-    *,
-    group: list[str] | tuple[str, ...],
-    all_groups: bool,
-    pyproject: PyProject,
-) -> list[str]:
-    if pyproject.dependency_groups:
-        all_dependency_groups: list[str] = sorted(pyproject.dependency_groups)
-    else:
-        all_dependency_groups: list[str] = []
-
-    if undefined := set(group) - set(all_dependency_groups):
-        raise ValueError(
-            f"the following dependency groups are not defined: {undefined}"
-        )
-
-    return all_dependency_groups if all_groups else sorted(group)
-
-
-def get_optional_dependencies_to_update(
-    *,
-    extra: list[str] | tuple[str, ...],
-    all_extras: bool,
-    pyproject: PyProject,
-) -> list[str]:
-    if pyproject.project and pyproject.project.get("optional-dependencies"):
-        all_extra_categories: list[str] = sorted(
-            pyproject.project["optional-dependencies"]
-        )
-    else:
-        all_extra_categories: list[str] = []
-
-    if undefined := set(extra) - set(all_extra_categories):
-        raise ValueError(
-            f"the following optional dependency categories are not defined: {undefined}"
-        )
-
-    return all_extra_categories if all_extras else sorted(extra)
-
-
-def run_subprocess(command: list[str]):
-    print(" ".join(command))
-    subprocess.run(command)
-
-
 class BumpMinimumDependencies:
     """
     Bump the minimum core dependencies in `pyproject.toml`.
