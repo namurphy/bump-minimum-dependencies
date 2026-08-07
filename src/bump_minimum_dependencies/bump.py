@@ -331,7 +331,7 @@ class BumpMinimumDependencies:
             return []
 
         try:
-            all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable, invalid-return-type]
+            all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable]
         except (TypeError, AttributeError, KeyError) as exc:
             errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
             raise RuntimeError(errmsg) from exc
@@ -447,7 +447,7 @@ class BumpMinimumDependencies:
             new_requirements: list[str] = []
 
             optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
-            for requirement in optionals[category]:  # ty: ignore[not-subscriptable]
+            for requirement in optionals[category]:
                 if requirement in self.packages_to_skip:
                     continue
                 if isinstance(requirement, str):
