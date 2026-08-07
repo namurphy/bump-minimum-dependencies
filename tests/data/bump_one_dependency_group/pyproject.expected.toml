@@ -10,9 +10,8 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.14",
 ]
-dependencies = []
 
-# bump numpy
+dependencies = [  ]
 
 [dependency-groups]
 astropy = [
