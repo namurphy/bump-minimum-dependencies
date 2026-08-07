@@ -292,6 +292,46 @@ def run_subprocess(command: list[str]):
 
 
 class BumpMinimumDependencies:
+    """
+    Bump the minimum core dependencies in `pyproject.toml`.
+
+    Parameters
+    ----------
+    pyproject_file: str, default: "pyproject.toml"
+        The path to the pyproject.toml file to be updated.
+
+    all_extras: bool, keyword-only, default: False
+        Update all optional dependencies.
+
+    all_groups: bool, keyword-only, default: False
+        Update all dependency groups.
+
+    cooldown_months: int, keyword-only, default: 12
+        The number of months since a package's release before it can
+        become the minimum version, when possible.
+
+    drop_months: int, keyword-only, default: 24
+        The preferred number of months after which a minor release is
+        no longer supported.
+
+    extra: tuple[str, ...] | list[str], keyword-only, optional
+        The names of the optional dependencies categories to be updated.
+
+    group: tuple[str, ...] | list[str], keyword-only, optional
+        The names of the dependency groups to be updated.
+
+    skip_core: bool, default: False
+        If `True`, skip updating core project dependencies.
+
+    skip_package: tuple[str, ...] | list[str], keyword-only, optional
+        The names of packages to skip when bumping requirements.
+
+    Notes
+    -----
+    This function does not yet work when the combined requirements
+    include a `!=` dependency or multiple ranges of dependencies.
+    """
+
     def __init__(
         self,
         pyproject_file: str = "pyproject.toml",
