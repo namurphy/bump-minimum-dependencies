@@ -62,9 +62,18 @@ def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
     "subdir,kwargs",
     [
         ("base_case", {"drop_months": 24, "cooldown_months": 21}),
-        ("bump_all_dependency_groups", {"drop_months": 24, "cooldown_months": 21, "all_groups": True}),
-        ("bump_one_dependency_group", {"drop_months": 24, "cooldown_months": 21, "group": ["numpy"]}),
-        ("bump_two_dependency_groups", {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]}),
+        (
+            "bump_all_dependency_groups",
+            {"drop_months": 24, "cooldown_months": 21, "all_groups": True},
+        ),
+        (
+            "bump_one_dependency_group",
+            {"drop_months": 24, "cooldown_months": 21, "group": ["numpy"]},
+        ),
+        (
+            "bump_two_dependency_groups",
+            {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]},
+        ),
     ],
 )
 def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs) -> None:
