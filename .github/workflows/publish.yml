@@ -1,5 +1,7 @@
 name: publish.yml
 on:
+  release:
+    types: [published]
 
 jobs:
   pypi-publish:
