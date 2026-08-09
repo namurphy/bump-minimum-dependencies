@@ -73,6 +73,39 @@ Options:
   --help                     Show this message and exit.
 ```
 
+## Examples
+
+To bump core package dependencies using default settings, run:
+```shell
+bump-minimum-dependencies
+```
+To skip updates for numpy and plasmapy, run:
+```shell
+bump-minimum-dependencies --skip-package numpy --skip-package plasmapy
+```
+To drop minor versions older than 36 months with a cooldown of 24 months, run:
+```shell
+bump-minimum-dependencies --drop-months 36 --cooldown-months 24
+```
+To bump all optional dependencies (extras), run:
+```shell
+bump-minimum-dependencies --all-extras
+```
+To bump all dependency groups, run:
+```shell
+bump-minimum-dependencies --all-groups
+```
+To bump the optional dependency (extras) category 'optionals' and
+```shell
+skip updates of core dependencies, run:
+```
+bump-minimum-dependencies --skip-core --extra optionals
+```shell
+To bump the dependency group named dev and core dependencies, run:
+```shell
+bump-minimum-dependencies --extra dev
+```
+
 ## Notes
 
 - Please review all updates to dependencies before accepting them, including to make sure that comments are satisfactorily preserved.
