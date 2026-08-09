@@ -441,7 +441,6 @@ class BumpMinimumDependencies:
 
     def bump_optional_dependencies(self):
         """Bump requirements in optional dependencies."""
-        print(self.optional_categories_to_update)
 
         for category in self.optional_categories_to_update:
             new_requirements: list[str] = []
