@@ -1,54 +1,105 @@
 # bump-minimum-dependencies
 
-Automatically updates the minimum supported dependencies of a Python package, including dependency groups and optional dependencies.
+Automatically bump the minimum allowed minor versions of package dependencies based on the time since first release.
 
-Updates to `pyproject.toml` are made with [uv](https://docs.astral.sh/uv).
+## Motivation
 
-> [!NOTE]
-> This tool is in the early stages of procrastination-driven development (PDD). If you find bugs, please raise an issue!
+This tool was inspired by [SPEC 0], which recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping dependencies.
+SPEC 0 recommends that support for core package dependencies be dropped 24 months after their initial minor release.
+For example, NumPy `v2.1.0` was released on 2024-08-18, so SPEC 0 recommends that packages drop support for `v2.1.*` of NumPy after 2026-08-18.
+
+SPEC 0 states:
+
+> Limiting the scope of supported dependencies is an effective way for packages to limit maintenance burden. Combinations of packages need to be tested, which impacts also on continuous integration times and infrastructure upkeep. Code itself also becomes more complicated when it has to be aware of various combinations of configurations.
+>
+> Adoption of this SPEC will ensure a consistent support policy across packages, and reduce the need for individual projects to devise similar policies.
+>
+> Ultimately, reduced maintenance burden frees up developer time, which translates into more features, bugfixes, and optimizations for users.
 
 ## Usage
 
 ```groff
-Usage: bump-minimum-dependencies [OPTIONS]
+Usage: bump-minimum-dependencies [OPTIONS] PYPROJECT_FILE
 
   Bump the minimum allowed versions of package dependencies.
 
+  To bump core package dependencies using default settings, run:
+
+    $ bump-minimum-dependencies
+
+  To skip updates for numpy and plasmapy, run:
+
+    $ bump-minimum-dependencies --skip-package numpy --skip-package plasmapy
+
+  To drop minor versions older than 36 months with a cooldown of 24 months,
+  run:
+
+    $ bump-minimum-dependencies --drop-months 36 --cooldown-months 24
+
+  To bump all optional dependencies (extras), run:
+
+    $ bump-minimum-dependencies --all-extras
+
+  To bump all dependency groups, run:
+
+    $ bump-minimum-dependencies --all-groups
+
+  To bump the optional dependency (extras) category 'optionals' and skip
+  updates of core dependencies, run:
+
+    $ bump-minimum-dependencies --skip-core --extra optionals
+
+  To bump the dependency group named dev and core dependencies, run:
+
+    $ bump-minimum-dependencies --extra dev
+
 Options:
-  --pyproject_file TEXT      Path to pyproject.toml
-  --drop-months INTEGER      Drop minor releases from this many months
-                             ago.
-  --cooldown-months INTEGER  Ensure that there is at least one release
-                             this many months old.
-  --all-extras               Update all optional dependencies.
-  --all-groups               Update all dependency groups.
-  --extra TEXT               Name of an optional dependencies category.
-                             May be provided more than once.
+  --skip-package TEXT        Name of a package to skip when performing
+                             updates. May be provided multiple times.
+  --drop-months INTEGER      Drop minor releases from this many months ago.
+                             Defaults to 24.
+  --cooldown-months INTEGER  Ensure that there is at least one release this
+                             many months old, if possible. Defaults to 12.
+  --all-extras               Flag to update all optional dependencies.
+                             Defaults to False.
+  --all-groups               Flag to update all dependency groups. Defaults to
+                             False.
+  --skip-core                Flag to skip updating core project dependencies.
+                             Defaults to False.
+  --extra TEXT               Name of an optional dependencies category. May be
+                             provided multiple times.
   --group TEXT               Name of a dependency group to update. May be
-                             provided more than once.
-  --skip TEXT                Name of a package to skip when performing
-                             updates. May be provided more than once.
+                             provided multiple times.
   --help                     Show this message and exit.
 ```
 
-## Background
+## Notes
 
-This tool was inspired by [SPEC 0 — Minimum Supported Dependencies](https://scientific-python.org/specs/spec-0000), which recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping dependencies.
-SPEC 0 recommends that support for core package dependencies be dropped 2 years after their initial release.
+- Please review all updates to dependencies before accepting them, including to make sure that comments are satisfactorily preserved.
 
-## Limitations
+- The tool uses uv to update `pyproject.toml`, but does not automatically update lockfiles or sync virtual environments. Commands like `uv lock` and `uv sync` would need to be run separately afterward.
 
-- This tool does not upgrade the minimum required version of Python.
+- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows `bump-minimum-dependencies` to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
 
-- By making use of [`dep-logic`](https://github.com/pdm-project/dep-logic), `bump-minimum-dependencies` is able to handle a wide variety of requirements. When a requirement is unable to be updated, `bump-minimum-dependencies` issues a warning and skips making changes to that requirement.
-
-- This tool does not automatically update lockfiles or sync virtual environments. These commands would need to be performed automatically.
+- Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform.
 
 - This tool removes `.0` suffixes when updating requirements for consistency with [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html).
 
-- The locations of comments may be changed when uv updates `pyproject.toml`, so changes should be reviewed before being accepted.
+- This tool does not upgrade the minimum required version of Python.
+
+## Feature requests and bug reports
+
+Because `bump-minimum-dependencies` is new, there may be some bugs related to edge cases.
+We encourage you to report them with a minimum reproducible example (i.e., your `pyproject.toml` with the `bump-minimum-dependencies` command).
+
+Please also submit feature requests that would make `bump-minimum-dependencies` more helpful to your projects.
 
 ## Related projects
 
 - [scientific-python/spec0-action](https://github.com/scientific-python/spec0-action) — a GitHub action to create quarterly pull requests to perform SPEC 0 updates using a published drop schedule. Unlike `bump-minimum-dependencies`, this tool distinguishes between SPEC 0 core packages and other packages.
+
 - [cgordberg/bump-dependencies](https://github.com/cgoldberg/bump-dependencies) — updates dependency specifiers in `pyproject.toml` to latest compatible versions.
+
+- [hmaarrfk/nep29](https://github.com/hmaarrfk/nep29) — calculator tools for [NEP 29](https://github.com/hmaarrfk/nep29) (a precursor to SPEC 0).
+
+[SPEC 0]: https://scientific-python.org/specs/spec-0000
