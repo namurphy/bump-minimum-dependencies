@@ -1,10 +1,10 @@
 [build-system]
 build-backend = "uv_build"
-requires = [ "uv-build>=0.12.2,<0.13" ]
+requires = [ "uv-build>=0.12.3,<0.13" ]
 
 [project]
 name = "bump-minimum-dependencies"
-version = "0.1.0b2"
+version = "0.1.0b3"
 description = "Command line tool to bump minimum dependencies in pyproject.toml"
 readme = "README.md"
 license-files = [ "LICENSE" ]
@@ -19,24 +19,24 @@ classifiers = [
 ]
 dependencies = [
   "charset-normalizer==3.3.2",
-  "click>=8.4.2",
-  "dep-logic>=0.5.2",
-  "distlib!=0.4.3",
-  "pyproject-parser>=0.13",
-  "python-dateutil>=2.8,<2.9",
-  "requests>=2.34.2",
-  "uv>=0.12.2",
+  "click==8.4.2",
+  "dep-logic>=0.6",
+  "pyproject-parser==0.14",
+  "requests==2.34.2",
+  "uv>=0.10",
 ]
 urls.Source = "https://github.com/namurphy/bump-minimum-dependencies"
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
 
 [dependency-groups]
 dev = [
+  "distlib==0.4.2",
   "nox>=2026.7.11",
   "nox-uv>=0.8",
   "prek>=0.4.12",
-  "pytest>=9,<9.1",
-  "pytest-freezer>=0.4.9",
+  "pytest==9.0.3",
+  "pytest-freezer==0.4.9",
+  "python-dateutil==2.8.2",
   "ty>=0.0.69",
 ]
 
