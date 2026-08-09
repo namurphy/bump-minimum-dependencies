@@ -88,30 +88,7 @@ def main(
     group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
 ) -> None:
-    """
-    Bump the minimum allowed versions of package dependencies.
-
-    \b
-    To bump core package dependencies using default settings, run:
-
-      $ bump-minimum-dependencies
-
-    To skip updates for numpy and plasmapy, run:
-
-      $ bump-minimum-dependencies --skip-package numpy --skip-package plasmapy
-
-    To drop minor versions older than 36 months with a cooldown of 24
-    months, run:
-
-      $ bump-minimum-dependencies --drop-months 36 --cooldown-months 24
-
-    To bump all optional dependencies (extras), run:
-
-      $ bump-minimum-dependencies --all-extras
-
-    To bump all dependency groups, run:
-
-      $ bump-minimum-dependencies --all-groups
+    """Bump the minimum allowed versions of package dependencies."""
 
     To bump the optional dependency (extras) category 'optionals' and
     skip updates of core dependencies, run:
