@@ -90,16 +90,10 @@ def main(
 ) -> None:
     """Bump the minimum allowed versions of package dependencies."""
 
-    To bump the optional dependency (extras) category 'optionals' and
-    skip updates of core dependencies, run:
-
-      $ bump-minimum-dependencies --skip-core --extra optionals
-
-    To bump the dependency group named dev and core dependencies, run:
-
-      $ bump-minimum-dependencies --extra dev
-
-    """
+    if cooldown_months>drop_months:
+        raise click.BadParameter(
+            "cooldown_months cannot exceed drop_months."
+        )
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(
         pyproject_file=pyproject_file,
