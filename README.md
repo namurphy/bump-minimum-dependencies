@@ -83,7 +83,7 @@ Options:
 
 - Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform.
 
-- This tool removes `.0` suffixes when updating requirements for consistency with [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html).
+- This tool removes `.0` suffixes when updating requirements (see [PEP 440](https://peps.python.org/pep-0440)) for consistency with [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html).
 
 - This tool does not upgrade the minimum required version of Python.
 
