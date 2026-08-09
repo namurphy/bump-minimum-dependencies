@@ -1,3 +1,4 @@
+import pathlib
 __all__ = ["BumpPackage"]
 
 
@@ -289,7 +290,7 @@ class BumpMinimumDependencies:
 
     def __init__(
         self,
-        pyproject_file: str = "pyproject.toml",
+        pyproject_file: str | pathlib.Path = "pyproject.toml",
         *,
         all_extras: bool = False,
         all_groups: bool = False,
@@ -476,7 +477,7 @@ class BumpMinimumDependencies:
                 subprocess.run(command)
 
     def run(self):
-        """Perform all of the requested and necessary updates."""
+        """Perform all the requested and necessary updates."""
         self.bump_core_requirements()
         self.bump_dependency_groups()
         self.bump_optional_dependencies()
