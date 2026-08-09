@@ -1,5 +1,7 @@
 __all__ = ["bump", "main"]
 
+import pathlib
+
 import click
 
 from . import bump
@@ -12,20 +14,23 @@ DEFAULT_ALL_GROUPS = False
 DEFAULT_SKIP_CORE = False
 
 @click.command()
-@click.argument(
-    "pyproject_file",
-    #default="pyproject.toml",
-    #help="Path to pyproject.toml. Defaults to pyproject.toml in current directory.",
+@click.option(
+    "--pyproject-file",
+    default="pyproject.toml",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=True, readable=True),
+    help="Path to pyproject.toml. Defaults to pyproject.toml in current directory.",
 )
 @click.option(
     "--skip-package",
     default=[],
+    type=click.STRING,
     help="Name of a package to skip when performing updates. May be provided multiple times.",
     multiple=True,
 )
 @click.option(
     "--drop-months",
     default=DEFAULT_DROP_MONTHS,
+    type=click.IntRange(min=0, max_open=True),
     help=(
         f"Drop minor releases from this many months ago. Defaults "
         f"to {DEFAULT_DROP_MONTHS}."
@@ -34,6 +39,7 @@ DEFAULT_SKIP_CORE = False
 @click.option(
     "--cooldown-months",
     default=DEFAULT_COOLDOWN_MONTHS,
+    type=click.IntRange(min=0, max_open=True),
     help=(
         f"Ensure that there is at least one release this many months "
         f"old, if possible. Defaults to {DEFAULT_COOLDOWN_MONTHS}."
@@ -41,36 +47,38 @@ DEFAULT_SKIP_CORE = False
 )
 @click.option(
     "--all-extras",
-    default={DEFAULT_ALL_EXTRAS},
+    default=False,
     is_flag=True,
-    help=f"Flag to update all optional dependencies. Defaults to {DEFAULT_ALL_EXTRAS}.",
+    help=f"Flag to update all optional dependencies. Defaults to false.",
 )
 @click.option(
     "--all-groups",
-    default=DEFAULT_ALL_GROUPS,
+    default=False,
     is_flag=True,
-    help=f"Flag to update all dependency groups. Defaults to {DEFAULT_ALL_GROUPS}.",
+    help=f"Flag to update all dependency groups. Defaults to false.",
 )
 @click.option(
     "--skip-core",
-    default=DEFAULT_SKIP_CORE,
+    default=False,
     is_flag=True,
-    help=f"Flag to skip updating core project dependencies. Defaults to {DEFAULT_SKIP_CORE}.",
+    help=f"Flag to skip updating core project dependencies. Defaults to false.",
 )
 @click.option(
     "--extra",
     default=[],
+    type=click.STRING,
     help="Name of an optional dependencies category. May be provided multiple times.",
     multiple=True,
 )
 @click.option(
     "--group",
     default=[],
+    type=click.STRING,
     help="Name of a dependency group to update. May be provided multiple times.",
     multiple=True,
 )
 def main(
-    pyproject_file: str,
+    pyproject_file: str | pathlib.Path,
     drop_months: int,
     cooldown_months: int,
     all_extras: bool,
