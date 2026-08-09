@@ -5,53 +5,68 @@ import click
 from . import bump
 
 
+DEFAULT_DROP_MONTHS = 24
+DEFAULT_COOLDOWN_MONTHS = 12
+DEFAULT_ALL_EXTRAS = False
+DEFAULT_ALL_GROUPS = False
+DEFAULT_SKIP_CORE = False
+
 @click.command()
+@click.argument(
+    "pyproject_file",
+    #default="pyproject.toml",
+    #help="Path to pyproject.toml. Defaults to pyproject.toml in current directory.",
+)
 @click.option(
-    "--pyproject_file",
-    default="pyproject.toml",
-    help="Path to pyproject.toml",
+    "--skip-package",
+    default=[],
+    help="Name of a package to skip when performing updates. May be provided multiple times.",
+    multiple=True,
 )
 @click.option(
     "--drop-months",
-    default=24,
-    help="Drop minor releases from this many months ago.",
+    default=DEFAULT_DROP_MONTHS,
+    help=(
+        f"Drop minor releases from this many months ago. Defaults "
+        f"to {DEFAULT_DROP_MONTHS}."
+    ),
 )
 @click.option(
     "--cooldown-months",
-    default=12,
-    help="Ensure that there is at least one release this many months old.",
+    default=DEFAULT_COOLDOWN_MONTHS,
+    help=(
+        f"Ensure that there is at least one release this many months "
+        f"old, if possible. Defaults to {DEFAULT_COOLDOWN_MONTHS}."
+    ),
 )
 @click.option(
     "--all-extras",
-    default=False,
+    default={DEFAULT_ALL_EXTRAS},
     is_flag=True,
-    help="Update all optional dependencies.",
+    help=f"Flag to update all optional dependencies. Defaults to {DEFAULT_ALL_EXTRAS}.",
 )
 @click.option(
-    "--all-groups", default=False, is_flag=True, help="Update all dependency groups."
+    "--all-groups",
+    default=DEFAULT_ALL_GROUPS,
+    is_flag=True,
+    help=f"Flag to update all dependency groups. Defaults to {DEFAULT_ALL_GROUPS}.",
+)
+@click.option(
+    "--skip-core",
+    default=DEFAULT_SKIP_CORE,
+    is_flag=True,
+    help=f"Flag to skip updating core project dependencies. Defaults to {DEFAULT_SKIP_CORE}.",
 )
 @click.option(
     "--extra",
     default=[],
-    help="Name of an optional dependencies category. May be provided more than once.",
+    help="Name of an optional dependencies category. May be provided multiple times.",
     multiple=True,
 )
 @click.option(
     "--group",
     default=[],
-    help="Name of a dependency group to update. May be provided more than once.",
-    multiple=True,
-)
-@click.option(
-    "--skip-core",
-    default=False,
-    is_flag=True,
-    help="Skip updating core project dependencies.",
-)
-@click.option(
-    "--skip-package",
-    default=[],
-    help="Name of a package to skip when performing updates. May be provided more than once.",
+    help="Name of a dependency group to update. May be provided multiple times.",
     multiple=True,
 )
 def main(
@@ -65,7 +80,41 @@ def main(
     group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
 ) -> None:
-    """Bump the minimum allowed versions of package dependencies."""
+    """
+    Bump the minimum allowed versions of package dependencies.
+
+    \b
+    To bump core package dependencies using default settings, run:
+
+      $ bump-minimum-dependencies
+
+    To skip updates for numpy and plasmapy, run:
+
+      $ bump-minimum-dependencies --skip-package numpy --skip-package plasmapy
+
+    To drop minor versions older than 36 months with a cooldown of 24
+    months, run:
+
+      $ bump-minimum-dependencies --drop-months 36 --cooldown-months 24
+
+    To bump all optional dependencies (extras), run:
+
+      $ bump-minimum-dependencies --all-extras
+
+    To bump all dependency groups, run:
+
+      $ bump-minimum-dependencies --all-groups
+
+    To bump the optional dependency (extras) category 'optionals' and
+    skip updates of core dependencies, run:
+
+      $ bump-minimum-dependencies --skip-core --extra optionals
+
+    To bump the dependency group named dev and core dependencies, run:
+
+      $ bump-minimum-dependencies --extra dev
+
+    """
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(
         pyproject_file=pyproject_file,
