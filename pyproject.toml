@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "uv_build"
-requires = [ "uv-build>=0.12.2" ]
+requires = [ "uv-build>=0.12.2,<0.13" ]
 
 [project]
 name = "bump-minimum-dependencies"
@@ -18,27 +18,29 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-  "click>=8.3",
+  "charset-normalizer==3.3.2",
+  "click>=8.4.2",
   "dep-logic>=0.5.2",
+  "distlib!=0.4.3",
   "pyproject-parser>=0.13",
+  "python-dateutil>=2.8,<2.9",
   "requests>=2.34.2",
   "uv>=0.12.2",
 ]
 urls.Source = "https://github.com/namurphy/bump-minimum-dependencies"
-
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
 
 [dependency-groups]
 dev = [
   "nox>=2026.7.11",
   "nox-uv>=0.8",
-  "prek>=0.2.14",
-  "pytest>=9.1",
+  "prek>=0.4.12",
+  "pytest>=9,<9.1",
   "pytest-freezer>=0.4.9",
   "ty>=0.0.69",
 ]
 
-[tool.uv.workspace]
-members = [
+[tool.uv]
+workspace.members = [
   "tests/data/temporary",
 ]
