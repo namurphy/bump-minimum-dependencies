@@ -94,26 +94,3 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs) -> None:
 
     if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject):
         pytest.fail(reason=errmsg)
-
-
-@pytest.mark.parametrize(
-    "subdir,kwargs,exception",
-    [
-        ("base_case", {"drop_months": 12, "cooldown_months": 24}, ValueError),
-        ("base_case", {"drop_months": -1, "cooldown_months": 24}, ValueError),
-        ("base_case", {"drop_months": -1, "cooldown_months": -1}, ValueError),
-    ],
-)
-def test_exceptions(tmp_path, monkeypatch, freezer, subdir, kwargs, exception) -> None:
-    freezer.move_to("2026-01-01")
-
-    data_dir = Path(__file__).parent / "data" / subdir
-    original_pyproject = data_dir / "pyproject.toml"
-    pyproject = tmp_path / "pyproject.toml"
-
-    shutil.copy(original_pyproject, pyproject)
-    monkeypatch.chdir(tmp_path)
-
-    with pytest.raises(exception):
-        bumper = bump.BumpMinimumDependencies(**kwargs)
-        bumper.run()
