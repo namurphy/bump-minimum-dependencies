@@ -19,8 +19,8 @@ classifiers = [
 ]
 dependencies = [
   "charset-normalizer==3.3.2",
-  "click==8.4.2",
-  "dep-logic>=0.6",
+  "click>=8.4.2,<9",
+  "dep-logic>=0.7.1",
   "pyproject-parser==0.14",
   "requests==2.34.2",
   "uv>=0.10",

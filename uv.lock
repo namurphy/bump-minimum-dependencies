@@ -70,8 +70,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "charset-normalizer", specifier = "==3.3.2" },
-    { name = "click", specifier = "==8.4.2" },
-    { name = "dep-logic", specifier = ">=0.6" },
+    { name = "click", specifier = ">=8.4.2,<9" },
+    { name = "dep-logic", specifier = ">=0.7.1" },
     { name = "pyproject-parser", specifier = "==0.14" },
     { name = "requests", specifier = "==2.34.2" },
     { name = "uv", specifier = ">=0.10" },
@@ -142,14 +142,14 @@ wheels = [
 
 [[package]]
 name = "dep-logic"
-version = "0.6.0"
+version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fa/36/fda3791e19337f2cd5949cf695394f24b0ccd51c1c76e9ab7b99a355e3dc/dep_logic-0.6.0.tar.gz", hash = "sha256:0468874dd86caafd67f28e19257ef86c96f19b2236994f9fe9d793f9d92a6433", size = 36869, upload-time = "2026-05-19T11:18:47.719Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/f7/a1397e24a342ef2421ef05127d9e5cd7d47876655645aa8e5a037ac92248/dep_logic-0.7.1.tar.gz", hash = "sha256:4bf66e3b323e0c30d2ed268c44efd69c179c10cdf499c28ca316c2cb49e95ee2", size = 37063, upload-time = "2026-08-10T09:31:38.706Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/dd/b01ce33bdb456cd281a3e252a88ef3e7ac4269e119fe0f32c3247c4d8ee2/dep_logic-0.6.0-py3-none-any.whl", hash = "sha256:f5aee31397cbddf9c197b88144ba51b178b4491adab4446deb0863cb58eeca04", size = 35755, upload-time = "2026-05-19T11:18:46.366Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/52/c6e420917d1e271ac716b555ed2006db740052586828494bfc6ddddc26db/dep_logic-0.7.1-py3-none-any.whl", hash = "sha256:38b96555083a8efdd62a6987e49f65eb3778fe4c8189e83b3429ca6b6412d196", size = 35688, upload-time = "2026-08-10T09:31:37.439Z" },
 ]
 
 [[package]]
