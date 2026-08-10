@@ -110,13 +110,13 @@ bump-minimum-dependencies --extra dev
 
 - Please review all updates to dependencies before accepting them, including to make sure that comments are satisfactorily preserved.
 
+- Requirements may be normalized, such as changing package names to lower case and removing `.0` suffixes (see [PEP 440](https://peps.python.org/pep-0440)).
+
 - The tool uses uv to update `pyproject.toml`, but does not automatically update lockfiles or sync virtual environments. Commands like `uv lock` and `uv sync` would need to be run separately afterward.
 
 - Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows `bump-minimum-dependencies` to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
 
 - Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform.
-
-- This tool removes `.0` suffixes when updating requirements (see [PEP 440](https://peps.python.org/pep-0440)) for consistency with [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html).
 
 - This tool does not upgrade the minimum required version of Python.
 
