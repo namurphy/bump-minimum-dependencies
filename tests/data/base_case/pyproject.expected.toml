@@ -17,6 +17,6 @@ dependencies = [
   "requests>=2.31",
   "spacepy==0.2.2",
   "sunpy>=5.1",
-  "xarray!=2024.3",
+  "xarray>=2024.1,!=2024.3",
   "zarr==3.1.3",
 ]
