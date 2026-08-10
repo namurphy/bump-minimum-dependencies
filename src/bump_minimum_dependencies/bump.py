@@ -27,6 +27,10 @@ import functools
 DAYS_PER_MONTH = 30.436875
 
 
+logger = logging.getLogger("bump")
+logger.propagate = True
+logger.setLevel(logging.DEBUG)
+
 def make_string_and_remove_dot_zero_suffixes(
     version: packaging.version.Version | str,
 ) -> str:
@@ -224,6 +228,8 @@ def combine_requirements(
     """
     parsed_original = parse_version_specifier(str(original))
     parsed_new = parse_version_specifier(str(new))
+    if parsed_new == parsed_original:
+        return str(original)
     combined = parsed_original & parsed_new
     new_specifier = str(original) if combined.is_empty() else str(combined)
     if "||" in new_specifier:
@@ -295,8 +301,8 @@ class BumpMinimumDependencies:
         all_extras: bool = False,
         all_groups: bool = False,
         skip_core: bool = False,
-        cooldown_months: int = 12,
-        drop_months: int = 24,
+        cooldown_months: float = 12,
+        drop_months: float = 24,
         extra: tuple[str, ...] | list[str] = (),
         group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
@@ -305,8 +311,8 @@ class BumpMinimumDependencies:
         self.update_all_optionals: bool = all_extras
         self.update_all_dependency_groups: bool = all_groups
         self.skip_core_requirements: bool = skip_core
-        self.cooldown_months: int = cooldown_months
-        self.drop_months = drop_months
+        self.cooldown_months: float = cooldown_months
+        self.drop_months: float = drop_months
         self.optional_categories = list(extra)
         self.dependency_groups = list(group)
         self.packages_to_skip = list(skip_package)
@@ -315,6 +321,8 @@ class BumpMinimumDependencies:
 
         if not self.pyproject.project:
             raise RuntimeError("project table not defined")
+
+        logger.info(f"Bumping minimum dependencies for {self.pyproject_file}")
 
     @property
     def uv_base_command(self) -> list[str]:
@@ -365,7 +373,7 @@ class BumpMinimumDependencies:
 
     @property
     def optional_categories_to_update(self) -> list[str]:
-        """Names of catories of optional dependencies to be updated if necessary."""
+        """Names of categories of optional dependencies to be updated if necessary."""
         all_optionals: list[str] = sorted(
             self.pyproject.project.get("optional-dependencies", [])  # ty: ignore[unresolved-attribute]
         )
@@ -383,6 +391,10 @@ class BumpMinimumDependencies:
 
         new_requirements: list[str] = []
         for requirement in self.core_requirements_to_update:
+            if requirement.name in self.packages_to_skip:
+                continue
+            if requirement.name == self.project_name:
+                continue
             try:
                 new: str = get_new_requirement_for_package(
                     requirement=requirement,
@@ -391,11 +403,12 @@ class BumpMinimumDependencies:
                 )
                 new_requirements.append(f"{requirement.name}{new}")
             except Exception:  # be more specific about the exception
-                msg = f"Unable to core dependency {requirement.name!r}; skipping."
-                warnings.warn(message=msg)
+                msg = f"Unable to core dependency {requirement}; skipping."
+                logger.debug(msg)
 
         if new_requirements:
             command = [*self.uv_base_command, *new_requirements]
+            logger.info(f"Running: {' '.join(command)}")
             subprocess.run(command)
 
     def bump_dependency_groups(self):
@@ -428,7 +441,7 @@ class BumpMinimumDependencies:
                         f"Unable to update package '{requirement.name}' for "
                         f"{dependency_group = }; skipping."
                     )
-                    warnings.warn(msg)
+                    logger.debug(msg)
 
             if not new_dependency_group_requirements:
                 continue
@@ -438,6 +451,7 @@ class BumpMinimumDependencies:
                 f"--group={dependency_group}",
                 *new_dependency_group_requirements,
             ]
+            logger.info(f"Running: {' '.join(command)}")
             subprocess.run(command)
 
     def bump_optional_dependencies(self):
@@ -449,6 +463,8 @@ class BumpMinimumDependencies:
             optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
             for requirement in optionals[category]:
                 if requirement in self.packages_to_skip:
+                    continue
+                if requirement.name == self.project_name:
                     continue
                 if isinstance(requirement, str):
                     requirement = packaging.requirements.Requirement(requirement)
@@ -466,7 +482,7 @@ class BumpMinimumDependencies:
                         f"Unable to update package {requirement.name!r} in "
                         f"the {category!r} optional dependencies category. Skipping."
                     )
-                    warnings.warn(msg)
+                    logger.debug(msg)
 
             if new_requirements:
                 command: list[str] = [
@@ -474,6 +490,7 @@ class BumpMinimumDependencies:
                     f"--optional={category}",
                     *new_requirements,
                 ]
+                logger.info(f"Running: {' '.join(command)}")
                 subprocess.run(command)
 
     def run(self):
