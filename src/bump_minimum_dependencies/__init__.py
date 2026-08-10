@@ -30,7 +30,7 @@ DEFAULT_SKIP_CORE = False
 @click.option(
     "--drop-months",
     default=DEFAULT_DROP_MONTHS,
-    type=click.IntRange(min=0, max_open=True),
+    type=click.FloatRange(min=0, max_open=True),
     help=(
         f"Drop minor releases from this many months ago. Defaults "
         f"to {DEFAULT_DROP_MONTHS}."
@@ -39,7 +39,7 @@ DEFAULT_SKIP_CORE = False
 @click.option(
     "--cooldown-months",
     default=DEFAULT_COOLDOWN_MONTHS,
-    type=click.IntRange(min=0, max_open=True),
+    type=click.FloatRange(min=0, max_open=True),
     help=(
         f"Ensure that there is at least one release this many months "
         f"old, if possible. Defaults to {DEFAULT_COOLDOWN_MONTHS}."
@@ -79,8 +79,8 @@ DEFAULT_SKIP_CORE = False
 )
 def main(
     pyproject_file: str | pathlib.Path,
-    drop_months: int,
-    cooldown_months: int,
+    drop_months: float,
+    cooldown_months: float,
     all_extras: bool,
     all_groups: bool,
     skip_core: bool,
