@@ -23,7 +23,8 @@ dependencies = [
   "dep-logic>=0.7.1",
   "pyproject-parser==0.14",
   "requests==2.34.2",
-  "uv>=0.10",
+  # older version of uv shift positions of certain inline comments
+  "uv>=0.12.5",
 ]
 urls.Source = "https://github.com/namurphy/bump-minimum-dependencies"
 scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
