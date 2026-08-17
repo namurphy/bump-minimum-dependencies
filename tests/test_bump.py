@@ -59,30 +59,33 @@ def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
 
 
 @pytest.mark.parametrize(
-    "subdir,kwargs",
+    "subdir,date,kwargs",
     [
-        ("base_case", {"drop_months": 24, "cooldown_months": 21}),
+        ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
             "bump_all_dependency_groups",
+            "2026-01-01",
             {"drop_months": 24, "cooldown_months": 21, "all_groups": True},
         ),
         (
             "bump_one_dependency_group",
+            "2026-01-01",
             {"drop_months": 24, "cooldown_months": 21, "group": ["numpy"]},
         ),
         (
             "bump_two_dependency_groups",
+            "2026-01-01",
             {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]},
         ),
     ],
 )
-def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs) -> None:
-    freezer.move_to("2026-01-01")
+def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None:
+    freezer.move_to(date)
 
-    data_dir = Path(__file__).parent / "data" / subdir
-    original_pyproject = data_dir / "pyproject.toml"
-    expected_pyproject = data_dir / "pyproject.expected.toml"
-    pyproject = tmp_path / "pyproject.toml"
+    data_dir: Path = Path(__file__).parent / "data" / subdir
+    original_pyproject: Path = data_dir / "pyproject.toml"
+    expected_pyproject: Path = data_dir / "pyproject.expected.toml"
+    pyproject: Path = tmp_path / "pyproject.toml"
 
     shutil.copy(original_pyproject, pyproject)
     monkeypatch.chdir(tmp_path)
