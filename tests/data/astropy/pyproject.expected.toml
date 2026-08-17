@@ -89,28 +89,28 @@ all = [
     "bleach>=6.3",
     "sortedcontainers>=2.4", # imposed by testing with hypothesis
     "pytz>=2016.10", # (older versions may work)
-    "jplephem>=2.17.0",
-    "mpmath>=1.2.1",
-    "asdf-astropy>=0.7.0",
-    "bottleneck>=1.4.0",
-    "fsspec[http,s3]>=2023.4.0",  # keep in sync with dependency-groups.dataframe
-    "s3fs>=2023.4.0",
-    "uncompresspy>=0.4.0"
+    "jplephem>=2.24",
+    "mpmath>=1.3",
+    "asdf-astropy>=0.9",
+    "bottleneck>=1.6",
+    "fsspec[http,s3]>=2025.9",  # keep in sync with dependency-groups.dataframe
+    "s3fs>=2025.9",
+    "uncompresspy>=0.4.0",
 ]
 # The base set of test-time dependencies.
 test = [
-    "setuptools>=77.0.0",  # can be removed once the astropy.wcs C API tests are removed
-    "coverage>=7.2.0",
-    "hypothesis>=6.84.0",
-    "pytest>=8.0.1",
+    "setuptools>=80.10.1",  # can be removed once the astropy.wcs C API tests are removed
+    "coverage>=7.11",
+    "hypothesis>=6.139",
+    "pytest>=9",
     "pytest-astropy-header>=0.2.2",
-    "pytest-cov>=2.3.1",
-    "pytest-doctestplus>=1.4.0",
+    "pytest-cov>=6.3",
+    "pytest-doctestplus>=1.5",
     "pytest-filter-subpackage>=0.2.0",
     "pytest-remotedata>=0.4.1",
     "pytest-skip-slow==1.1.0",
-    "pytest-xdist>=3.6.0",
-    "threadpoolctl>=3.0.0",
+    "pytest-xdist>=3.8",
+    "threadpoolctl>=3.6",
 ]
 test_all = [
     # Install grouped optional dependencies
