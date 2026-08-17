@@ -1,4 +1,5 @@
 import pathlib
+
 __all__ = ["BumpPackage"]
 
 
@@ -30,6 +31,7 @@ DAYS_PER_MONTH = 30.436875
 logger = logging.getLogger("bump")
 logger.propagate = True
 logger.setLevel(logging.DEBUG)
+
 
 def make_string_and_remove_dot_zero_suffixes(
     version: packaging.version.Version | str,
@@ -462,9 +464,7 @@ class BumpMinimumDependencies:
 
             optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
             for requirement in optionals[category]:
-                if requirement in self.packages_to_skip:
-                    continue
-                if requirement.name == self.project_name:
+                if requirement in self.packages_to_skip or requirement.name == self.project_name:
                     continue
                 if isinstance(requirement, str):
                     requirement = packaging.requirements.Requirement(requirement)
