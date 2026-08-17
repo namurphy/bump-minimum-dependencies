@@ -4,7 +4,6 @@ dynamic = [
     "version"
 ]
 description = "Astronomy and astrophysics core library"
-readme = "README.rst"
 authors = [
     { name = "The Astropy Developers", email = "astropy.team@gmail.com" }
 ]
