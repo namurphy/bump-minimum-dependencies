@@ -13,11 +13,14 @@ DEFAULT_ALL_EXTRAS = False
 DEFAULT_ALL_GROUPS = False
 DEFAULT_SKIP_CORE = False
 
+
 @click.command()
 @click.option(
     "--pyproject-file",
     default="pyproject.toml",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=True, readable=True),
+    type=click.Path(
+        exists=True, file_okay=True, dir_okay=False, writable=True, readable=True
+    ),
     help="Path to pyproject.toml. Defaults to pyproject.toml in current directory.",
 )
 @click.option(
@@ -49,19 +52,19 @@ DEFAULT_SKIP_CORE = False
     "--all-extras",
     default=False,
     is_flag=True,
-    help=f"Flag to update all optional dependencies. Defaults to false.",
+    help="Flag to update all optional dependencies. Defaults to false.",
 )
 @click.option(
     "--all-groups",
     default=False,
     is_flag=True,
-    help=f"Flag to update all dependency groups. Defaults to false.",
+    help="Flag to update all dependency groups. Defaults to false.",
 )
 @click.option(
     "--skip-core",
     default=False,
     is_flag=True,
-    help=f"Flag to skip updating core project dependencies. Defaults to false.",
+    help="Flag to skip updating core project dependencies. Defaults to false.",
 )
 @click.option(
     "--extra",
@@ -90,10 +93,8 @@ def main(
 ) -> None:
     """Bump the minimum allowed versions of package dependencies."""
 
-    if cooldown_months>drop_months:
-        raise click.BadParameter(
-            "cooldown_months cannot exceed drop_months."
-        )
+    if cooldown_months > drop_months:
+        raise click.BadParameter("cooldown_months cannot exceed drop_months.")
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(
         pyproject_file=pyproject_file,
