@@ -52,31 +52,44 @@ Options:
 ## Examples
 
 To bump core package dependencies using default settings, run:
+
 ```shell
 bump-minimum-dependencies
 ```
+
 To skip updates for numpy and plasmapy, run:
+
 ```shell
 bump-minimum-dependencies --skip-package numpy --skip-package plasmapy
 ```
+
 To drop minor versions older than 36 months with a cooldown of 24 months, run:
+
 ```shell
 bump-minimum-dependencies --drop-months 36 --cooldown-months 24
 ```
+
 To bump all optional dependencies (extras), run:
+
 ```shell
 bump-minimum-dependencies --all-extras
 ```
+
 To bump all dependency groups, run:
+
 ```shell
 bump-minimum-dependencies --all-groups
 ```
+
 To bump the optional dependency (extras) category 'optionals' and
 skip updates of core dependencies, run:
+
 ```shell
 bump-minimum-dependencies --skip-core --extra optionals
 ```
+
 To bump the dependency group named dev and core dependencies, run:
+
 ```shell
 bump-minimum-dependencies --extra dev
 ```
@@ -114,4 +127,4 @@ Please also submit feature requests that would make `bump-minimum-dependencies` 
 
 - [hmaarrfk/nep29](https://github.com/hmaarrfk/nep29) — calculator tools for [NEP 29](https://github.com/hmaarrfk/nep29) (a precursor to SPEC 0).
 
-[SPEC 0]: https://scientific-python.org/specs/spec-0000
+[spec 0]: https://scientific-python.org/specs/spec-0000
