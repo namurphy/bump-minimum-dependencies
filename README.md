@@ -72,11 +72,10 @@ To bump all dependency groups, run:
 bump-minimum-dependencies --all-groups
 ```
 To bump the optional dependency (extras) category 'optionals' and
-```shell
 skip updates of core dependencies, run:
-```
-bump-minimum-dependencies --skip-core --extra optionals
 ```shell
+bump-minimum-dependencies --skip-core --extra optionals
+```
 To bump the dependency group named dev and core dependencies, run:
 ```shell
 bump-minimum-dependencies --extra dev
