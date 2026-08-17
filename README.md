@@ -106,9 +106,9 @@ bump-minimum-dependencies --extra dev
 
 - The tool uses uv to update `pyproject.toml`, but does not automatically update lockfiles or sync virtual environments. Commands like `uv lock` and `uv sync` would need to be run separately afterward.
 
-- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows `bump-minimum-dependencies` to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
+- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows `bump-minimum-dependencies` to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`. Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform (such as when there are multiple `!=` operations in the resulting requirement, as of `dep-logic==0.7.1`).
 
-- Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform (such as when there are multiple `!=` operations in the resulting requirement, as of `dep-logic==0.7.1`).
+- If a README or license file is declared in `pyproject.toml`, they must be present so that `pyproject.toml` can be loaded by [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
 
 - This tool does not upgrade the minimum required version of Python.
 
