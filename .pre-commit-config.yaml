@@ -63,7 +63,7 @@ repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
   - id: codespell
     name: codespell (add false positives to pyproject.toml)
     args: [--write-changes]
-    exclude: CITATION.cff
+    exclude: CITATION.cff|tests/data
 
 - repo: https://github.com/adhtruong/mirrors-typos
   # use mirrors-typos because `pre-commit autoupdate` drops the version
@@ -72,7 +72,7 @@ repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
   hooks:
   - id: typos
     name: typos (add false positives to _typos.toml)
-    exclude: CITATION.cff|docs/notebooks/dispersion/stix_dispersion.ipynb
+    exclude: tests/data
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.14.2
@@ -94,6 +94,7 @@ repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
   hooks:
   - id: pyproject-fmt
     name: format pyproject.toml
+    exclude: tests/data
 
 - repo: https://github.com/astral-sh/uv-pre-commit
   rev: 0.9.6
