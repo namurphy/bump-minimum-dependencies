@@ -182,12 +182,12 @@ dataframe = [
     # keep in sync with project.optional-dependencies.recommended
     # and project.optional-dependencies.all
     # and project.optional-dependencies.typing
-    "narwhals>=1.42.0",
-    "pyarrow>=16.0",
-    "pandas>=2.2.2",
-    "polars>=1.18.0",
-    "duckdb>=1.1.0",
-    "dask[dataframe]>=2024.8.0", # keep in sync with other declarations
+    "narwhals>=2.2",
+    "pyarrow>=22",
+    "pandas>=3",
+    "polars>=1.33",
+    "duckdb>=1.4",
+    "dask[dataframe]>=2025.9", # keep in sync with other declarations
 ]
 # re-define historical optional dependencies (a.k.a. 'extras') as
 # user-invisible, PEP 735 dependency groups
