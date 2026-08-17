@@ -76,8 +76,8 @@ requires-dist = [
     { name = "charset-normalizer", specifier = "==3.3.2" },
     { name = "click", specifier = ">=8.4.2,<9" },
     { name = "dep-logic", specifier = ">=0.7.1" },
-    { name = "pyproject-parser", specifier = "==0.14" },
-    { name = "requests", specifier = "==2.34.2" },
+    { name = "pyproject-parser", specifier = "~=0.14" },
+    { name = "requests", specifier = ">=2.34.2" },
     { name = "uv", specifier = ">=0.12.5" },
 ]
 
