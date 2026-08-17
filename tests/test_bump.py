@@ -79,10 +79,10 @@ def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
         ),
         (
             "astropy",
-            "2026-09-01",
+            "2026-08-17",
             {
-                "drop_months": 24,
-                "cooldown_months": 12,
+                "drop_months": 12,
+                "cooldown_months": 6,
                 "all_groups": True,
                 "all_extras": True,
             },
