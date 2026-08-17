@@ -464,7 +464,10 @@ class BumpMinimumDependencies:
 
             optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
             for requirement in optionals[category]:
-                if requirement in self.packages_to_skip or requirement.name == self.project_name:
+                if (
+                    requirement in self.packages_to_skip
+                    or requirement.name == self.project_name
+                ):
                     continue
                 if isinstance(requirement, str):
                     requirement = packaging.requirements.Requirement(requirement)
