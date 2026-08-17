@@ -77,6 +77,16 @@ def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
             "2026-01-01",
             {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]},
         ),
+        (
+            "astropy",
+            "2027-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "all_groups": True,
+                "all_extras": True,
+            },
+        ),
     ],
 )
 def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None:
