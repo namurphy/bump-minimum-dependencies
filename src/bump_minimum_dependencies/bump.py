@@ -1,8 +1,6 @@
-import pathlib
-
 __all__ = ["BumpPackage"]
 
-
+import pathlib
 import requests
 
 from dep_logic.specifiers import parse_version_specifier
@@ -23,7 +21,6 @@ import math
 
 import subprocess
 import functools
-
 
 DAYS_PER_MONTH = 30.436875
 
@@ -319,7 +316,17 @@ class BumpMinimumDependencies:
         self.dependency_groups = list(group)
         self.packages_to_skip = list(skip_package)
 
-        self.pyproject: PyProject = PyProject.load(pyproject_file)
+        try:
+            self.pyproject: PyProject = PyProject.load(pyproject_file)
+        except FileNotFoundError as exc:
+            exception_message = str(exc).lower()
+            msg = f"Unable to load {pyproject_file} with pyproject_parser.PyProject.load()."
+            if "readme" in exception_message or "license" in exception_message:
+                msg += (
+                    " If a readme or license file is declared in a pyproject.toml, "
+                    "these files must be present alongside pyproject.toml."
+                )
+            raise FileNotFoundError(msg) from exc
 
         if not self.pyproject.project:
             raise RuntimeError("project table not defined")
