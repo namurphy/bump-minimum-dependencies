@@ -421,8 +421,6 @@ class BumpMinimumDependencies:
 
         logger.debug(f"{requirements_to_update = }")
 
-        # print(f"{requirements_to_update = }")
-
         packages_with_markers: list[str] = []
         for requirement in requirements_to_update:
             if requirement.marker:
@@ -452,21 +450,15 @@ class BumpMinimumDependencies:
 
                 as_requirement = packaging.requirements.Requirement(new_requirement)
 
-                print(type(as_requirement))
-
                 if as_requirement in requirements_to_update:
                     msg = (
                         f"Excluding {new_requirement = } since it is in "
                         f"{requirements_to_update = !r}"
                     )
                     logger.debug(msg)
-
-                    raise
-
                     continue
-                new_requirements.append(f"{new_requirement}")
 
-        # print(f"{new_requirements = }")
+                new_requirements.append(f"{new_requirement}")
 
         return new_requirements
 
