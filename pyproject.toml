@@ -40,8 +40,3 @@ dev = [
   "python-dateutil==2.8.2",
   "ty>=0.0.69",
 ]
-
-[tool.uv]
-workspace.members = [
-  "tests/data/temporary",
-]
