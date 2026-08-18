@@ -5,7 +5,6 @@ import requests
 
 from dep_logic.specifiers import parse_version_specifier
 import collections
-import warnings
 
 import datetime
 
@@ -219,8 +218,8 @@ class BumpPackage:
 
 def combine_requirements(
     original: packaging.specifiers.SpecifierSet,
-    new: packaging.requirements.Requirement | str,
-) -> str:
+    new: str,
+) -> str | None:
     """
     Combine two version specifiers, falling back to `original` if the
     two specifiers are mutually incompatible.
@@ -232,24 +231,33 @@ def combine_requirements(
     combined = parsed_original & parsed_new
     new_specifier = str(original) if combined.is_empty() else str(combined)
     if "||" in new_specifier:
-        warnings.warn("Cannot update versions with != in supported range; skipping.")
-        return str(original)
-    return new_specifier.strip().removesuffix(".0").removesuffix(".0")
+        logger.warning("Cannot update versions with != in supported range; skipping.")
+        return None
+
+    new_specifier = new_specifier.replace(".0,", ",")
+    while new_specifier.endswith(".0"):
+        new_specifier = new_specifier.removesuffix(".0")
+
+    return new_specifier
 
 
 def get_new_requirement_for_package(
     requirement: packaging.requirements.Requirement,
     drop_months: float | int,
     cooldown_months: float | int,
-) -> str:
+) -> str | None:
     package = BumpPackage(requirement.name)
-    original_requirement = requirement.specifier
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    return combine_requirements(original_requirement, time_based_requirement)
+    new_requirement = combine_requirements(
+        original=requirement.specifier,
+        new=time_based_requirement,
+    )
+
+    return f"{requirement.name}{new_requirement}"
 
 
 class BumpMinimumDependencies:
@@ -306,15 +314,17 @@ class BumpMinimumDependencies:
         group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
     ):
-        self.pyproject_file = pyproject_file
+        self.pyproject_file: str | pathlib.Path = pyproject_file
         self.update_all_optionals: bool = all_extras
         self.update_all_dependency_groups: bool = all_groups
         self.skip_core_requirements: bool = skip_core
         self.cooldown_months: float = cooldown_months
         self.drop_months: float = drop_months
-        self.optional_categories = list(extra)
-        self.dependency_groups = list(group)
-        self.packages_to_skip = list(skip_package)
+        self.optional_categories: list[str] = [category.lower() for category in extra]
+        self.dependency_groups: list[str] = [
+            dependency_group.lower() for dependency_group in group
+        ]
+        self.packages_to_skip: list[str] = [package.lower() for package in skip_package]
 
         try:
             self.pyproject: PyProject = PyProject.load(pyproject_file)
@@ -328,14 +338,13 @@ class BumpMinimumDependencies:
                 )
             raise FileNotFoundError(msg) from exc
 
+        if isinstance(self.project_name, str):
+            self.packages_to_skip.append(self.project_name)
+
         if not self.pyproject.project:
             raise RuntimeError("project table not defined")
 
         logger.info(f"Bumping minimum dependencies for {self.pyproject_file}")
-
-    @property
-    def uv_base_command(self) -> list[str]:
-        return ["uv", "add", "--frozen", "--quiet"]
 
     @property
     def project_name(self) -> str | None:
@@ -393,32 +402,119 @@ class BumpMinimumDependencies:
             )
         return all_optionals if self.update_all_optionals else self.optional_categories
 
-    def bump_core_requirements(self):
-        """Bump the core package requirements."""
-        if self.skip_core_requirements:
-            return
+    def get_new_requirements(
+        self,
+        requirements: list[packaging.requirements.Requirement],
+    ) -> list[str]:
+        requirements_to_update: list[packaging.requirements.Requirement] = []
+        for requirement in requirements:
+            if isinstance(requirement, str):
+                requirement: str = requirement.lower()
+                while requirement.endswith(".0"):
+                    requirement = requirement.removesuffix(".0")
+                requirement = packaging.requirements.Requirement(requirement)  # ty:ignore[invalid-assignment]
+            if not isinstance(requirement, packaging.requirements.Requirement):
+                continue
+            if requirement.name.lower() in self.packages_to_skip:
+                continue
+            requirements_to_update.append(requirement)
+
+        logger.debug(f"{requirements_to_update = }")
+
+        # print(f"{requirements_to_update = }")
+
+        packages_with_markers: list[str] = []
+        for requirement in requirements_to_update:
+            if requirement.marker:
+                packages_with_markers.append(requirement.name.lower())
 
         new_requirements: list[str] = []
-        for requirement in self.core_requirements_to_update:
-            if requirement.name in self.packages_to_skip:
+        for requirement in requirements_to_update:
+            if requirement.name.lower() in packages_with_markers:
+                logger.debug(str(requirement))
                 continue
-            if requirement.name == self.project_name:
-                continue
+
             try:
-                new: str = get_new_requirement_for_package(
+                new_requirement: str | None = get_new_requirement_for_package(
                     requirement=requirement,
                     drop_months=self.drop_months,
                     cooldown_months=self.cooldown_months,
                 )
-                new_requirements.append(f"{requirement.name}{new}")
-            except Exception:  # be more specific about the exception
-                msg = f"Unable to core dependency {requirement}; skipping."
-                logger.debug(msg)
 
-        if new_requirements:
-            command = [*self.uv_base_command, *new_requirements]
-            logger.info(f"Running: {' '.join(command)}")
-            subprocess.run(command)
+            except KeyError:
+                warning_message = (
+                    f"Unable to update dependency {requirement}. Skipping."
+                )
+                logger.warning(warning_message)
+            else:
+                if not new_requirement:
+                    continue
+
+                as_requirement = packaging.requirements.Requirement(new_requirement)
+
+                print(type(as_requirement))
+
+                if as_requirement in requirements_to_update:
+                    msg = (
+                        f"Excluding {new_requirement = } since it is in "
+                        f"{requirements_to_update = !r}"
+                    )
+                    logger.debug(msg)
+
+                    raise
+
+                    continue
+                new_requirements.append(f"{new_requirement}")
+
+        # print(f"{new_requirements = }")
+
+        return new_requirements
+
+    def run_uv_command(
+        self,
+        new_requirements: list[str],
+        *,
+        dependency_group: str | None = None,
+        extras_category: str | None = None,
+    ):
+        if dependency_group and extras_category:
+            raise ValueError("Cannot set both dependency_group and extras_category.")
+
+        if dependency_group:
+            flag = [f"--group={dependency_group}"]
+            clause = f"dependency group {dependency_group!r}"
+        elif extras_category:
+            flag = [f"--optional={extras_category}"]
+            clause = f"optional dependencies category {extras_category}"
+        else:
+            flag = []
+            clause = f"core dependencies"
+
+        if not new_requirements:
+            msg = f"No updates to requirements for {clause}."
+            logger.info(msg)
+            return
+
+        command = [
+            "uv",
+            "add",
+            "--frozen",
+            "--quiet",
+            *flag,
+            *new_requirements,
+        ]
+
+        msg = f"Running: {' '.join(command)}"
+        logger.info(msg)
+        subprocess.run(command)
+
+    def bump_core_requirements(self) -> None:
+        """Bump the core package requirements."""
+        if self.skip_core_requirements:
+            return
+
+        new_requirements = self.get_new_requirements(self.core_requirements_to_update)
+        self.run_uv_command(new_requirements)
 
     def bump_dependency_groups(self):
         """Bump requirements in dependency groups."""
@@ -427,81 +523,63 @@ class BumpMinimumDependencies:
 
         for dependency_group in self.dependency_groups_to_update:
             requirements = self.pyproject.dependency_groups[dependency_group]  # ty: ignore[not-subscriptable]
-            new_dependency_group_requirements: list[str] = []
-            for requirement in requirements:
-                if requirement in self.packages_to_skip:
-                    continue
-                if isinstance(requirement, str):
-                    requirement = packaging.requirements.Requirement(requirement)
-                if not isinstance(requirement, packaging.requirements.Requirement):
-                    continue
-                if requirement.name == self.project_name:
-                    continue
+            new_requirements = self.get_new_requirements(requirements)
 
-                try:
-                    new = get_new_requirement_for_package(
-                        requirement,
-                        drop_months=self.drop_months,
-                        cooldown_months=self.cooldown_months,
-                    )
-                    new_dependency_group_requirements.append(f"{requirement.name}{new}")
-                except Exception:
-                    msg = (
-                        f"Unable to update package '{requirement.name}' for "
-                        f"{dependency_group = }; skipping."
-                    )
-                    logger.debug(msg)
-
-            if not new_dependency_group_requirements:
-                continue
-
-            command = [
-                *self.uv_base_command,
-                f"--group={dependency_group}",
-                *new_dependency_group_requirements,
-            ]
-            logger.info(f"Running: {' '.join(command)}")
-            subprocess.run(command)
+            self.run_uv_command(new_requirements, dependency_group=dependency_group)
 
     def bump_optional_dependencies(self):
         """Bump requirements in optional dependencies."""
+        if not self.update_all_optionals and not self.optional_categories_to_update:
+            return
+
+        optionals = self.pyproject.project.get("optional-dependencies")
+        if not optionals:
+            logger.info("No optional dependencies found.")
+            return
 
         for category in self.optional_categories_to_update:
-            new_requirements: list[str] = []
+            requirements = optionals[category]
+            new_requirements = self.get_new_requirements(requirements)
+            self.run_uv_command(new_requirements, extras_category=category)
 
-            optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
-            for requirement in optionals[category]:
-                if (
-                    requirement in self.packages_to_skip
-                    or requirement.name == self.project_name
-                ):
-                    continue
-                if isinstance(requirement, str):
-                    requirement = packaging.requirements.Requirement(requirement)
-                if not isinstance(requirement, packaging.requirements.Requirement):
-                    continue
-                try:
-                    new = get_new_requirement_for_package(
-                        requirement,
-                        drop_months=self.drop_months,
-                        cooldown_months=self.cooldown_months,
-                    )
-                    new_requirements.append(f"{requirement.name}{new}")
-                except Exception:
-                    msg = (
-                        f"Unable to update package {requirement.name!r} in "
-                        f"the {category!r} optional dependencies category. Skipping."
-                    )
-                    logger.debug(msg)
+    #        optionals = self.pyproject.project["optional-dependencies"]
 
-            if new_requirements:
-                command: list[str] = [
-                    *self.uv_base_command,
-                    f"--optional={category}",
-                    *new_requirements,
-                ]
-                logger.info(f"Running: {' '.join(command)}")
-                subprocess.run(command)
+    # for category in self.optional_categories_to_update:
+    #     new_requirements: list[str] = []
+    #
+    #     optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
+    #     for requirement in optionals[category]:
+    #         if (
+    #             requirement in self.packages_to_skip
+    #             or requirement.name == self.project_name
+    #         ):
+    #             continue
+    #         if isinstance(requirement, str):
+    #             requirement = packaging.requirements.Requirement(requirement)
+    #         if not isinstance(requirement, packaging.requirements.Requirement):
+    #             continue
+    #         try:
+    #             new = get_new_requirement_for_package(
+    #                 requirement,
+    #                 drop_months=self.drop_months,
+    #                 cooldown_months=self.cooldown_months,
+    #             )
+    #             new_requirements.append(f"{requirement.name}{new}")
+    #         except Exception:
+    #             msg = (
+    #                 f"Unable to update package {requirement.name!r} in "
+    #                 f"the {category!r} optional dependencies category. Skipping."
+    #             )
+    #             logger.debug(msg)
+    #
+    #     if new_requirements:
+    #         command: list[str] = [
+    #             *self.uv_base_command,
+    #             f"--optional={category}",
+    #             *new_requirements,
+    #         ]
+    #         logger.info(f"Running: {' '.join(command)}")
+    #         subprocess.run(command)
 
     def run(self):
         """Perform all the requested and necessary updates."""
