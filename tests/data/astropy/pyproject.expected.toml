@@ -108,7 +108,7 @@ test = [
     "pytest-doctestplus>=1.5",
     "pytest-filter-subpackage>=0.2.0",
     "pytest-remotedata>=0.4.1",
-    "pytest-skip-slow==1.1.0",   # keep '.0' suffix
+    "pytest-skip-slow==1.1.0",  # keep '.0' suffix
     "pytest-xdist>=3.8",
     "threadpoolctl>=3.6",
 ]
@@ -142,7 +142,7 @@ docs = [
     "pytest>=9",
     "sphinx-changelog>=1.6",
     "sphinx-design>=0.7",
-    "jinja2>=3.1.3",
+    "Jinja2>=3.1.3",
     "sphinxcontrib-globalsubs>=1",
     "matplotlib>=3.10",  # https://github.com/matplotlib/matplotlib/issues/28234
     "dask[dataframe]>=2025.9", # keep in sync with dependency-groups.dataframe
