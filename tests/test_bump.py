@@ -35,7 +35,11 @@ def test_bump(
     assert str(release) == expected
 
 
-def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
+def get_errmsg_from_file_comparison(
+    pyproject,
+    expected_pyproject,
+    subdir,
+) -> str | None:
     with open(pyproject) as f1:
         actual = f1.readlines()
 
@@ -47,15 +51,24 @@ def get_errmsg_from_file_comparison(pyproject, expected_pyproject) -> str:
     if len(actual) != len(expected):
         error_messages.append("Length of files do not match.")
 
-    for actual_line, expected_line in zip(actual, expected):
+    for line, (actual_line, expected_line) in enumerate(zip(actual, expected)):
         if actual_line != expected_line:
-            actual_line = actual_line.strip('" ,\n')
-            expected_line = expected_line.strip('" ,\n')
+            actual_line = actual_line.removesuffix("\n")
+            expected_line = expected_line.removesuffix("\n")
             error_messages.append(
-                f"Expected '{expected_line}' but got '{actual_line}'."
+                f"Line {line + 1}\n"
+                f"  Result:   {actual_line}\n  Expected: {expected_line}\n"
             )
 
-    return " ".join(error_messages)
+    if not error_messages:
+        return
+
+    expanded_comparison = (
+        f"Mismatch between updated and expected pyproject.toml for {subdir = !r}.\n\n"
+        + "\n".join(error_messages)
+    )
+
+    return expanded_comparison
 
 
 @pytest.mark.parametrize(
@@ -100,10 +113,8 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None
     shutil.copy(original_pyproject, pyproject)
     monkeypatch.chdir(tmp_path)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        bumper = bump.BumpMinimumDependencies(**kwargs)
-        bumper.run()
+    bumper = bump.BumpMinimumDependencies(**kwargs)
+    bumper.run()
 
-    if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject):
+    if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject, subdir):
         pytest.fail(reason=errmsg)
