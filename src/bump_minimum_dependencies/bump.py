@@ -488,7 +488,7 @@ class BumpMinimumDependencies:
             clause = f"optional dependencies category {extras_category}"
         else:
             flag = []
-            clause = f"core dependencies"
+            clause = "core dependencies"
 
         if not new_requirements:
             msg = f"No updates to requirements for {clause}."
