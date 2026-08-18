@@ -7,32 +7,6 @@ import pytest
 from pathlib import Path
 
 
-@pytest.mark.parametrize(
-    "name, drop_months, cooldown_months, expected",
-    [
-        ("plasmapy", 24, 0, "2024.2"),
-        ("plasmapy", 4, 0, "2025.10"),
-        ("plasmapy", 4, 3, "2025.8"),
-        ("plasmapy", 48, 0, "0.8.1"),
-        ("plasmapy", 1, 0, "2025.10"),
-        ("numpy", 24, 0, "2"),
-        ("numpy", 24, 23, "1.26"),
-        ("astropy", 24, 12, "6.1"),
-        ("astropy", 24, 23, "6"),
-        ("pyproject-fmt", 100, 100, "0.1"),
-    ],
-)
-def test_bump(
-    name: str, drop_months: int, cooldown_months: int, expected: str, freezer
-) -> None:
-    freezer.move_to("2026-01-01")
-    package = bump.BumpPackage(name=name)
-    release = package.oldest_supported_minor_release(
-        drop_months=drop_months, cooldown_months=cooldown_months
-    )
-    assert str(release) == expected
-
-
 def get_errmsg_from_file_comparison(
     pyproject,
     expected_pyproject,
@@ -72,6 +46,7 @@ def get_errmsg_from_file_comparison(
 @pytest.mark.parametrize(
     "subdir,date,kwargs",
     [
+        ("trailing_dot_zero", "2026-01-01", {}),
         ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
             "bump_all_dependency_groups",
@@ -116,3 +91,29 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None
 
     if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject, subdir):
         pytest.fail(reason=errmsg)
+
+
+@pytest.mark.parametrize(
+    "name, drop_months, cooldown_months, expected",
+    [
+        ("plasmapy", 24, 0, "2024.2"),
+        ("plasmapy", 4, 0, "2025.10"),
+        ("plasmapy", 4, 3, "2025.8"),
+        ("plasmapy", 48, 0, "0.8.1"),
+        ("plasmapy", 1, 0, "2025.10"),
+        ("numpy", 24, 0, "2"),
+        ("numpy", 24, 23, "1.26"),
+        ("astropy", 24, 12, "6.1"),
+        ("astropy", 24, 23, "6"),
+        ("pyproject-fmt", 100, 100, "0.1"),
+    ],
+)
+def test_bump(
+    name: str, drop_months: int, cooldown_months: int, expected: str, freezer
+) -> None:
+    freezer.move_to("2026-01-01")
+    package = bump.BumpPackage(name=name)
+    release = package.oldest_supported_minor_release(
+        drop_months=drop_months, cooldown_months=cooldown_months
+    )
+    assert str(release) == expected
