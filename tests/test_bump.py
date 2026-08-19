@@ -83,14 +83,14 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-                "scipy",
-                "2026-08-18",
-                {
-                    "drop_months": 12,
-                    "cooldown_months": 6,
-                    "all_groups": True,
-                    "all_extras": True,
-                },
+            "scipy",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "all_groups": True,
+                "all_extras": True,
+            },
         ),
     ],
 )
