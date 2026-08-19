@@ -24,7 +24,21 @@ This limitation can be mitigated by providing a cooldown period so that new rele
 ```groff
 Usage: bump-minimum-dependencies [OPTIONS]
 
-  Bump the minimum allowed versions of package dependencies.
+  Bump the minimum allowed minor versions of package dependencies.
+
+  This tool updates pyproject.toml via `uv add --frozen` to drop support for
+  minor versions of package dependencies based on the time since the minor
+  version was first released, where package versions may be given by
+  `<MAJOR>.<MINOR>` or `<MAJOR>.<MINOR>.<PATCH>`. Additional constraints such
+  as upper limits are preserved.
+
+  For example, if version `3.4.0` of a package dependency was released 25
+  months ago and version `3.5.0` was released 23 months ago, running `bump-
+  minimum-dependencies` will change a requirement specifier of that package
+  from `>=3.4.0` to `>=3.5.0`.
+
+  Requirements with markers or that cannot be updated will be skipped with a
+  warning.
 
 Options:
   --pyproject-file FILE          Path to pyproject.toml. Defaults to
