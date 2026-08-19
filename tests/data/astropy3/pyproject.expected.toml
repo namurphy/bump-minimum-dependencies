@@ -147,7 +147,7 @@ docs = [
     "sphinxcontrib-globalsubs>=0.1.1",
     "matplotlib>=1.3.1,!=3.9",  # https://github.com/matplotlib/matplotlib/issues/28234
     "dask[dataframe]>=2024.8.0", # keep in sync with dependency-groups.dataframe
-    "fsspec[http,s3]>=2023.4.0",  # keep in sync with dependency-groups.dataframe
+    "fsspec[s3,http]>=2023.4.0",  # keep in sync with dependency-groups.dataframe
 ]
 
 [project.urls]
