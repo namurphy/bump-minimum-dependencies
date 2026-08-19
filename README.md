@@ -110,6 +110,8 @@ bump-minimum-dependencies --extra dev
   - If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
   - Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform (such as when there are multiple `!=` operations in the resulting requirement, as of `dep-logic==0.7.1`).
 
+- If a dependency has a marker within a particular category, the dependency will not be updated.
+
 - If a README or license file is declared in `pyproject.toml`, they must be present so that `pyproject.toml` can be loaded by [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
 
 - This tool does not upgrade the minimum required version of Python.
