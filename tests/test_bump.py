@@ -93,6 +93,16 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
+                "astropy3",
+                "2026-08-18",
+                {
+                    "drop_months": 24000,
+                    "cooldown_months": 12000,
+                    "all_groups": True,
+                    "all_extras": True,
+                },
+        ),
+        (
             "scipy",
             "2026-08-18",
             {
