@@ -123,7 +123,10 @@ Please also submit feature requests that would make `bump-minimum-dependencies` 
 
 - [cgordberg/bump-dependencies](https://github.com/cgoldberg/bump-dependencies) — updates dependency specifiers in `pyproject.toml` to latest compatible versions.
 
-- [hmaarrfk/nep29](https://github.com/hmaarrfk/nep29) — calculator tools for [NEP 29](https://github.com/hmaarrfk/nep29) (a precursor to SPEC 0).
+- [hmaarrfk/nep29](https://github.com/hmaarrfk/nep29) — calculator tools for [NEP 29](https://github.com/hmaarrfk/nep29), a precursor to SPEC 0. `nep29` can be used to check the results of `bump-minimum-dependencies`, as in the following example (if uv is installed):
+  ```shell
+  uvx --python=3.14 --with=setuptools nep29 --n_minor=1 --n_months=12 scipy
+  ``` 
 
 - [tox-dev/pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) — an opinionated formatter for `pyproject.toml` files
 
