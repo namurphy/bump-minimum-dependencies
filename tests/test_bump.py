@@ -82,6 +82,16 @@ def get_errmsg_from_file_comparison(
                 "all_extras": True,
             },
         ),
+        (
+                "scipy",
+                "2026-08-17",
+                {
+                    "drop_months": 12,
+                    "cooldown_months": 6,
+                    "all_groups": True,
+                    "all_extras": True,
+                },
+        ),
     ],
 )
 def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None:
