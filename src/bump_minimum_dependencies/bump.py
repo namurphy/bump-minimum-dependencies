@@ -458,7 +458,9 @@ class BumpMinimumDependencies:
                     cooldown_months=self.cooldown_months,
                 )
 
-            except KeyError:
+            # Catch any exception since if a package cannot be updated
+            # for whatever reason, it should be skipped with a warning issued.
+            except Exception:
                 warning_message = (
                     f"Unable to update dependency {requirement}. Skipping."
                 )
