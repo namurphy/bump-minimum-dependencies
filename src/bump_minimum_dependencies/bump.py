@@ -287,7 +287,12 @@ def get_new_requirement_for_package(
         new=time_based_requirement,
     )
 
-    return f"{requirement.name}{new_requirement}"
+    if not requirement.extras:
+        return f"{requirement.name}{new_requirement}"
+
+    return (
+        f"{requirement.name}[{','.join(sorted(requirement.extras))}]{new_requirement}"
+    )
 
 
 class BumpMinimumDependencies:
