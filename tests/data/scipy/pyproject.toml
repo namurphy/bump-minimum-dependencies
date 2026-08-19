@@ -42,7 +42,6 @@ requires-python = ">=3.12"  # keep in sync with `min_python_version` in meson.bu
 dependencies = [
     "numpy>=2.0.0",
 ] # keep in sync with `min_numpy_version` in meson.build
-readme = "README.rst"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
@@ -160,7 +159,7 @@ bench = [
     # benchmark job past its time limit; revisit when that is fixed upstream
     "asv==0.6.5",
     "pyfftw",
-    "cffi", 
+    "cffi",
 ]
 
 doc = [
