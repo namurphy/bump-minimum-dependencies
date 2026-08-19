@@ -1,23 +1,23 @@
 # bump-minimum-dependencies
 
-Automatically bump the minimum allowed minor versions of package dependencies based on the time since first release, with a cooldown period.
+Automatically bump the minimum allowed minor versions of Python package dependencies based on the time since first release, with a cooldown period.
 
 ## Motivation
 
-This tool was inspired by [SPEC 0], which recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping dependencies.
-SPEC 0 recommends that support for core package dependencies be dropped 24 months after their initial minor release.
-For example, NumPy `v2.1.0` was released on 2024-08-18, so SPEC 0 recommends that packages drop support for `v2.1.*` of NumPy after 2026-08-18.
+Determining the minimum allowed version of a dependency requires balancing competing tradeoffs. ⚖️
+Supporting older versions increases maintenance burden because of the need to support and test a wide range of versions, while also limiting developers from using newer features and assuming bugfixes.
+When the range of allowed versions is too large, code can become more complicated to account for various contingencies.
+Support windows that are too brief increase the risk of dependency conflicts and may cause problems for end users.
+The developer maintenance burden is further increased when developers repeatedly discuss when to drop older versions of dependencies.
 
-SPEC 0 states:
+[SPEC 0] recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping support for older versions of dependencies.
+SPEC 0 recommends core package dependencies be dropped 24 months after their initial minor release.
+NumPy `v2.1.0` was released on 2024-08-18, so SPEC 0 recommends that packages drop support for `v2.1.*` of NumPy after 2026-08-18.
 
-> Limiting the scope of supported dependencies is an effective way for packages to limit maintenance burden. Combinations of packages need to be tested, which impacts also on continuous integration times and infrastructure upkeep. Code itself also becomes more complicated when it has to be aware of various combinations of configurations.
->
-> Adoption of this SPEC will ensure a consistent support policy across packages, and reduce the need for individual projects to devise similar policies.
->
-> Ultimately, reduced maintenance burden frees up developer time, which translates into more features, bugfixes, and optimizations for users.
+A limitation of SPEC 0 is that when a dependency goes more than 24 months between releases, a new release can immediately become the minimum supported version.
+This limitation can be mitigated by providing a cooldown period so that new releases do not become the minimum supported version until a certain time period has passed (such as 12 months).
 
-A limitation of following the SPEC 0 recommendations is that when a dependency goes more than 24 months between releases, a new release can immediately become the minimum supported version.
-This limitation can be mitigated by providing a cooldown period so that new releases do not become the minimum supported version until a certain time period has passed.
+Because dependency updates have often needed to be performed manually (such as by looking up release times on the Python Package Index and editing `pyproject.toml` accordingly), a tool that automates these updates will save developer time, especially when accounting for edge cases.
 
 ## Usage
 
@@ -108,34 +108,55 @@ To bump the dependency group named dev and core dependencies, run:
 bump-minimum-dependencies --extra dev
 ```
 
-## Notes
+## Usage notes
 
-- Please review all updates to dependencies before accepting them, including to make sure that comments are satisfactorily preserved.
+- Please review and test all updates to `pyproject.toml` before accepting them.
 
-- Requirements may be normalized upon updates.
+- This tool invokes `uv add --frozen` to update dependencies in `pyproject.toml` without updating lock files or syncing virtual environments.
+
+- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows bump-minimum-dependencies to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
+
+- If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
+
+- If a particular requirement cannot be updated, it will be skipped with a warning.
+
+- Within a given category, dependencies with markers (such as `'setuptools; python_version > "3.11"'`) will not be updated.
+
+- Requirements may be normalized upon updates by `uv add`. Opinionated autoformatters [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) will reduce or eliminate the need for requirements normalization. Example normalizations include:
 
   - `.0` suffixes may be removed, since `X.Y` and `X.Y.0` "are not considered distinct release numbers" as per [PEP 440](https://peps.python.org/pep-0440).
   - Package names, which are case-insensitive, may be made lower case.
+  - Single quotes may be changed to double quotes.
+  - Changes to spacing, indentation, and line breaks.
 
-- The tool uses uv to update `pyproject.toml`, but does not automatically update lockfiles or sync virtual environments. Commands like `uv lock` and `uv sync` would need to be run separately afterward.
+## Limitations and caveats
 
-- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows `bump-minimum-dependencies` to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
+- This tool may be unable to update certain dependencies that:
 
-  - If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
-  - Because not all cases can be handled cleanly, `bump-minimum-dependencies` skips updates that it cannot perform (such as when there are multiple `!=` operations in the resulting requirement, as of `dep-logic==0.7.1`).
+  - Do not follow a standard pattern (e.g., `<MAJOR>.<MINOR>`, `<MAJOR>.<MINOR>.<PATCH>`, or `<MAJOR>.<MINOR>.<PATCH>.<MICRO>`).
+  - Have resulting requirements with multiple `!=` operators (as of `dep-logic==0.7.1`).
+  - Do not have metadata in the expected form.
+  - Are unavailable from the Python Package Index.
 
-- If a dependency has a marker within a particular category, the dependency will not be updated.
+- This tool does _not_ guarantee that an environment can be created that includes the minimum allowed versions of all direct dependencies (such as when updates are skipped for a dependency without a minimum allowed version).
 
-- If a README or license file is declared in `pyproject.toml`, they must be present so that `pyproject.toml` can be loaded by [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
+  - Run `uv lock --dry-run` to test that the requirements can produce a self-consistent environment.
+
+  - Run `uv lock --resolution=lowest-direct --dry-run` to test that the minimum allowed versions of direct dependencies can produce a self-consistent environment.
+
+- This tool does not update `build-system.requires`, as these updates cannot be performed with `uv add` as of `uv==0.12.5`.
+
+- This tool does not check whether minimum allowed versions of dependencies have been yanked.
+
+- If README and/or license files are declared in `pyproject.toml`, they must be present so that `pyproject.toml` can be loaded by [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
 
 - This tool does not upgrade the minimum required version of Python.
 
 ## Feature requests and bug reports
 
-Because `bump-minimum-dependencies` is new, there may be some bugs related to edge cases.
-We encourage you to report them with a minimum reproducible example (i.e., your `pyproject.toml` with the `bump-minimum-dependencies` command).
+To make a feature request, please [raise an issue].
 
-Please also submit feature requests that would make `bump-minimum-dependencies` more helpful to your projects.
+If you discover a bug, please [raise an issue] with a minimal reproducible example (i.e., the `pyproject.toml` file and the `bump-minimum-dependencies` command that was used).
 
 ## Related projects
 
@@ -149,6 +170,5 @@ Please also submit feature requests that would make `bump-minimum-dependencies` 
   uvx --python=3.14 --with=setuptools nep29 --n_minor=1 --n_months=12 scipy
   ```
 
-- [tox-dev/pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) — an opinionated formatter for `pyproject.toml` files
-
+[raise an issue]: https://github.com/namurphy/bump-minimum-dependencies/issues/new
 [spec 0]: https://scientific-python.org/specs/spec-0000
