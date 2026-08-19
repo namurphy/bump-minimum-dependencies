@@ -98,10 +98,8 @@ bump-minimum-dependencies --extra dev
 
 - Please review all updates to dependencies before accepting them, including to make sure that comments are satisfactorily preserved.
 
-- Requirements may be normalized.
-
+- Requirements may be normalized upon updates.
   - `.0` suffixes may be removed, since `X.Y` and `X.Y.0` "are not considered distinct release numbers" as per [PEP 440](https://peps.python.org/pep-0440).
-
   - Package names, which are case-insensitive, may be made lower case.
 
 - The tool uses uv to update `pyproject.toml`, but does not automatically update lockfiles or sync virtual environments. Commands like `uv lock` and `uv sync` would need to be run separately afterward.
@@ -126,5 +124,7 @@ Please also submit feature requests that would make `bump-minimum-dependencies` 
 - [cgordberg/bump-dependencies](https://github.com/cgoldberg/bump-dependencies) — updates dependency specifiers in `pyproject.toml` to latest compatible versions.
 
 - [hmaarrfk/nep29](https://github.com/hmaarrfk/nep29) — calculator tools for [NEP 29](https://github.com/hmaarrfk/nep29) (a precursor to SPEC 0).
+
+- [tox-dev/pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) — an opinionated formatter for `pyproject.toml` files
 
 [spec 0]: https://scientific-python.org/specs/spec-0000
