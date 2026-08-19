@@ -19,7 +19,7 @@ classifiers = [
 requires-python = '>=3.10'
 dependencies = [
     "typing-extensions>=4.15.0",
-    "annotated-types>=0.6.0",
+    "annotated-types>=0.8",
     # Keep this in sync with the version in the `check_pydantic_core_version()` function:
     "pydantic-core==2.48.0",
     "typing-inspection>=0.4.4",
@@ -27,78 +27,80 @@ dependencies = [
 dynamic = ['version', 'readme']
 
 [project.optional-dependencies]
-email = ['email-validator>=2.0.0']
+email = [
+    "email-validator>=2.3",
+]
 timezone = [
     'tzdata; platform_system == "Windows"',
 ]
 [dependency-groups]
 dev = [
-    'coverage[toml]',
+    "coverage[toml]>=7.11",
     'pytz',
-    'dirty-equals',
-    'pytest',
-    'pytest-mock',
-    'pytest-pretty',
-    'pytest-examples',
-    'faker',
-    'pytest-benchmark',
-    'pytest-codspeed',
-    'pytest-run-parallel>=0.3.1',
-    'packaging',
-    'jsonschema',
+    "dirty-equals>=0.10",
+    "pytest>=9",
+    "pytest-mock>=3.15",
+    "pytest-pretty>=1.3",
+    "pytest-examples>=0.0.1",
+    "faker>=37.6",
+    "pytest-benchmark>=5.2",
+    "pytest-codspeed>=4.1",
+    "pytest-run-parallel>=0.7",
+    "packaging>=26",
+    "jsonschema>=4.26",
     'time-machine; platform_python_implementation != "PyPy"',
 ]
 coverage = [
-    'coverage[toml]',
+    "coverage[toml]>=7.11",
 ]
 docs = [
-    'autoflake',
-    'mkdocs',
-    'mkdocs-exclude',
-    'mkdocs-llmstxt',
-    'mkdocs-material[imaging]',
-    'mkdocs-redirects',
-    'mkdocstrings-python',
-    'tomli',
-    'pyupgrade',
-    'mike',
-    'pydantic-settings',
-    'requests',
-    'build>=1.3.0',
-    'pydantic-extra-types>=2.10.6',
+    "autoflake>=2.3",
+    "mkdocs>=1.6",
+    "mkdocs-exclude>=1",
+    "mkdocs-llmstxt>=0.4",
+    "mkdocs-material[imaging]>=9.7",
+    "mkdocs-redirects>=1.2.1",
+    "mkdocstrings-python>=1.18",
+    "tomli>=2.3",
+    "pyupgrade>=3.21",
+    "mike>=2.2",
+    "pydantic-settings>=2.11",
+    "requests>=2.33",
+    "build>=1.4",
+    "pydantic-extra-types>=2.11",
     'pydantic-docs',
 ]
 docs-upload = [
-    'algoliasearch>=4.12.0',
-    'beautifulsoup4>=4.13.3',
+    "algoliasearch>=4.25",
+    "beautifulsoup4>=4.14",
 ]
 linting = [
-    'ruff',
-    'pyright',
+    "ruff>=0.13",
+    "pyright>=1.1.224",
 ]
 testing-extra = [
-    'cloudpickle',
-    'ansi2html',
-    'devtools',
-    'sqlalchemy',
+    "cloudpickle>=3.1",
+    "ansi2html>=1.9.1",
+    "devtools>=0.12",
+    "sqlalchemy>=2",
     'pytest-memray; platform_python_implementation == "CPython" and platform_system != "Windows" and python_version < "3.15"',
     'memray; platform_python_implementation == "CPython" and platform_system != "Windows" and python_version < "3.15"',
 ]
 typechecking = [
-    'mypy',
-    'pyright',
-    'pyrefly',
-    'pydantic-settings',
+    "mypy>=1.18.1",
+    "pyright>=1.1.224",
+    "pyrefly>=0.29",
+    "pydantic-settings>=2.11",
 ]
 build = [
-    'build',
-    'twine',
+    "build>=1.4",
+    "twine>=6.2",
 ]
 pyodide-build = [
-    "pyodide-build",
+    "pyodide-build>=0.31",
 ]
 tweet = [
-    "tweepy",
+    "tweepy>=4.17",
 ]
 all = [
   { include-group = 'dev' },
