@@ -2,7 +2,7 @@
 name = "trailing-dot-zero"
 version = "0.1.0"
 description = "Add your description here"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
   "scipy>=1.18.0",
   "numpy>=2.4.0,<2.6.0",
