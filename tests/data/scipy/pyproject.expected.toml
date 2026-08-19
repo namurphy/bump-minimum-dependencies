@@ -40,7 +40,7 @@ maintainers = [
 #     https://scipy.github.io/devdocs/dev/core-dev/index.html#version-ranges-for-numpy-and-other-dependencies
 requires-python = ">=3.12"  # keep in sync with `min_python_version` in meson.build
 dependencies = [
-    "numpy>=2.0.0",
+    "numpy>=2.4",
 ] # keep in sync with `min_numpy_version` in meson.build
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -76,63 +76,63 @@ user-discussion = "https://discuss.scientific-python.org/c/user/scipy/"
 # NOTE: when updating this table, also update `dependency-groups.optional-runtime-deps`
 [project.optional-dependencies]
 all = [
-    "pooch",  # datasets
-    "threadpoolctl",  # io.mm{...}
-    "matplotlib",  # cluster.hierarchy.dendrogram, stats.probplot
+    "pooch>=1.9",  # datasets
+    "threadpoolctl>=3.6",  # io.mm{...}
+    "matplotlib>=3.10",  # cluster.hierarchy.dendrogram, stats.probplot
     # circular dependency issues, https://github.com/scipy/scipy/issues/19783
     # "scikit-umfpack",  # optimize, sparse.linalg
 ]
 
 [dependency-groups]
 optional-runtime-deps = [
-    "pooch",  # datasets
-    "threadpoolctl",  # io.mm{...}
-    "matplotlib",  # cluster.hierarchy.dendrogram, stats.probplot
+    "pooch>=1.9",  # datasets
+    "threadpoolctl>=3.6",  # io.mm{...}
+    "matplotlib>=3.10",  # cluster.hierarchy.dendrogram, stats.probplot
     # circular dependency issues, https://github.com/scipy/scipy/issues/19783
     # "scikit-umfpack",  # optimize, sparse.linalg
 ]
 
 build = [
-    "meson-python>=0.15.0",
+    "meson-python>=0.19",
     "Cython>=3.2.0",
-    "pybind11>=2.13.2",
+    "pybind11>=3",
     "pythran>=0.18.1",
-    "numpy>=2.0.0",
-    "ninja>=1.8.2",
+    "numpy>=2.4",
+    "ninja>=1.13",
 ]
 
 test-core = [
-    "pytest>=8.0.0",
-    "hypothesis>=6.30",
-    "pooch",
-    "pytest-xdist",  # not required, but used widely, belongs in -core
-    "pytest-timeout",  # not required, but used widely, belongs in -core
+    "pytest>=9",
+    "hypothesis>=6.139",
+    "pooch>=1.9",
+    "pytest-xdist>=3.8",  # not required, but used widely, belongs in -core
+    "pytest-timeout>=2.4",  # not required, but used widely, belongs in -core
 ]
 test-mp = [
-    "mpmath",
+    "mpmath>=1.3",
     # for PyPI: 'gmpy2; sys_platform != "win32" or platform_machine != "ARM64"'
-    "gmpy2",
+    "gmpy2>=2.3",
 ]
 test-extending-cython = [  # {special, linalg, optimize}.tests.test_extending
-    "Cython",
-    "meson",
+    "cython>=3.2",
+    "meson>=1.9",
     'ninja; sys_platform != "emscripten"',
 ]
 test-parallel = [
     { include-group = "test-core" },
-    "pytest-run-parallel",
+    "pytest-run-parallel>=0.7",
 ]
 test-docs = [
     { include-group = "test-core" },
-    "scipy-doctest>=2.0.0",
-    "matplotlib",
+    "scipy-doctest>=2.1",
+    "matplotlib>=3.10",
 ]
 test-array-types = [
     { include-group = "test-core" },
-    "array-api-strict>=2.3.1",
-    "marray",
+    "array-api-strict>=2.4",
+    "marray>=0.0.1",
     # for PyPI: 'sparse; sys_platform != "win32" or platform_machine != "ARM64"'
-    "sparse",
+    "sparse>=0.17",
 ]
 test = [
     { include-group = "optional-runtime-deps" },
@@ -143,74 +143,74 @@ test = [
     { include-group = "test-docs" },
     { include-group = "test-array-types" },
     # useful but doesn't have its own group (rarely used, and has compiled wheels so can be hard to install)
-    "psutil",
+    "psutil>=7.1",
 ]
 test-fail-slow = [
     { include-group = "test-core" },
-    "pytest-fail-slow",  # only one CI job; isolated so it doesn't cause failures for contributors randomly
+    "pytest-fail-slow>=0.6",  # only one CI job; isolated so it doesn't cause failures for contributors randomly
 ]
 coverage = [
     { include-group = "test" },  # includes all optional test and runtime deps for maximum coverage
-    "pytest-cov",
+    "pytest-cov>=6.3",
 ]
 
 bench = [
     # 0.6.6 regressed per-benchmark overhead ~7x, which pushes the CircleCI
     # benchmark job past its time limit; revisit when that is fixed upstream
     "asv==0.6.5",
-    "pyfftw",
-    "cffi",
+    "pyfftw>=0.15",
+    "cffi>=2",
 ]
 
 doc = [
     "sphinx>=8.2.0,<8.3.0",
-    "intersphinx_registry",
-    "pydata-sphinx-theme>=0.15.2",
-    "sphinx-copybutton",
-    "sphinx-design>=0.4.0",
-    "matplotlib>=3.5",
-    "numpydoc",
-    "jupytext",
-    "myst-nb>=1.2.0",
-    "pooch",
-    "jupyterlite-sphinx>=0.19.1",
-    "jupyterlite-pyodide-kernel",
-    "linkify-it-py",
-    "tabulate",
+    "intersphinx-registry>=0.2510.5",
+    "pydata-sphinx-theme>=0.16",
+    "sphinx-copybutton>=0.5",
+    "sphinx-design>=0.7",
+    "matplotlib>=3.10",
+    "numpydoc>=1.10",
+    "jupytext>=1.18",
+    "myst-nb>=1.3",
+    "pooch>=1.9",
+    "jupyterlite-sphinx>=0.21",
+    "jupyterlite-pyodide-kernel>=0.7",
+    "linkify-it-py>=2",
+    "tabulate>=0.9",
 ]
 
 dev-cli = [
-    "spin",
+    "spin>=0.15",
 ]
 
 typecheck = [
     # type checkers
     "pyrefly==1.1.1",
     # typing deps
-    "typing_extensions",
+    "typing-extensions>=4.15",
     # stub deps
     "types-cffi",
     "types-psutil",
-    "types-pyyaml",
+    "types-pyyaml>=6",
     # import deps
-    "array_api_strict",
-    "cython",
-    "dask",
-    "matplotlib",
-    "pybind11",
+    "array-api-strict>=2.4",
+    "cython>=3.2",
+    "dask>=2025.9",
+    "matplotlib>=3.10",
+    "pybind11>=3",
     # circular dependency issues, https://github.com/scipy/scipy/issues/19783
     # "scikit-umfpack",
-    "sphinx",
-    "sympy",
-    "uarray",
+    "sphinx>=9",
+    "sympy>=1.14",
+    "uarray>=0.9.1",
 ]
 
 lint = [
-    "ruff>=0.12.0",
-    "cython-lint>=0.12.2",
-    "packaging",
-    "tach",
-    "zizmor",
+    "ruff>=0.13",
+    "cython-lint>=0.17",
+    "packaging>=26",
+    "tach>=0.32",
+    "zizmor>=1.13",
 ]
 
 dev = [
@@ -221,7 +221,7 @@ dev = [
     { include-group = "dev-cli" },
     { include-group = "typecheck" },
     { include-group = "lint" },
-    "scipy-stubs",
+    "scipy-stubs>=1.17",
 ]
 
 [tool.spin]
