@@ -9,7 +9,7 @@ bump-all-optionals = "bump_all_optionals:main"
 
 [project.optional-dependencies]
 typing = [
-    "ty",
+    "mypy>0.1",
 ]
 doc = [
     "sphinx>=1,<9",

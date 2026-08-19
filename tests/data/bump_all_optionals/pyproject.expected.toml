@@ -9,13 +9,13 @@ bump-all-optionals = "bump_all_optionals:main"
 
 [project.optional-dependencies]
 typing = [
-    "ty",
+    "mypy>=1.9",
 ]
 doc = [
-    "sphinx~=8.1",
+    "sphinx>=7.3,<9",
 ]
 test = [
-    "pytest>=8.4,!=9.1.1",
+    "pytest>=8,!=9.1.1",
 ]
 
 [build-system]
