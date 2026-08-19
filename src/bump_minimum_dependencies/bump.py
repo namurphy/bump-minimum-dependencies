@@ -12,6 +12,8 @@ import packaging.specifiers
 import packaging.version
 import packaging.requirements
 
+from packaging.requirements import Requirement
+
 from pyproject_parser import PyProject
 
 import logging
@@ -27,6 +29,13 @@ DAYS_PER_MONTH = 30.436875
 logger = logging.getLogger("bump")
 logger.propagate = True
 logger.setLevel(logging.DEBUG)
+
+
+def normalize_requirement_string(v: str) -> str:
+    v = str(v).strip().lower().replace(".0,", ",")
+    while v.endswith(".0"):
+        v = v.removesuffix(".0")
+    return v
 
 
 def make_string_and_remove_dot_zero_suffixes(
@@ -234,18 +243,30 @@ def combine_requirements(
         logger.warning("Cannot update versions with != in supported range; skipping.")
         return None
 
-    new_specifier = new_specifier.replace(".0,", ",")
-    while new_specifier.endswith(".0"):
-        new_specifier = new_specifier.removesuffix(".0")
+    new_specifier = normalize_requirement_string(new_specifier)
 
     return new_specifier
 
 
+def requirement_already_included(new_requirement: str, old_requirements):
+    old_requirements_set: set[Requirement] = set()
+
+    for requirement in old_requirements:
+        old_requirements_set.add(Requirement(normalize_requirement_string(requirement)))
+
+    new_requirement: Requirement = Requirement(
+        normalize_requirement_string(new_requirement)
+    )
+
+    return new_requirement in old_requirements_set
+
+
 def get_new_requirement_for_package(
-    requirement: packaging.requirements.Requirement,
+    requirement: Requirement,
     drop_months: float | int,
     cooldown_months: float | int,
 ) -> str | None:
+    """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(requirement.name)
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
@@ -352,7 +373,7 @@ class BumpMinimumDependencies:
         return self.pyproject.project.get("name", None)  # ty: ignore[unresolved-attribute]
 
     @property
-    def core_requirements_to_update(self) -> list[packaging.requirements.Requirement]:
+    def core_requirements_to_update(self) -> list[Requirement]:
         """Core project dependencies to be updated if necessary."""
         if self.skip_core_requirements:
             return []
@@ -363,7 +384,7 @@ class BumpMinimumDependencies:
             errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
             raise RuntimeError(errmsg) from exc
 
-        core_requirements_to_update: list[packaging.requirements.Requirement] = []
+        core_requirements_to_update: list[Requirement] = []
         for requirement in all_requirements:
             if requirement.name in self.packages_to_skip:
                 continue
@@ -404,16 +425,14 @@ class BumpMinimumDependencies:
 
     def get_new_requirements(
         self,
-        requirements: list[packaging.requirements.Requirement],
+        requirements: list[Requirement],
     ) -> list[str]:
-        requirements_to_update: list[packaging.requirements.Requirement] = []
+        requirements_to_update: list[Requirement] = []
         for requirement in requirements:
             if isinstance(requirement, str):
-                requirement: str = requirement.lower()
-                while requirement.endswith(".0"):
-                    requirement = requirement.removesuffix(".0")
-                requirement = packaging.requirements.Requirement(requirement)  # ty:ignore[invalid-assignment]
-            if not isinstance(requirement, packaging.requirements.Requirement):
+                requirement = normalize_requirement_string(requirement)
+                requirement = Requirement(requirement)
+            if not isinstance(requirement, Requirement):
                 continue
             if requirement.name.lower() in self.packages_to_skip:
                 continue
@@ -448,14 +467,10 @@ class BumpMinimumDependencies:
                 if not new_requirement:
                     continue
 
-                as_requirement = packaging.requirements.Requirement(new_requirement)
-
-                if as_requirement in requirements_to_update:
-                    msg = (
-                        f"Excluding {new_requirement = } since it is in "
-                        f"{requirements_to_update = !r}"
-                    )
-                    logger.debug(msg)
+                if requirement_already_included(
+                    new_requirement=new_requirement,
+                    old_requirements=requirements_to_update,
+                ):
                     continue
 
                 new_requirements.append(f"{new_requirement}")
@@ -514,9 +529,8 @@ class BumpMinimumDependencies:
             return
 
         for dependency_group in self.dependency_groups_to_update:
-            requirements = self.pyproject.dependency_groups[dependency_group]  # ty: ignore[not-subscriptable]
-            new_requirements = self.get_new_requirements(requirements)
-
+            requirements = self.pyproject.dependency_groups[dependency_group]  # ty:ignore[not-subscriptable]
+            new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
             self.run_uv_command(new_requirements, dependency_group=dependency_group)
 
     def bump_optional_dependencies(self):
@@ -524,54 +538,15 @@ class BumpMinimumDependencies:
         if not self.update_all_optionals and not self.optional_categories_to_update:
             return
 
-        optionals = self.pyproject.project.get("optional-dependencies")
+        optionals = self.pyproject.project.get("optional-dependencies")  # ty:ignore[unresolved-attribute]
         if not optionals:
             logger.info("No optional dependencies found.")
             return
 
         for category in self.optional_categories_to_update:
             requirements = optionals[category]
-            new_requirements = self.get_new_requirements(requirements)
+            new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
             self.run_uv_command(new_requirements, extras_category=category)
-
-    #        optionals = self.pyproject.project["optional-dependencies"]
-
-    # for category in self.optional_categories_to_update:
-    #     new_requirements: list[str] = []
-    #
-    #     optionals = self.pyproject.project["optional-dependencies"]  # ty: ignore[not-subscriptable]
-    #     for requirement in optionals[category]:
-    #         if (
-    #             requirement in self.packages_to_skip
-    #             or requirement.name == self.project_name
-    #         ):
-    #             continue
-    #         if isinstance(requirement, str):
-    #             requirement = packaging.requirements.Requirement(requirement)
-    #         if not isinstance(requirement, packaging.requirements.Requirement):
-    #             continue
-    #         try:
-    #             new = get_new_requirement_for_package(
-    #                 requirement,
-    #                 drop_months=self.drop_months,
-    #                 cooldown_months=self.cooldown_months,
-    #             )
-    #             new_requirements.append(f"{requirement.name}{new}")
-    #         except Exception:
-    #             msg = (
-    #                 f"Unable to update package {requirement.name!r} in "
-    #                 f"the {category!r} optional dependencies category. Skipping."
-    #             )
-    #             logger.debug(msg)
-    #
-    #     if new_requirements:
-    #         command: list[str] = [
-    #             *self.uv_base_command,
-    #             f"--optional={category}",
-    #             *new_requirements,
-    #         ]
-    #         logger.info(f"Running: {' '.join(command)}")
-    #         subprocess.run(command)
 
     def run(self):
         """Perform all the requested and necessary updates."""
