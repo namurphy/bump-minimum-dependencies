@@ -100,13 +100,13 @@ class BumpPackage:
             try:
                 version = packaging.version.Version(ver)
             except packaging.version.InvalidVersion as e:
-                logging.debug(
+                logger.debug(
                     f"'{ver}' is an invalid version for '{self.name}'. Reason: {e}"
                 )
                 continue
 
             if version.is_prerelease:
-                logging.debug(
+                logger.debug(
                     f"Excluding {ver} for {self.name} since it is a prerelease"
                 )
                 continue
@@ -118,7 +118,7 @@ class BumpPackage:
                         file["upload-time"], format_
                     )
                 except ValueError as e:
-                    logging.debug(f"Invalid date: {e}")
+                    logger.debug(f"Invalid date: {e}")
 
             if not release_date:
                 continue
