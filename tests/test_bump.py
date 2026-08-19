@@ -3,8 +3,10 @@ import shutil
 
 from bump_minimum_dependencies import bump
 import pytest
-
+import logging
 from pathlib import Path
+
+bump.logger.setLevel(logging.INFO)
 
 
 def get_errmsg_from_file_comparison(
@@ -96,8 +98,8 @@ def get_errmsg_from_file_comparison(
                 "astropy3",
                 "2026-08-18",
                 {
-                    "drop_months": 24000,
-                    "cooldown_months": 12000,
+                    "drop_months": 180,
+                    "cooldown_months": 120,
                     "all_groups": True,
                     "all_extras": True,
                 },
