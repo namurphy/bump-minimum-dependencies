@@ -28,7 +28,7 @@ DAYS_PER_MONTH = 30.436875
 
 logger = logging.getLogger("bump")
 logger.propagate = True
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 
 def normalize_requirement_string(v: str) -> str:
