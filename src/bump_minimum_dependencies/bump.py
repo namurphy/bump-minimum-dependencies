@@ -1,4 +1,13 @@
-__all__ = ["BumpPackage"]
+__all__ = [
+    "BumpMinimumDependencies",
+    "BumpPackage",
+    "combine_requirements",
+    "get_new_requirement_for_package",
+    "logger",
+    "make_string_and_remove_dot_zero_suffixes",
+    "normalize_requirement_string",
+    "requirement_already_included",
+]
 
 import pathlib
 import requests
