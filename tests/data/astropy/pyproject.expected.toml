@@ -43,8 +43,8 @@ keywords = [
 ]
 dependencies = [
     "astropy-iers-data>=0.2026.7.27.0.56.29",
-    "numpy>=2.1",
-    "packaging>=25.0",
+    "numpy>=2.4",
+    "packaging>=26",
     "pyerfa>=2.0.1.3",  # for >=2.0.1.7, adjust structured_units.rst and doctest-requires
     "PyYAML>=6.0.0",  # keep '.0.0' suffix and capital letters in package name
 ]
@@ -52,26 +52,26 @@ dependencies = [
 [project.optional-dependencies]
 # Recommended run-time dependencies to enable a lot of functionality within Astropy.
 recommended = [
-    "scipy>=1.15",
+    "scipy>=1.17",
     "matplotlib>=3.10",
-    "narwhals>=1.42.0",  # keep in sync with dependency-groups.dataframe
+    "narwhals>=2.2",  # keep in sync with dependency-groups.dataframe
 ]
 # Optional IPython-related behavior is in many places in Astropy. IPython is a complex
 # dependency that occasionally requires pinning one of it's upstream dependencies. If
 # you are using Astropy from an IPython-dependent IDE, like Jupyter, this should enforce
 # the minimum supported version of IPython.
 ipython = [
-    "ipython>=8.27",
+    "ipython>=8.38",
 ]
 jupyter = [  # these are optional dependencies for utils.console and table
     "astropy[ipython]",
     "ipywidgets>=8.1",
-    "ipykernel>=6.30",
+    "ipykernel>=6.31",
     "ipydatagrid>=1.4",
     # jupyter-core is a transitive dependency via ipykernel, we declare it as
     # a direct dependency in order to set a lower bound for oldest-deps testing
-    "jupyter-core>=5.8",
-    "pandas>=2.3",
+    "jupyter-core>=5.9",
+    "pandas>=3",
 ]
 # This is ALL the run-time optional dependencies.
 all = [
@@ -80,36 +80,36 @@ all = [
     "astropy[ipython]",
     "astropy[jupyter]",
     # Install all remaining optional dependencies
-    "certifi>=2024.8.30",
-    "dask[dataframe]>=2024.9", # keep in sync with dependency-groups.dataframe
-    "h5py>=3.12",
-    "pyarrow>=18",
-    "beautifulsoup4>=4.13", # imposed by pandas==2.2.2
+    "certifi>=2025.10.5",
+    "dask[dataframe]>=2025.9", # keep in sync with dependency-groups.dataframe
+    "h5py>=3.15",
+    "pyarrow>=22",
+    "beautifulsoup4>=4.14", # imposed by pandas==2.2.2
     "html5lib>=1.1",
-    "bleach>=6.2",
+    "bleach>=6.3",
     "sortedcontainers>=2.4", # imposed by testing with hypothesis
     "pytz>=2016.10", # (older versions may work)
-    "jplephem>=2.23",
+    "jplephem>=2.24",
     "mpmath>=1.3",
-    "asdf-astropy>=0.7.0",
-    "bottleneck>=1.5",
-    "fsspec[http,s3]>=2024.9",  # keep in sync with dependency-groups.dataframe
-    "s3fs>=2024.9",
+    "asdf-astropy>=0.9",
+    "bottleneck>=1.6",
+    "fsspec[http,s3]>=2025.9",  # keep in sync with dependency-groups.dataframe
+    "s3fs>=2025.9",
     "uncompresspy>=0.4.0",
 ]
 # The base set of test-time dependencies.
 test = [
-    "setuptools>=77.0.0",  # can be removed once the astropy.wcs C API tests are removed
-    "coverage>=7.7",
-    "hypothesis>=6.112",
-    "pytest>=8.4",
+    "setuptools>=80.10.1",  # can be removed once the astropy.wcs C API tests are removed
+    "coverage>=7.11",
+    "hypothesis>=6.139",
+    "pytest>=9",
     "pytest-astropy-header>=0.2.2",
-    "pytest-cov>=6",
-    "pytest-doctestplus>=1.4.0",
+    "pytest-cov>=6.3",
+    "pytest-doctestplus>=1.5",
     "pytest-filter-subpackage>=0.2.0",
     "pytest-remotedata>=0.4.1",
     "pytest-skip-slow==1.1.0",  # keep '.0' suffix
-    "pytest-xdist>=3.7",
+    "pytest-xdist>=3.8",
     "threadpoolctl>=3.6",
 ]
 test_all = [
@@ -118,8 +118,8 @@ test_all = [
     "astropy[test]",
     # Install all remaining dependencies
     "objgraph>=3.6",
-    "skyfield>=1.50",
-    "sgp4>=2.24",
+    "skyfield>=1.54",
+    "sgp4>=2.25",
     "array-api-strict>=1.0",  # skip because of marker on next line
     "array-api-strict<2.4;python_version<'3.12'",  # PYTHON_LT_3_12
     # 0.2.2 works on *some* platforms we support, though not all
@@ -132,21 +132,21 @@ test_all = [
 ]
 typing = [
     "pandas-stubs>=2.0.2",
-    "scipy-stubs>=1.14.1.6",
-    "narwhals>=1.42.0" # keep in sync with dependency-groups.dataframe
+    "scipy-stubs>=1.17",
+    "narwhals>=2.2", # keep in sync with dependency-groups.dataframe
 ]
 docs = [
     "astropy[recommended]",  # installs the [recommended] dependencies
     "sphinx>=8.2.0,<9",  # keep in sync with docs/conf.py
     "sphinx-astropy[confv3]>=1.11",
-    "pytest>=8.4",
+    "pytest>=9",
     "sphinx-changelog>=1.6",
-    "sphinx_design>=0.6.1",
+    "sphinx-design>=0.7",
     "Jinja2>=3.1.3",
-    "sphinxcontrib-globalsubs>=0.1.1",
+    "sphinxcontrib-globalsubs>=1",
     "matplotlib>=3.10",  # https://github.com/matplotlib/matplotlib/issues/28234
-    "dask[dataframe]>=2024.9", # keep in sync with dependency-groups.dataframe
-    "fsspec[http,s3]>=2024.9",  # keep in sync with dependency-groups.dataframe
+    "dask[dataframe]>=2025.9", # keep in sync with dependency-groups.dataframe
+    "fsspec[http,s3]>=2025.9",  # keep in sync with dependency-groups.dataframe
 ]
 
 [project.urls]
@@ -182,12 +182,12 @@ dataframe = [
     # keep in sync with project.optional-dependencies.recommended
     # and project.optional-dependencies.all
     # and project.optional-dependencies.typing
-    "narwhals>=1.42.0",
-    "pyarrow>=18",
-    "pandas>=2.3",
-    "polars>=1.18.0",
-    "duckdb>=1.1.0",
-    "dask[dataframe]>=2024.9", # keep in sync with other declarations
+    "narwhals>=2.2",
+    "pyarrow>=22",
+    "pandas>=3",
+    "polars>=1.33",
+    "duckdb>=1.4",
+    "dask[dataframe]>=2025.9", # keep in sync with other declarations
 ]
 # re-define historical optional dependencies (a.k.a. 'extras') as
 # user-invisible, PEP 735 dependency groups
