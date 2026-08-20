@@ -350,6 +350,14 @@ class BumpMinimumDependencies:
         skip_package: tuple[str, ...] | list[str] = (),
         only_package: tuple[str, ...] | list[str] = (),
     ):
+        if cooldown_months > drop_months:
+            # issue a warning when cooldown_months ≠ the default value
+            if cooldown_months != 12:
+                msg = f"Reducing cooldown_months to {drop_months} to equal drop_months."
+                logger.warning(msg)
+
+            cooldown_months = drop_months
+
         self.pyproject_file: str | pathlib.Path = pyproject_file
         self.update_all_optionals: bool = all_extras
         self.update_all_dependency_groups: bool = all_groups
