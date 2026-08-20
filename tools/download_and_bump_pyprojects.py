@@ -1,26 +1,51 @@
 # /// script
 # requires-python = ">=3.14"
-# dependencies = ["requests", "tomli_w"]
+# dependencies = ["requests", "tomli_w", "rich", "urllib3"]
 # ///
 
-
+import difflib
 from pathlib import Path
-import requests
-
 import subprocess
-
-
 import shutil
-
-import warnings
-
-
+import subprocess
+import time
 import tomllib
+import warnings
+from pathlib import Path
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 import tomli_w
+from rich.console import Console
+from rich.panel import Panel
+from rich.syntax import Syntax
+
+console = Console()
+
+
+def get_retry_session(
+    retries: int = 3, backoff_factor: float = 1.0
+) -> requests.Session:
+    """Create a requests Session configured with exponential backoff retries."""
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 
 def download_pyproject(
     repo_slug: str,
+    session: requests.Session | None = None,
 ) -> list[Path]:
     """Download the `pyproject.toml` file from a GitHub repository.
 
@@ -28,6 +53,8 @@ def download_pyproject(
     ----------
     repo_slug : str
         The GitHub repository target formatted as "OWNER/REPO".
+    session : requests.Session, optional
+        A session with pre-configured retry behavior.
 
     Returns
     -------
@@ -35,13 +62,22 @@ def download_pyproject(
         Paths to the downloaded local files, or an empty list if not found.
     """
     file_name = "pyproject.toml"
-    api_url = f"https://api.github.com/repos/{repo_slug}/contents/{file_name}"
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "Python-GH-File-Fetcher",
-    }
+    # Direct raw endpoint bypasses API overhead and rate limits
+    raw_url = f"https://raw.githubusercontent.com/{repo_slug}/HEAD/{file_name}"
+    headers = {"User-Agent": "Python-GH-File-Fetcher"}
 
-    response = requests.get(api_url, headers=headers, timeout=10)
+    http = session or get_retry_session()
+
+    try:
+        # Tuple timeout: (connect_timeout, read_timeout)
+        response = http.get(raw_url, headers=headers, timeout=(5, 30))
+    except requests.RequestException as exc:
+        warnings.warn(
+            f"Network error downloading '{file_name}' from '{repo_slug}': {exc}",
+            UserWarning,
+            stacklevel=2,
+        )
+        return []
 
     if response.status_code == 404:
         warnings.warn(
@@ -51,32 +87,20 @@ def download_pyproject(
         )
         return []
 
-    response.raise_for_status()
-    item = response.json()
-
-    download_url = item.get("download_url")
-    if not download_url:
+    if not response.ok:
         warnings.warn(
-            f"Could not retrieve download URL for '{file_name}' in '{repo_slug}'.",
+            f"HTTP {response.status_code} downloading '{file_name}' from '{repo_slug}'. Skipping.",
             UserWarning,
             stacklevel=2,
         )
         return []
 
-    # Create the subdirectory only after confirming the file exists
-    output_dir = repo_slug.split("/")[1]
-    output_path = Path(output_dir)
+    repo_name = repo_slug.split("/")[1]
+    output_path = Path("pyprojects") / repo_name
     output_path.mkdir(parents=True, exist_ok=True)
 
-    file_resp = requests.get(
-        download_url,
-        headers={"User-Agent": "Python-GH-File-Fetcher"},
-        timeout=10,
-    )
-    file_resp.raise_for_status()
-
     dest_file = output_path / file_name
-    dest_file.write_bytes(file_resp.content)
+    dest_file.write_bytes(response.content)
 
     return [dest_file]
 
@@ -84,7 +108,8 @@ def download_pyproject(
 def clean_pyproject_files(root_dir: str | Path = ".") -> list[Path]:
     """
     Recursively find pyproject.toml files in subdirectories and remove
-    `project.license-files` and `project.readme` fields.
+    `project.license-files`, `project.readme`, `project.license.file`,
+    and `project.authors` fields.
 
     Parameters
     ----------
@@ -99,7 +124,6 @@ def clean_pyproject_files(root_dir: str | Path = ".") -> list[Path]:
     root_path = Path(root_dir).resolve()
     modified_files: list[Path] = []
 
-    # Search for pyproject.toml files in subdirectories (excluding root itself if desired)
     for file_path in root_path.rglob("pyproject.toml"):
         if file_path.parent == root_path:
             continue
@@ -111,18 +135,27 @@ def clean_pyproject_files(root_dir: str | Path = ".") -> list[Path]:
         if not isinstance(project_table, dict):
             continue
 
-        # Check if target keys exist
-        has_license_files = "license-files" in project_table
-        has_readme = "readme" in project_table
+        modified = False
 
-        if not (has_license_files or has_readme):
+        # Remove top-level project keys
+        for key in ("license-files", "readme", "authors"):
+            if key in project_table:
+                project_table.pop(key)
+                modified = True
+
+        # Remove project.license.file if project.license is a dict/table
+        license_table = project_table.get("license")
+        if isinstance(license_table, dict) and "file" in license_table:
+            license_table.pop("file")
+            modified = True
+
+            # Clean up project.license table if it is now empty
+            if not license_table:
+                project_table.pop("license")
+
+        if not modified:
             continue
 
-        # Remove keys
-        project_table.pop("license-files", None)
-        project_table.pop("readme", None)
-
-        # Write modified content back
         with file_path.open("wb") as f:
             tomli_w.dump(data, f)
 
@@ -167,64 +200,105 @@ def copy_pyproject_files(
     return created_files
 
 
-def bump_all_subdirectories() -> None:
-    """Run `uvx bump-minimum-dependencies` in every immediate subdirectory."""
-    current_dir = Path.cwd()
 
-    for path in current_dir.iterdir():
-        if path.is_dir():
-            print(f"Processing: {path.name}")
-            try:
-                subprocess.run(
-                    [
-                        # "uvx",
-                        "bump-minimum-dependencies",
-                        # "--all-groups",
-                        # "--all-extras",
-                    ],
-                    cwd=path,
-                    check=True,
-                    text=True,
-                )
-            except subprocess.CalledProcessError as e:
-                print(f"Failed in {path.name}: {e}")
+def bump_all_subdirectories() -> None:
+    """Run `bump-minimum-dependencies` in every immediate subdirectory of pyprojects
+
+    and display a diff comparing pyproject.original.toml to pyproject.toml.
+    """
+
+    subprocess.run(["bump-minimum-dependencies", "--version"])
+
+    pyprojects_dir = Path.cwd() / "pyprojects"
+    if not pyprojects_dir.is_dir():
+        return
+
+    for path in pyprojects_dir.iterdir():
+        if not path.is_dir():
+            continue
+
+        console.rule(f"[bold cyan]{path.name}[/bold cyan]")
+
+        try:
+            subprocess.run(
+                [
+                    "bump-minimum-dependencies",
+                    "--all-groups",
+                    "--all-extras",
+                    "--drop-months=2",
+                    "--cooldown-months=1",
+                ],
+                cwd=path,
+                check=True,
+                text=True,
+            )
+        except subprocess.CalledProcessError as e:
+            console.print(f"[bold red]Failed in {path.name}:[/bold red] {e}")
+            continue
+
+        original_file = path / "pyproject.original.toml"
+        current_file = path / "pyproject.toml"
+
+        if not original_file.exists() or not current_file.exists():
+            console.print("[yellow]Skipping diff: target files missing.[/yellow]")
+            continue
+
+        original_lines = original_file.read_text().splitlines(keepends=True)
+        current_lines = current_file.read_text().splitlines(keepends=True)
+
+        diff_lines = list(
+            difflib.unified_diff(
+                original_lines,
+                current_lines,
+                fromfile="pyproject.original.toml",
+                tofile="pyproject.toml",
+            )
+        )
+
+        diff_text = "".join(diff_lines).strip()
+
+        if diff_text:
+            syntax = Syntax(diff_text, "diff", theme="ansi_dark", line_numbers=False)
+            console.print(
+                Panel(syntax, title=f"Diff for {path.name}", border_style="green")
+            )
+        else:
+            console.print(
+                "[dim]No changes between pyproject.original.toml and pyproject.toml[/dim]"
+            )
 
 
 def main() -> None:
     repositories = [
-        "ansible/ansible",
-        "apache/airflow",
+        # "apache/airflow",
         "astropy/astropy",
-        "celery/celery",
-        "django/django",
-        "fastapi/fastapi",
-        "home-assistant/core",
-        "indygreg/python-build-standalone",
-        "jax-ml/jax",
-        "matplotlib/matplotlib",
-        "numpy/numpy",
-        "pallets/flask",
-        "pandas-dev/pandas",
-        "PlasmaPy/PlasmaPy",
-        "pydantic/pydantic",
-        "pypa/pip",
-        "pytest-dev/pytest",
-        "python-poetry/poetry",
-        "pytorch/pytorch",
-        "pyvista/pyvista",
-        "scikit-image/scikit-image",
-        "scikit-learn/scikit-learn",
-        "scipy/scipy",
-        "sqlalchemy/sqlalchemy",
-        "sunpy/sunpy",
-        "sympy/sympy",
+        # "django/django",
+        # "fastapi/fastapi",
+        # "home-assistant/core",
+        # "indygreg/python-build-standalone",
+        # "matplotlib/matplotlib",
+        # "numpy/numpy",
+        # "pallets/flask",
+        # "pandas-dev/pandas",
+        # "PlasmaPy/PlasmaPy",
+        # "pydantic/pydantic",
+        # "pytest-dev/pytest",
+        # "python-poetry/poetry",
+        # "pytorch/pytorch",
+        # "pyvista/pyvista",
+        # "scikit-image/scikit-image",
+        # "scikit-learn/scikit-learn",
+        # "scipy/scipy",
+        # "sqlalchemy/sqlalchemy",
+        # "sunpy/sunpy",
         "yt-project/yt",
-        "namurphy/bump-minimum-dependencies",
+        # "namurphy/bump-minimum-dependencies",
     ]
 
     for repository in repositories:
         downloaded = download_pyproject(repository)
         print([str(p) for p in downloaded])
+        time.sleep(2)
 
     clean_pyproject_files()
 
