@@ -124,8 +124,7 @@ def main(
     with a warning.
     """
 
-    if cooldown_months > drop_months:
-        raise click.BadParameter("cooldown_months cannot exceed drop_months.")
+    cooldown_months = min(cooldown_months, drop_months)
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(
         pyproject_file=pyproject_file,
