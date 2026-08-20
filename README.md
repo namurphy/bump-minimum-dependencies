@@ -64,6 +64,7 @@ Options:
                                  updated.
   --skip-core                    If provided, core project dependencies will
                                  not be updated.
+  --version                      Show the version and exit.
   --help                         Show this message and exit.
 ```
 

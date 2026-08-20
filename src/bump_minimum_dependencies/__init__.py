@@ -94,6 +94,7 @@ DEFAULT_SKIP_CORE = False
     is_flag=True,
     help="If provided, core project dependencies will not be updated.",
 )
+@click.version_option(package_name="bump_minimum_dependencies")
 def main(
     pyproject_file: str | pathlib.Path,
     drop_months: float,
