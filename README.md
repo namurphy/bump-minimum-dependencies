@@ -34,35 +34,36 @@ Usage: bump-minimum-dependencies [OPTIONS]
 
   For example, if version `3.4.0` of a package dependency was released 25
   months ago and version `3.5.0` was released 23 months ago, running `bump-
-  minimum-dependencies` will change a requirement specifier of that package
-  from `>=3.4.0` to `>=3.5.0`.
+  minimum-dependencies` will update the requirement from `>=3.4.0` to
+  `>=3.5.0`.
 
   Requirements with markers or that cannot be updated will be skipped with a
   warning.
 
 Options:
-  --pyproject-file FILE          Path to pyproject.toml. Defaults to
+  --pyproject-file FILE          Path to pyproject.toml. Default is
                                  pyproject.toml in current directory.
-  --skip-package TEXT            Name of a package to skip when performing
-                                 updates. May be provided multiple times.
-  --drop-months FLOAT RANGE      Drop minor releases from this many months
-                                 ago. Defaults to 24.  [x>=0]
+  --drop-months FLOAT RANGE      Drop minor releases older than this many
+                                 months ago. Defaults to 24.  [x>=0]
   --cooldown-months FLOAT RANGE  Ensure that there is at least one release
                                  this many months old, if possible. Defaults
-                                 to 12.  [x>=0]
-  --all-extras                   Flag to update all optional dependencies.
-                                 Defaults to false.
-  --all-groups                   Flag to update all dependency groups.
-                                 Defaults to false.
-  --skip-core                    Flag to skip updating core project
-                                 dependencies. Defaults to false.
-  --extra TEXT                   Name of an optional dependencies category.
-                                 May be provided multiple times.
+                                 to 12 or the value provided to --drop-months,
+                                 whichever is smaller.  [x>=0]
+  --only-package TEXT            Name of a package to update. May be provided
+                                 multiple times. When this option is used, all
+                                 other packages will be skipped.
+  --skip-package TEXT            Name of a package to skip when performing
+                                 updates. May be provided multiple times.
+  --extra TEXT                   Name of an optional dependencies category to
+                                 update. May be provided multiple times.
+  --all-extras                   If provided, all optional dependency
+                                 categories will be updated.
   --group TEXT                   Name of a dependency group to update. May be
                                  provided multiple times.
-  --only-package TEXT            Name of a package to update, while skipping
-                                 all others not specified. May be provided
-                                 multiple times.
+  --all-groups                   If provided, all dependency groups will be
+                                 updated.
+  --skip-core                    If provided, core project dependencies will
+                                 not be updated.
   --help                         Show this message and exit.
 ```
 
@@ -72,6 +73,12 @@ To bump core package dependencies using default settings, run:
 
 ```shell
 bump-minimum-dependencies
+```
+
+To bump only plasmapy, run:
+
+```shell
+bump-minimum-dependencies --only-package plasmapy
 ```
 
 To skip updates for numpy and plasmapy, run:
