@@ -11,7 +11,7 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-  "numpy>1.21",
+  "numpy>2.5",
   "plasmapy>=0.3.1",
 ]
 optional-dependencies.skip = [
@@ -19,7 +19,7 @@ optional-dependencies.skip = [
   "plasmapy>=0.3.1",
 ]
 optional-dependencies.update = [
-  "numpy>1.21",
+  "numpy>2.5",
   "plasmapy>=0.3.1",
 ]
 
@@ -29,6 +29,6 @@ skip = [
   "plasmapy>=0.3.1",
 ]
 update = [
-  "numpy>1.21",
+  "numpy>2.5",
   "plasmapy>=0.3.1",
 ]
