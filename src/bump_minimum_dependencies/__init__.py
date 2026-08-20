@@ -19,23 +19,20 @@ DEFAULT_SKIP_CORE = False
     "--pyproject-file",
     default="pyproject.toml",
     type=click.Path(
-        exists=True, file_okay=True, dir_okay=False, writable=True, readable=True
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        writable=True,
+        readable=True,
     ),
-    help="Path to pyproject.toml. Defaults to pyproject.toml in current directory.",
-)
-@click.option(
-    "--skip-package",
-    default=[],
-    type=click.STRING,
-    help="Name of a package to skip when performing updates. May be provided multiple times.",
-    multiple=True,
+    help="Path to pyproject.toml. Default is pyproject.toml in current directory.",
 )
 @click.option(
     "--drop-months",
     default=DEFAULT_DROP_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=(
-        f"Drop minor releases from this many months ago. Defaults "
+        f"Drop minor releases older than this many months ago. Defaults "
         f"to {DEFAULT_DROP_MONTHS}."
     ),
 )
@@ -45,33 +42,38 @@ DEFAULT_SKIP_CORE = False
     type=click.FloatRange(min=0, max_open=True),
     help=(
         f"Ensure that there is at least one release this many months "
-        f"old, if possible. Defaults to {DEFAULT_COOLDOWN_MONTHS}."
+        f"old, if possible. Defaults to {DEFAULT_COOLDOWN_MONTHS} or "
+        f"the value provided to --drop-months, whichever is smaller."
     ),
 )
 @click.option(
-    "--all-extras",
-    default=False,
-    is_flag=True,
-    help="Flag to update all optional dependencies. Defaults to false.",
+    "--only-package",
+    default=[],
+    type=click.STRING,
+    help=(
+        "Name of a package to update. May be provided multiple times. "
+        "When this option is used, all other packages will be skipped."
+    ),
 )
 @click.option(
-    "--all-groups",
-    default=False,
-    is_flag=True,
-    help="Flag to update all dependency groups. Defaults to false.",
-)
-@click.option(
-    "--skip-core",
-    default=False,
-    is_flag=True,
-    help="Flag to skip updating core project dependencies. Defaults to false.",
+    "--skip-package",
+    default=[],
+    type=click.STRING,
+    help="Name of a package to skip when performing updates. May be provided multiple times.",
+    multiple=True,
 )
 @click.option(
     "--extra",
     default=[],
     type=click.STRING,
-    help="Name of an optional dependencies category. May be provided multiple times.",
+    help="Name of an optional dependencies category to update. May be provided multiple times.",
     multiple=True,
+)
+@click.option(
+    "--all-extras",
+    default=False,
+    is_flag=True,
+    help="If provided, all optional dependency categories will be updated.",
 )
 @click.option(
     "--group",
@@ -81,10 +83,16 @@ DEFAULT_SKIP_CORE = False
     multiple=True,
 )
 @click.option(
-    "--only-package",
-    default=[],
-    type=click.STRING,
-    help="Name of a package to update, while skipping all others not specified. May be provided multiple times.",
+    "--all-groups",
+    default=False,
+    is_flag=True,
+    help="If provided, all dependency groups will be updated.",
+)
+@click.option(
+    "--skip-core",
+    default=False,
+    is_flag=True,
+    help="If provided, core project dependencies will not be updated.",
 )
 def main(
     pyproject_file: str | pathlib.Path,
@@ -109,8 +117,8 @@ def main(
 
     For example, if version `3.4.0` of a package dependency was released
     25 months ago and version `3.5.0` was released 23 months ago,
-    running `bump-minimum-dependencies` will change a requirement
-    specifier of that package from `>=3.4.0` to `>=3.5.0`.
+    running `bump-minimum-dependencies` will update the requirement from
+    `>=3.4.0` to `>=3.5.0`.
 
     Requirements with markers or that cannot be updated will be skipped
     with a warning.
