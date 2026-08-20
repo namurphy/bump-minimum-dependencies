@@ -5,6 +5,7 @@ requires = [ "uv-build>=0.12.2,<0.13" ]
 [project]
 name = "bump-only-package"
 requires-python = ">=3.13"
+version = "0.1.0"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.13",
