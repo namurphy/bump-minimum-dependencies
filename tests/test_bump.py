@@ -1,5 +1,5 @@
 import shutil
-
+import subprocess
 
 from bump_minimum_dependencies import bump
 import pytest
@@ -46,98 +46,83 @@ def get_errmsg_from_file_comparison(
 
 
 @pytest.mark.parametrize(
-    "subdir,date,kwargs",
+    "subdir,date,cli_options",
     [
-        ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
+        ("base_case", "2026-01-01", ["--drop-months=24", "--cooldown-months=21"]),
         (
             "bump_all_dependency_groups",
             "2026-01-01",
-            {"drop_months": 24, "cooldown_months": 21, "all_groups": True},
+            ["--drop-months=24", "--cooldown-months=21", "--all-groups"],
         ),
         (
             "bump_all_optionals",
             "2026-01-01",
-            {"all_extras": True, "drop_months": 24, "cooldown_months": 12},
+            ["--all-extras", "--drop-months=24", "--cooldown-months=12"],
+
         ),
         (
             "trailing_dot_zero",
             "2026-01-01",
-            {"all_extras": True, "drop_months": 24, "cooldown_months": 12},
+            [                "--all-extras", "--drop-months=24", "--cooldown-months=12"]
         ),
         (
             "bump_one_dependency_group",
             "2026-01-01",
-            {"drop_months": 24, "cooldown_months": 21, "group": ["numpy"]},
+            [
+                "--drop-months=24",
+                "--cooldown-months=21",
+                "--group=numpy",
+            ],
         ),
         (
             "bump_two_dependency_groups",
             "2026-01-01",
-            {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]},
+            [
+                "--drop-months=24",
+                "--cooldown-months=21",
+                "--group=astropy",
+                "--group=numpy",
+            ],
         ),
         (
             "bump_only_package",
             "2026-08-17",
-            {
-                "drop_months": 0,
-                "cooldown_months": 0,
-                "group": ["update"],
-                "extra": ["update"],
-                "only_package": ["numpy"],
-            },
+            [
+                "--drop-months=0",
+                "--cooldown-months=0",
+                "--group=update",
+                "--extra=update",
+                "--only-package=numpy",
+            ]
         ),
         (
             "astropy",
             "2026-08-17",
-            {
-                "drop_months": 12,
-                "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
-            },
+            ["--drop-months=12", "--cooldown-months=6", "--all-groups", "--all-extras"]
         ),
         (
             "astropy2",
             "2026-08-18",
-            {
-                "drop_months": 24,
-                "cooldown_months": 12,
-                "all_groups": True,
-                "all_extras": True,
-            },
+            ["--drop-months=12", "--cooldown-months=12", "--all-groups", "--all-extras"]
         ),
         (
             "astropy3",
             "2026-08-18",
-            {
-                "drop_months": 360,
-                "cooldown_months": 360,
-                "all_groups": True,
-                "all_extras": True,
-            },
+            ["--drop-months=360", "--cooldown-months=360", "--all-groups", "--all-extras"]
         ),
         (
             "scipy",
             "2026-08-18",
-            {
-                "drop_months": 12,
-                "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
-            },
+            ["--drop-months=12", "--cooldown-months=6", "--all-groups", "--all-extras"]
         ),
         (
             "pydantic",
             "2026-08-18",
-            {
-                "drop_months": 12,
-                "cooldown_months": 0,
-                "all_groups": True,
-                "all_extras": True,
-            },
+            ["--drop-months=12", "--cooldown-months=0", "--all-groups", "--all-extras"]
         ),
     ],
 )
-def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None:
+def test_pyproject(tmp_path, monkeypatch, freezer, subdir, cli_options: list[str], date) -> None:
     freezer.move_to(date)
 
     data_dir: Path = Path(__file__).parent / "data" / subdir
@@ -148,8 +133,12 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None
     shutil.copy(original_pyproject, pyproject)
     monkeypatch.chdir(tmp_path)
 
-    bumper = bump.BumpMinimumDependencies(**kwargs)
-    bumper.run()
+    subprocess.run([
+            "bump-minimum-dependencies",
+            *cli_options,
+        ]
+    )
+
 
     if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject, subdir):
         pytest.fail(reason=errmsg)
