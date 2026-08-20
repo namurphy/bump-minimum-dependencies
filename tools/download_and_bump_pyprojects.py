@@ -8,12 +8,15 @@ from pathlib import Path
 import requests
 
 import subprocess
-import time
 
+
+import shutil
 
 import warnings
-from pathlib import Path
-import requests
+
+
+import tomllib
+import tomli_w
 
 
 def download_pyproject(
@@ -77,16 +80,6 @@ def download_pyproject(
 
     return [dest_file]
 
-import sys
-from pathlib import Path
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
-
-import tomli_w
-
 
 def clean_pyproject_files(root_dir: str | Path = ".") -> list[Path]:
     """
@@ -137,9 +130,6 @@ def clean_pyproject_files(root_dir: str | Path = ".") -> list[Path]:
 
     return modified_files
 
-import shutil
-from pathlib import Path
-
 
 def copy_pyproject_files(
     target_name: str,
@@ -176,6 +166,7 @@ def copy_pyproject_files(
 
     return created_files
 
+
 def bump_all_subdirectories() -> None:
     """Run `uvx bump-minimum-dependencies` in every immediate subdirectory."""
     current_dir = Path.cwd()
@@ -188,8 +179,8 @@ def bump_all_subdirectories() -> None:
                     [
                         # "uvx",
                         "bump-minimum-dependencies",
-                        #"--all-groups",
-                        #"--all-extras",
+                        # "--all-groups",
+                        # "--all-extras",
                     ],
                     cwd=path,
                     check=True,
@@ -200,7 +191,6 @@ def bump_all_subdirectories() -> None:
 
 
 def main() -> None:
-
     repositories = [
         "ansible/ansible",
         "apache/airflow",
@@ -232,9 +222,9 @@ def main() -> None:
         "namurphy/bump-minimum-dependencies",
     ]
 
-    #for repository in repositories:
-        #downloaded = download_pyproject(repository)
-        #print([str(p) for p in downloaded])
+    for repository in repositories:
+        downloaded = download_pyproject(repository)
+        print([str(p) for p in downloaded])
 
     clean_pyproject_files()
 
