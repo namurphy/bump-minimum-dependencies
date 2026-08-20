@@ -7,11 +7,9 @@ import difflib
 from pathlib import Path
 import subprocess
 import shutil
-import subprocess
 import time
 import tomllib
 import warnings
-from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -198,7 +196,6 @@ def copy_pyproject_files(
         created_files.append(dest_path)
 
     return created_files
-
 
 
 def bump_all_subdirectories() -> None:
