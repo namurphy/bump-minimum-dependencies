@@ -361,7 +361,9 @@ class BumpMinimumDependencies:
             dependency_group.lower() for dependency_group in group
         ]
         self.packages_to_skip: list[str] = [package.lower() for package in skip_package]
-        self.only_update_these_packages: list[str] = [package.lower() for package in only_package]
+        self.only_update_these_packages: list[str] = [
+            package.lower() for package in only_package
+        ]
 
         try:
             self.pyproject: PyProject = PyProject.load(pyproject_file)
@@ -406,7 +408,10 @@ class BumpMinimumDependencies:
                 continue
             if requirement.name == self.project_name:
                 continue
-            if self.only_update_these_packages and requirement.name not in self.only_update_these_packages:
+            if (
+                self.only_update_these_packages
+                and requirement.name not in self.only_update_these_packages
+            ):
                 continue
             core_requirements_to_update.append(requirement)
 
@@ -454,7 +459,10 @@ class BumpMinimumDependencies:
                 continue
             if requirement.name.lower() in self.packages_to_skip:
                 continue
-            if self.only_update_these_packages and requirement.name.lower() not in self.only_update_these_packages:
+            if (
+                self.only_update_these_packages
+                and requirement.name.lower() not in self.only_update_these_packages
+            ):
                 continue
             requirements_to_update.append(requirement)
 
