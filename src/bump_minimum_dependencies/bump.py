@@ -9,6 +9,7 @@ __all__ = [
     "requirement_already_included",
 ]
 
+
 import pathlib
 import requests
 
@@ -24,7 +25,7 @@ import packaging.requirements
 from packaging.requirements import Requirement
 
 from pyproject_parser import PyProject
-
+import click
 import logging
 
 import math
@@ -384,6 +385,11 @@ class BumpMinimumDependencies:
                     "these files must be present alongside pyproject.toml."
                 )
             raise FileNotFoundError(msg) from exc
+
+        if not self.pyproject.project:
+            raise click.ClickException(
+                f"project table not defined in {pyproject_file}; aborting."
+            )
 
         if isinstance(self.project_name, str):
             self.packages_to_skip.append(self.project_name)
