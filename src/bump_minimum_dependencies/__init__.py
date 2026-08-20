@@ -124,8 +124,6 @@ def main(
     with a warning.
     """
 
-    cooldown_months = min(cooldown_months, drop_months)
-
     bump_minimum_dependencies = bump.BumpMinimumDependencies(
         pyproject_file=pyproject_file,
         drop_months=drop_months,
