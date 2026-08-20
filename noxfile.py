@@ -30,6 +30,7 @@ def test(session: nox.Session) -> None:
         "--tb=short",
         "--doctest-modules",
         "--doctest-continue-on-failure",
+        *session.posargs,
     )
 
 
