@@ -406,9 +406,13 @@ class BumpMinimumDependencies:
 
         try:
             all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable]
-        except (TypeError, AttributeError, KeyError) as exc:
-            errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
-            raise RuntimeError(errmsg) from exc
+        except (TypeError, AttributeError, KeyError):
+            msg = (
+                f"Unable to access project.dependencies in "
+                f"{self.pyproject_file!r}; skipping."
+            )
+            logger.warning(msg)
+            all_requirements = []
 
         core_requirements_to_update: list[Requirement] = []
         for requirement in all_requirements:
