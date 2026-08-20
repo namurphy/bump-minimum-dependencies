@@ -469,7 +469,12 @@ class BumpMinimumDependencies:
         for requirement in requirements:
             if isinstance(requirement, str):
                 requirement = normalize_requirement_string(requirement)
-                requirement = Requirement(requirement)
+                try:
+                    requirement = Requirement(requirement)
+                except Exception:
+                    msg = f"Unable to parse {requirement = }. Skipping."
+                    logger.warning(msg)
+                    continue
             if not isinstance(requirement, Requirement):
                 continue
             if requirement.name.lower() in self.packages_to_skip:
