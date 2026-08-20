@@ -80,6 +80,12 @@ DEFAULT_SKIP_CORE = False
     help="Name of a dependency group to update. May be provided multiple times.",
     multiple=True,
 )
+@click.option(
+    "--only-package",
+    default=[],
+    type=click.STRING,
+    help="Name of a package to update, while skipping all others not specified. May be provided multiple times.",
+)
 def main(
     pyproject_file: str | pathlib.Path,
     drop_months: float,
@@ -90,6 +96,7 @@ def main(
     extra: tuple[str, ...] | list[str],
     group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
+    only_package: tuple[str, ...] | list[str],
 ) -> None:
     """
     Bump the minimum allowed minor versions of package dependencies.
@@ -122,6 +129,7 @@ def main(
         group=group,
         skip_package=skip_package,
         skip_core=skip_core,
+        only_package=only_package,
     )
 
     bump_minimum_dependencies.run()

@@ -75,6 +75,17 @@ def get_errmsg_from_file_comparison(
             {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]},
         ),
         (
+            "bump_only_package",
+            "2026-08-17",
+            {
+                "drop_months": 0,
+                "cooldown_months": 0,
+                "group": ["update"],
+                "extra": ["update"],
+                "only_package": ["numpy"],
+            },
+        ),
+        (
             "astropy",
             "2026-08-17",
             {

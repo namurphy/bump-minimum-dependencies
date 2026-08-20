@@ -60,6 +60,9 @@ Options:
                                  May be provided multiple times.
   --group TEXT                   Name of a dependency group to update. May be
                                  provided multiple times.
+  --only-package TEXT            Name of a package to update, while skipping
+                                 all others not specified. May be provided
+                                 multiple times.
   --help                         Show this message and exit.
 ```
 

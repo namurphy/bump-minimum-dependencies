@@ -1,0 +1,35 @@
+[build-system]
+build-backend = "uv_build"
+requires = [ "uv-build>=0.12.2,<0.13" ]
+
+[project]
+name = "bump-only-package"
+requires-python = ">=3.13"
+version = "0.1.0"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "numpy>1.21",
+  "plasmapy>=0.3.1",
+]
+optional-dependencies.skip = [
+  "numpy>1.21",
+  "plasmapy>=0.3.1",
+]
+optional-dependencies.update = [
+  "numpy>1.21",
+  "plasmapy>=0.3.1",
+]
+
+[dependency-groups]
+skip = [
+  "numpy>1.21",
+  "plasmapy>=0.3.1",
+]
+update = [
+  "numpy>1.21",
+  "plasmapy>=0.3.1",
+]
