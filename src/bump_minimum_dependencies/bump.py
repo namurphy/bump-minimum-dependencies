@@ -394,9 +394,6 @@ class BumpMinimumDependencies:
         if isinstance(self.project_name, str):
             self.packages_to_skip.append(self.project_name)
 
-        if not self.pyproject.project:
-            raise RuntimeError("project table not defined")
-
         logger.info(f"Bumping minimum dependencies for {self.pyproject_file}")
 
     @property
@@ -466,7 +463,7 @@ class BumpMinimumDependencies:
 
     def get_new_requirements(
         self,
-        requirements: list[Requirement],
+        requirements: list[Requirement | str],
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
