@@ -10,9 +10,13 @@ import datetime
 _pypi_upload_suffixes = (".bz2", ".tar", ".tar.bz2", ".tar.gz", ".tar.vz2", ".zip")
 
 
-def normalize_requirement_string(v: str | packaging.version.Version) -> str:
+def normalize_requirement_string(
+    v: str | packaging.version.Version | packaging.requirements.Requirement,
+) -> str:
     """Remove trailing .0 suffixes and make it lower-case."""
-    v = str(v).strip().lower().replace(".0,", ",")
+    v = str(v).strip().lower()
+    while ".0," in v:
+        v = v.replace(".0,", ",")
     while v.endswith(".0"):
         v = v.removesuffix(".0")
     return v

@@ -1,11 +1,26 @@
 import datetime
 import packaging.version
+import packaging.requirements
 
 import pytest
 from bump_minimum_dependencies import utils
 
 
 import requests
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("ASTROPY>=3.0.0.0.0", "astropy>=3"),
+        ("PyYAML>4.0.0,<5.0.0", "pyyaml>4,<5"),
+        (packaging.version.Version("0.1.0"), "0.1"),
+        (packaging.requirements.Requirement("a<0.6.0,>=0.3.0"), "a<0.6,>=0.3"),
+    ],
+)
+def test_normalize_requirement_string(input, expected):
+    result = utils.normalize_requirement_string(input)
+    assert result == expected
 
 
 @pytest.mark.parametrize(
