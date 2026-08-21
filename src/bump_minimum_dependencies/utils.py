@@ -4,14 +4,15 @@ __all__ = [
     "version_from_pypi_filename",
 ]
 
-import packaging.version
+from packaging.version import Version, InvalidVersion
+from packaging.requirements import Requirement
 import datetime
 
 _pypi_upload_suffixes = (".bz2", ".tar", ".tar.bz2", ".tar.gz", ".tar.vz2", ".zip")
 
 
 def normalize_requirement_string(
-    v: str | packaging.version.Version | packaging.requirements.Requirement,
+    v: str | Version | Requirement,
 ) -> str:
     """Remove trailing .0 suffixes and make it lower-case."""
     v = str(v).strip().lower()
@@ -25,7 +26,7 @@ def normalize_requirement_string(
 def version_from_pypi_filename(
     filename: str,
     package_name: str,
-) -> packaging.version.Version | None:
+) -> Version | None:
     """
     Get the version of a release from the filename associated with a
     PyPI upload.
@@ -47,8 +48,8 @@ def version_from_pypi_filename(
         ver = ver.removesuffix(suffix)
     ver = ver.split("-")[0]
     try:
-        return packaging.version.Version(ver)
-    except packaging.version.InvalidVersion:
+        return Version(ver)
+    except InvalidVersion:
         return None
 
 
@@ -56,7 +57,7 @@ def make_version_to_release_date_dict(
     response,
     skip_prerelease: bool = True,
     skip_yanked: bool = True,
-) -> dict[packaging.version.Version, datetime.date]:
+) -> dict[Version, datetime.date]:
     """
     Take a response from a requests query and create a dict that maps
     Version objects to date objects for when they were released.
@@ -64,7 +65,7 @@ def make_version_to_release_date_dict(
     Prereleases and yanked releases are excluded from the lists by
     default, as well as releases that use non-standard version specifiers.
     """
-    version_to_release_dates: dict[packaging.version.Version, datetime.date] = {}
+    version_to_release_dates: dict[Version, datetime.date] = {}
 
     for file in response["files"]:
         version = version_from_pypi_filename(
