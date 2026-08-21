@@ -6,7 +6,7 @@ import pytest
 import logging
 from pathlib import Path
 
-bump.logger.setLevel(logging.DEBUG)
+bump.logger.setLevel(logging.INFO)
 
 
 def get_errmsg_from_file_comparison(
