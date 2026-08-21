@@ -36,7 +36,7 @@ timezone = [
 [dependency-groups]
 dev = [
     "coverage[toml]>=7.11",
-    'pytz',
+    "pytz>=2026.1",
     "dirty-equals>=0.10",
     "pytest>=9",
     "pytest-mock>=3.15",
@@ -59,7 +59,7 @@ docs = [
     "mkdocs-exclude>=1",
     "mkdocs-llmstxt>=0.4",
     "mkdocs-material[imaging]>=9.7",
-    "mkdocs-redirects>=1.2.1",
+    "mkdocs-redirects>=1.2",
     "mkdocstrings-python>=1.18",
     "tomli>=2.3",
     "pyupgrade>=3.21",
