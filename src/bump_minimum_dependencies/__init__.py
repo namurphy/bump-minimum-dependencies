@@ -5,6 +5,7 @@ import pathlib
 import click
 
 from . import bump
+from . import utils
 
 
 DEFAULT_DROP_MONTHS = 24
