@@ -190,7 +190,9 @@ def requirement_already_included(new_requirement: str, old_requirements):
     old_requirements_set: set[Requirement] = set()
 
     for requirement in old_requirements:
-        old_requirements_set.add(Requirement(utils.normalize_requirement_string(requirement)))
+        old_requirements_set.add(
+            Requirement(utils.normalize_requirement_string(requirement))
+        )
 
     new_requirement: Requirement = Requirement(
         utils.normalize_requirement_string(new_requirement)
