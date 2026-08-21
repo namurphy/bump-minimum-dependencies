@@ -1,4 +1,4 @@
-__all__ = ["bump", "main"]
+__all__ = ["bump", "main", "utils"]
 
 import pathlib
 
