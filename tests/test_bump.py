@@ -6,7 +6,7 @@ import pytest
 import logging
 from pathlib import Path
 
-bump.logger.setLevel(logging.INFO)
+bump.logger.setLevel(logging.DEBUG)
 
 
 def get_errmsg_from_file_comparison(
@@ -48,6 +48,16 @@ def get_errmsg_from_file_comparison(
 @pytest.mark.parametrize(
     "subdir,date,kwargs",
     [
+        (
+            "problems",
+            "2026-08-17",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "all_groups": True,
+                "all_extras": True,
+            },
+        ),
         ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
             "bump_all_dependency_groups",
