@@ -1,7 +1,6 @@
 [project]
 name = "bump-matplotlib"
 version = "0.1.0"
-requires-python = ">=3.14"
 dependencies = [
-    "matplotlib>=0.86,!=3.9",
+    "matplotlib",  # releases prior to 0.86 on PyPI do not have files to download
 ]
