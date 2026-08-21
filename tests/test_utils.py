@@ -7,6 +7,7 @@ from bump_minimum_dependencies import utils
 
 import requests
 
+
 @pytest.mark.parametrize(
     "filename,package,version",
     [
@@ -54,8 +55,8 @@ v010 = packaging.version.Version("0.1.0")
 v011 = packaging.version.Version("0.1.1")
 yanked_release = packaging.version.Version("0.2.0")
 
-def test_make_version_to_release_date_dict_skip():
 
+def test_make_version_to_release_date_dict_skip():
     package = "bump-minimum-dependencies"
 
     response = requests.get(
@@ -76,8 +77,8 @@ def test_make_version_to_release_date_dict_skip():
     assert prerelease not in result
     assert yanked_release not in result
 
-def test_make_version_to_release_date_dict_keep():
 
+def test_make_version_to_release_date_dict_keep():
     package = "bump-minimum-dependencies"
 
     response = requests.get(

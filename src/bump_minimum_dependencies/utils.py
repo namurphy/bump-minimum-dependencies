@@ -58,7 +58,7 @@ def make_version_to_release_date_dict(
         if skip_prerelease and version.is_prerelease:
             continue
 
-        if skip_yanked and file['yanked']:
+        if skip_yanked and file["yanked"]:
             continue
 
         date_string: str = file["upload-time"].split("T")[0]
