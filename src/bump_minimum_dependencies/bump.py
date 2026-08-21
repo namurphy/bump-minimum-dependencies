@@ -151,9 +151,10 @@ class BumpPackage:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
                 logger.debug(
-                    f"{self.name} {str(release)} is not in "
-                    f"versions_to_release_dates, possibly because it was "
-                    f"yanked. Continuing."
+                    f"{self.name} {str(release)} is not in the "
+                    f"mapping from versions to release dates, possibly due "
+                    f"to non-standard versioning or that the release was "
+                    f"yanked or a prerelease. Continuing."
                 )
                 continue
 
