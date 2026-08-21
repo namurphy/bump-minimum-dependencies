@@ -54,8 +54,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 0,
-                "all_groups": True,
-                "all_extras": True,
             },
         ),
         (
@@ -64,8 +62,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 360,
                 "cooldown_months": 360,
-                "all_groups": True,
-                "all_extras": True,
             },
         ),
         (
