@@ -144,7 +144,15 @@ class BumpPackage:
         releases_before_drop_date: list[packaging.version.Version] = []
 
         for release in self.minor_releases:
-            release_date: datetime.date = self.versions_to_release_dates[release]
+            try:
+                release_date: datetime.date = self.versions_to_release_dates[release]
+            except KeyError:
+                logger.debug(
+                    f"{self.name} {str(release)} is not in "
+                    f"versions_to_release_dates, possibly because it was "
+                    f"yanked. Continuing."
+                )
+                continue
 
             if drop_date <= release_date < cooldown_date:
                 supported_releases_before_cooldown.append(release)
