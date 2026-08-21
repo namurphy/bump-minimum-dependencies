@@ -1,5 +1,6 @@
 __all__ = [
     "make_version_to_release_date_dict",
+    "normalize_requirement_string",
     "version_from_pypi_filename",
 ]
 
@@ -7,6 +8,13 @@ import packaging.version
 import datetime
 
 _pypi_upload_suffixes = (".bz2", ".tar", ".tar.bz2", ".tar.gz", ".tar.vz2", ".zip")
+
+
+def normalize_requirement_string(v: str | packaging.version.Version) -> str:
+    v = str(v).strip().lower().replace(".0,", ",")
+    while v.endswith(".0"):
+        v = v.removesuffix(".0")
+    return v
 
 
 def version_from_pypi_filename(
@@ -22,7 +30,7 @@ def version_from_pypi_filename(
     Raises
     ------
     packaging.version.InvalidVersion
-        If the version is not valid.
+        If the version specifier does not meet current standards.
     """
     package_name = package_name.lower()
     ver = filename.lower().strip()
@@ -47,6 +55,9 @@ def make_version_to_release_date_dict(
     """
     Take a response from a requests query and create a dict that maps
     Version objects to date objects for when they were released.
+
+    Prereleases and yanked releases are excluded from the lists by
+    default, as well as releases that use non-standard version specifiers.
     """
     version_to_release_dates: dict[packaging.version.Version, datetime.date] = {}
 

@@ -4,8 +4,6 @@ __all__ = [
     "combine_requirements",
     "get_new_requirement_for_package",
     "logger",
-    "make_string_and_remove_dot_zero_suffixes",
-    "normalize_requirement_string",
     "requirement_already_included",
 ]
 
@@ -39,39 +37,6 @@ DAYS_PER_MONTH = 30.436875
 logger = logging.getLogger("bump")
 logger.propagate = True
 logger.setLevel(logging.WARNING)
-
-
-def normalize_requirement_string(v: str) -> str:
-    v = str(v).strip().lower().replace(".0,", ",")
-    while v.endswith(".0"):
-        v = v.removesuffix(".0")
-    return v
-
-
-def make_string_and_remove_dot_zero_suffixes(
-    version: packaging.version.Version | str,
-) -> str:
-    """
-    Convert the version into a string and remove '.0' suffixes.
-
-    Arguments
-    ---------
-    version : packaging.version.Version | str
-        The version to be formatted.
-
-    Examples
-    --------
-    >>> import packaging
-    >>> version = packaging.version.Version(version="1.5.0")
-    >>> make_string_and_remove_dot_zero_suffixes(version)
-    '1.5'
-    >>> make_string_and_remove_dot_zero_suffixes("1.0.0")
-    '1'
-    """
-    v = str(version).strip()
-    while v.endswith(".0"):
-        v = v.removesuffix(".0")
-    return v
 
 
 class BumpPackage:
@@ -188,9 +153,9 @@ class BumpPackage:
 
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            return make_string_and_remove_dot_zero_suffixes(min(self.releases))
+            return utils.normalize_requirement_string(min(self.releases))
 
-        return make_string_and_remove_dot_zero_suffixes(
+        return utils.normalize_requirement_string(
             min(
                 supported_releases_before_cooldown,
                 default=max(releases_before_drop_date),
@@ -216,7 +181,7 @@ def combine_requirements(
         logger.warning("Cannot update versions with != in supported range; skipping.")
         return None
 
-    new_specifier = normalize_requirement_string(new_specifier)
+    new_specifier = utils.normalize_requirement_string(new_specifier)
 
     return new_specifier
 
@@ -225,10 +190,10 @@ def requirement_already_included(new_requirement: str, old_requirements):
     old_requirements_set: set[Requirement] = set()
 
     for requirement in old_requirements:
-        old_requirements_set.add(Requirement(normalize_requirement_string(requirement)))
+        old_requirements_set.add(Requirement(utils.normalize_requirement_string(requirement)))
 
     new_requirement: Requirement = Requirement(
-        normalize_requirement_string(new_requirement)
+        utils.normalize_requirement_string(new_requirement)
     )
 
     return new_requirement in old_requirements_set
@@ -425,7 +390,7 @@ class BumpMinimumDependencies:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
             if isinstance(requirement, str):
-                requirement = normalize_requirement_string(requirement)
+                requirement = utils.normalize_requirement_string(requirement)
                 requirement = Requirement(requirement)
             if not isinstance(requirement, Requirement):
                 continue
