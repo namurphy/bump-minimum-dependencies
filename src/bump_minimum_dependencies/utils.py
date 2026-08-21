@@ -1,4 +1,5 @@
 __all__ = [
+    "make_version_to_release_date_dict",
     "version_from_pypi_filename",
 ]
 
@@ -37,3 +38,39 @@ def version_from_pypi_filename(
     except packaging.version.InvalidVersion:
         return None
 
+
+def make_version_to_release_date_dict(
+    response,
+    skip_prerelease: bool = True,
+    skip_yanked: bool = True,
+) -> dict[packaging.version.Version, datetime.date]:
+    version_to_release_dates: dict[packaging.version.Version, datetime.date] = {}
+
+    for file in response["files"]:
+        version = version_from_pypi_filename(
+            filename=file["filename"],
+            package_name=response["name"],
+        )
+
+        if version is None:
+            continue
+
+        if skip_prerelease and version.is_prerelease:
+            continue
+
+        if skip_yanked and file['yanked']:
+            continue
+
+        date_string: str = file["upload-time"].split("T")[0]
+        release_date: datetime.date = datetime.datetime.strptime(
+            date_string, "%Y-%m-%d"
+        ).date()
+
+        if version not in version_to_release_dates:
+            version_to_release_dates[version] = release_date
+        else:
+            version_to_release_dates[version] = min(
+                version_to_release_dates[version], release_date
+            )
+
+    return version_to_release_dates
