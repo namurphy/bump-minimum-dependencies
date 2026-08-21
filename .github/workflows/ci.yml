@@ -36,7 +36,8 @@ jobs:
         include:
 
         - nox_session: lint
-        - nox_session: test
+        - nox_session: test-3.13
+        - nox_session: test-3.14
         - nox_session: ty
         - nox_session: build
         - nox_session: run

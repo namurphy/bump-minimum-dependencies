@@ -1,10 +1,11 @@
-__all__ = ["bump", "main"]
+__all__ = ["bump", "main", "utils"]
 
 import pathlib
 
 import click
 
 from . import bump
+from . import utils
 
 
 DEFAULT_DROP_MONTHS = 24

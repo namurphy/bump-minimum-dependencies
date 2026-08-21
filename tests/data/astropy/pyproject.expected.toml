@@ -43,7 +43,7 @@ keywords = [
 ]
 dependencies = [
     "astropy-iers-data>=0.2026.7.27.0.56.29",
-    "numpy>=2.4",
+    "numpy>=2.4.1",
     "packaging>=26",
     "pyerfa>=2.0.1.3",  # for >=2.0.1.7, adjust structured_units.rst and doctest-requires
     "PyYAML>=6.0.0",  # keep '.0.0' suffix and capital letters in package name
@@ -88,7 +88,7 @@ all = [
     "html5lib>=1.1",
     "bleach>=6.3",
     "sortedcontainers>=2.4", # imposed by testing with hypothesis
-    "pytz>=2016.10", # (older versions may work)
+    "pytz>=2025.2", # (older versions may work)
     "jplephem>=2.24",
     "mpmath>=1.3",
     "asdf-astropy>=0.9",

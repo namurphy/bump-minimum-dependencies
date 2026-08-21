@@ -1,0 +1,6 @@
+[project]
+name = "bump-matplotlib"
+version = "0.1.0"
+dependencies = [
+    "matplotlib",  # releases prior to 0.86 on PyPI do not have files to download
+]
