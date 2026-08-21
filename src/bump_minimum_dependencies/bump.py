@@ -57,6 +57,7 @@ class BumpPackage:
             skip_yanked=True,
             skip_prerelease=True,
         )
+        logger.debug(f"Finding new minimum allowed version for {self.name}")
 
     @functools.cached_property
     def response(self):
@@ -66,9 +67,11 @@ class BumpPackage:
         ).json()
 
     @functools.cached_property
-    def releases(self) -> list[packaging.version.Version]:
-        """The dates of all releases."""
-        return sorted(self.versions_to_release_dates)
+    def released_versions(self) -> list[packaging.version.Version]:
+        """The versions of all releases."""
+        versions = sorted(self.versions_to_release_dates)
+        logger.debug(f"Most recent release of {self.name}: {versions[-1]}")
+        return versions
 
     @functools.cached_property
     def _epoch_major_minor_to_set_of_micro(
@@ -83,7 +86,7 @@ class BumpPackage:
         """
         epoch_major_minor_to_set_of_micro = {}
 
-        for version in self.releases:
+        for version in self.released_versions:
             epoch = version.epoch
             major = version.major
             minor = version.minor
@@ -161,14 +164,20 @@ class BumpPackage:
 
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            return utils.normalize_requirement_string(min(self.releases))
+            return utils.normalize_requirement_string(min(self.released_versions))
 
-        return utils.normalize_requirement_string(
+        minimum_allowed_requirement = utils.normalize_requirement_string(
             min(
                 supported_releases_before_cooldown,
                 default=max(releases_before_drop_date),
             )
         )
+
+        logger.debug(
+            f"Oldest supported release of {self.name} is {minimum_allowed_requirement}"
+        )
+
+        return minimum_allowed_requirement
 
 
 def combine_requirements(
@@ -216,22 +225,25 @@ def get_new_requirement_for_package(
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(requirement.name)
+    logger.info(f"Pre-existing requirement: {str(requirement)}")
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    new_requirement = combine_requirements(
+    combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
     )
 
-    if not requirement.extras:
-        return f"{requirement.name}{new_requirement}"
+    if requirement.extras:
+        new_requirement = f"{requirement.name}[{','.join(sorted(requirement.extras))}]{combined_requirement}"
+    else:
+        new_requirement = f"{requirement.name}{combined_requirement}"
 
-    return (
-        f"{requirement.name}[{','.join(sorted(requirement.extras))}]{new_requirement}"
-    )
+    logger.info(f"Combined requirement: {new_requirement}")
+
+    return new_requirement
 
 
 class BumpMinimumDependencies:
@@ -395,7 +407,7 @@ class BumpMinimumDependencies:
 
     def get_new_requirements(
         self,
-        requirements: list[Requirement],
+        requirements: list[Requirement | str],
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
@@ -413,7 +425,10 @@ class BumpMinimumDependencies:
                 continue
             requirements_to_update.append(requirement)
 
-        logger.debug(f"{requirements_to_update = }")
+        logger.debug(
+            "Requirements to update: "
+            f"{', '.join([str(requirement) for requirement in requirements_to_update])}"
+        )
 
         packages_with_markers: list[str] = []
         for requirement in requirements_to_update:
