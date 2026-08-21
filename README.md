@@ -144,10 +144,8 @@ bump-minimum-dependencies --extra dev
 
 - This tool may be unable to update certain dependencies that:
 
-  - Do not follow a standard pattern (e.g., `<MAJOR>.<MINOR>`, `<MAJOR>.<MINOR>.<PATCH>`, or `<MAJOR>.<MINOR>.<PATCH>.<MICRO>`).
+  - Use non-standard [version specifiers](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers).
   - Have resulting requirements with multiple `!=` operators (as of `dep-logic==0.7.1`).
-  - Do not have metadata in the expected form.
-  - Are unavailable from the Python Package Index.
 
 - This tool does _not_ guarantee that an environment can be created that includes the minimum allowed versions of all direct dependencies (such as when updates are skipped for a dependency without a minimum allowed version).
 
@@ -156,8 +154,6 @@ bump-minimum-dependencies --extra dev
   - Run `uv lock --resolution=lowest-direct --dry-run` to test that the minimum allowed versions of direct dependencies can produce a self-consistent environment.
 
 - This tool does not update `build-system.requires`, as these updates cannot be performed with `uv add` as of `uv==0.12.5`.
-
-- This tool does not check whether minimum allowed versions of dependencies have been yanked.
 
 - If README and/or license files are declared in `pyproject.toml`, they must be present so that `pyproject.toml` can be loaded by [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
 
