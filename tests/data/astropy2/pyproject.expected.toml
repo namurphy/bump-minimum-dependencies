@@ -82,9 +82,9 @@ all = [
     # Install all remaining optional dependencies
     "certifi>=2024.8.30",
     "dask[dataframe]>=2024.9", # keep in sync with dependency-groups.dataframe
-    "h5py>=3.12",
+    "h5py>=3.12.1",
     "pyarrow>=18",
-    "beautifulsoup4>=4.13", # imposed by pandas==2.2.2
+    "beautifulsoup4>=4.13.1", # imposed by pandas==2.2.2
     "html5lib>=1.1",
     "bleach>=6.2",
     "sortedcontainers>=2.4", # imposed by testing with hypothesis
