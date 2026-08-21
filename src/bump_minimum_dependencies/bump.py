@@ -97,7 +97,9 @@ class BumpPackage:
 
             if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
                 if version.post is not None:
-                    logger.warning(f"Skipping post release of {self.name}: {str(version)}")
+                    logger.warning(
+                        f"Skipping post release of {self.name}: {str(version)}"
+                    )
                     continue
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
             else:
@@ -112,8 +114,12 @@ class BumpPackage:
                 number_of_micros = len(epoch_major_minor_to_set_of_micro[x])
                 if number_of_micros >= 20:
                     major_minor = f"{x[1]}.{x[2]}"
-                    first_patch = f"{major_minor}.{min(epoch_major_minor_to_set_of_micro[x])}"
-                    last_patch = f"{major_minor}.{max(epoch_major_minor_to_set_of_micro[x])}"
+                    first_patch = (
+                        f"{major_minor}.{min(epoch_major_minor_to_set_of_micro[x])}"
+                    )
+                    last_patch = (
+                        f"{major_minor}.{max(epoch_major_minor_to_set_of_micro[x])}"
+                    )
                     logger.warning(
                         f"Dependency {self.name} has {number_of_micros} releases between "
                         f"{first_patch} and {last_patch}, and may use uncommon "
