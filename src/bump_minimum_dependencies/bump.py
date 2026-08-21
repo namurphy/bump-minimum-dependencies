@@ -426,7 +426,7 @@ class BumpMinimumDependencies:
 
     def get_new_requirements(
         self,
-        requirements: list[Requirement | str],
+        requirements: list[Requirement],
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
