@@ -13,7 +13,6 @@ import pathlib
 import requests
 
 from dep_logic.specifiers import parse_version_specifier
-import collections
 
 import datetime
 
@@ -24,6 +23,8 @@ import packaging.requirements
 from packaging.requirements import Requirement
 
 from pyproject_parser import PyProject
+
+from . import utils
 
 import logging
 
@@ -85,61 +86,24 @@ class BumpPackage:
 
     def __init__(self, name):
         self.name = name
-        self.get_release_dates()
         self.today = datetime.datetime.now().date()
+        self.versions_to_release_dates = utils.make_version_to_release_date_dict(
+            self.response,
+            skip_yanked=True,
+            skip_prerelease=True,
+        )
 
-    def get_release_dates(self) -> None:
-        response = requests.get(
+    @functools.cached_property
+    def response(self):
+        return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
         ).json()
 
-        file_date = collections.defaultdict(list)
-        for file in response["files"]:
-            ver = file["filename"].split("-")[1]
-            try:
-                version = packaging.version.Version(ver)
-            except packaging.version.InvalidVersion as e:
-                logger.debug(
-                    f"'{ver}' is an invalid version for '{self.name}'. Reason: {e}"
-                )
-                continue
-
-            if version.is_prerelease:
-                logger.debug(
-                    f"Excluding {ver} for {self.name} since it is a prerelease"
-                )
-                continue
-
-            release_date = None
-            for format_ in ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]:
-                try:
-                    release_date = datetime.datetime.strptime(
-                        file["upload-time"], format_
-                    )
-                except ValueError as e:
-                    logger.debug(f"Invalid date: {e}")
-
-            if not release_date:
-                continue
-
-            file_date[version].append(release_date.date())
-
-        release_date = {version: min(file_date[version]) for version in file_date}
-
-        self._release_dates: dict[packaging.version.Version, datetime.date] = {}
-        for version, release_date in release_date.items():
-            self._release_dates[version] = release_date
-
-    @property
-    def release_dates(self) -> dict[packaging.version.Version, datetime.date]:
-        """A dictionary mapping the version to the date it was released."""
-        return self._release_dates
-
     @functools.cached_property
     def releases(self) -> list[packaging.version.Version]:
         """The dates of all releases."""
-        return sorted(self.release_dates)
+        return sorted(self.versions_to_release_dates)
 
     @functools.cached_property
     def _epoch_major_minor_to_set_of_micro(
@@ -215,7 +179,7 @@ class BumpPackage:
         releases_before_drop_date: list[packaging.version.Version] = []
 
         for release in self.minor_releases:
-            release_date: datetime.date = self.release_dates[release]
+            release_date: datetime.date = self.versions_to_release_dates[release]
 
             if drop_date <= release_date < cooldown_date:
                 supported_releases_before_cooldown.append(release)
