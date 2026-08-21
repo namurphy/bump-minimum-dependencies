@@ -103,14 +103,22 @@ class BumpPackage:
     def minor_releases(self) -> list[packaging.version.Version]:
         """The first release of each major/minor pair."""
         minor_releases: list[packaging.version.Version] = []
-        minor_releases.extend(
-            packaging.version.Version(f"{epoch}!{major}.{minor}.{min(micros)}")
-            for (
-                epoch,
-                major,
-                minor,
-            ), micros in self._epoch_major_minor_to_set_of_micro.items()
-        )
+
+        for (
+            epoch,
+            major,
+            minor,
+        ), micros in self._epoch_major_minor_to_set_of_micro.items():
+            version_str = f"{epoch}!{major}.{minor}.{min(micros)}"
+            version = packaging.version.Version(version_str)
+            if version in self.released_versions:
+                minor_releases.append(version)
+            else:
+                logger.debug(
+                    f"{self.name} reconstructed version {version} not found "
+                    f"in released versions. Skipping."
+                )
+
         return sorted(minor_releases)
 
     def oldest_supported_minor_release(
@@ -163,8 +171,15 @@ class BumpPackage:
             elif release_date < drop_date:
                 releases_before_drop_date.append(release)
 
+        if not supported_releases_before_cooldown:
+            logger.debug("No supported releases before cooldown.")
+
+        if not releases_before_drop_date:
+            logger.debug("No releases before dropdate.")
+
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
+            logger.debug("First release of package is during the cooldown period")
             return utils.normalize_requirement_string(min(self.released_versions))
 
         minimum_allowed_requirement = utils.normalize_requirement_string(
@@ -232,6 +247,7 @@ def get_new_requirement_for_package(
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
+    logger.debug(f"Time-based requirement: {time_based_requirement}")
     combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
@@ -242,7 +258,7 @@ def get_new_requirement_for_package(
     else:
         new_requirement = f"{requirement.name}{combined_requirement}"
 
-    logger.info(f"Combined requirement: {new_requirement}")
+    logger.debug(f"Combined requirement: {new_requirement}")
 
     return new_requirement
 
