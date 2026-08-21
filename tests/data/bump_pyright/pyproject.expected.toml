@@ -3,5 +3,5 @@ name = "bump-pyright"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
-    "pyright>=1.1.224",  # 1.1.224 was yanked and followed by 1.1.224.post0 and 1.1.224.post1
+    "pyright>=1.1.225",  # 1.1.224 was yanked and followed by 1.1.224.post0 and 1.1.224.post1
 ]
