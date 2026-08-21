@@ -1,0 +1,7 @@
+[project]
+name = "bump-pyright"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "pyright>0.0.1",
+]
