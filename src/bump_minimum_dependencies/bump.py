@@ -81,6 +81,7 @@ class BumpPackage:
     ) -> dict[tuple[int, int, int], set[int]]:
         """
         Dictionary to help determine the lowest micro release of each
+        major minor pair.
 
         Each key is a tuple containing the epoch, major, and minor
         version numbers and the corresponding value is a set containing
@@ -173,6 +174,9 @@ class BumpPackage:
 
         drop_date: datetime.date = self.today - support_window
         cooldown_date: datetime.date = self.today - cooldown_period
+
+        logger.debug(f"{cooldown_date = !r}")
+        logger.debug(f"{drop_date = }")
 
         supported_releases_before_cooldown: list[packaging.version.Version] = []
         releases_before_drop_date: list[packaging.version.Version] = []
