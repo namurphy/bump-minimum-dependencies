@@ -44,6 +44,10 @@ def make_version_to_release_date_dict(
     skip_prerelease: bool = True,
     skip_yanked: bool = True,
 ) -> dict[packaging.version.Version, datetime.date]:
+    """
+    Take a response from a requests query and create a dict that maps
+    Version objects to date objects for when they were released.
+    """
     version_to_release_dates: dict[packaging.version.Version, datetime.date] = {}
 
     for file in response["files"]:
