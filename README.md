@@ -130,9 +130,11 @@ bump-minimum-dependencies --extra dev
   - Use non-standard [version specifiers](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers).
   - Have resulting requirements with multiple `!=` operators (as of `dep-logic==0.7.1`).
 
-- This tool does _not_ guarantee that an environment can be created that includes the minimum allowed versions of all direct dependencies (such as when updates are skipped for a dependency without a minimum allowed version).
+- This tool does not guarantee that an environment can be created that includes the minimum allowed versions of all direct dependencies, but this can be tested with `uv lock --resolution=lowest-direct --dry-run`.
 
-  - Run `uv lock --dry-run` to test that the requirements can produce a self-consistent environment.
+- This tool does not update `build-system.requires`.
+
+- README and license files declared in `pyproject.toml` must be present so that `pyproject.toml` due to an upstream limitation with [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
 
 ## Motivation
 
