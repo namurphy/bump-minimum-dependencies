@@ -112,16 +112,15 @@ bump-minimum-dependencies --extra dev
 
 - If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
 
-- If a particular requirement cannot be updated, it will be skipped with a warning.
+- If a particular requirement cannot be updated, it will be skipped.
 
 - Within a given category, dependencies with markers (such as `'setuptools; python_version > "3.11"'`) will not be updated.
 
-- Requirements may be normalized upon updates by `uv add`. Opinionated autoformatters [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) will reduce or eliminate the need for requirements normalization. Example normalizations include:
+- Requirements may be normalized upon updates by `uv add`. Opinionated autoformatters like [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) reduce the need for requirements normalization. Example normalizations include:
 
   - `.0` suffixes may be removed, since `X.Y` and `X.Y.0` "are not considered distinct release numbers" as per [PEP 440](https://peps.python.org/pep-0440).
-  - Package names, which are case-insensitive, may be made lower case.
+  - Package names may be made lower case.
   - Single quotes may be changed to double quotes.
-  - Changes to spacing, indentation, and line breaks.
 
 ## Limitations and caveats
 
