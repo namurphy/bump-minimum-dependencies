@@ -55,6 +55,7 @@ DEFAULT_SKIP_CORE = False
         "Name of a package to update. May be provided multiple times. "
         "When this option is used, all other packages will be skipped."
     ),
+    multiple=True,
 )
 @click.option(
     "--skip-package",

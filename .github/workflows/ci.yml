@@ -31,32 +31,32 @@ jobs:
 
     strategy:
       fail-fast: false
-
       matrix:
         include:
-
-        - nox_session: lint
+        - nox_session: test_cli-3.13
+        - nox_session: test_cli-3.14
         - nox_session: test-3.13
         - nox_session: test-3.14
         - nox_session: ty
+        - nox_session: lint
         - nox_session: build
         - nox_session: run
-
     steps:
-
     - name: Checkout code
       uses: actions/checkout@v5
       with:
         persist-credentials: false
-
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
         activate-environment: true
         enable-cache: true
         cache-suffix: ${{ matrix.nox_session }}
-
     - run: uv pip install . --group dev
-
+    - name: Install faketime (requires Ubuntu)
+      if: contains(matrix.nox_session, 'cli')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y faketime
     - name: Run the check
       run: nox -s '${{ matrix.nox_session }}'
