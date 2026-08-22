@@ -89,13 +89,13 @@ def test_cli(session: nox.Session):
         return
 
     diff = list(
-         difflib.unified_diff(
-             result, expected, fromfile=str(result), tofile=str(expected)
-         )
-     )
+        difflib.unified_diff(
+            result, expected, fromfile=str(result), tofile=str(expected)
+        )
+    )
 
     for x in diff[2:]:
-         print(x.removesuffix("\n"))
+        print(x.removesuffix("\n"))
 
     session.error(
         "The resulting pyproject.toml does not match pyproject.expected.toml."
