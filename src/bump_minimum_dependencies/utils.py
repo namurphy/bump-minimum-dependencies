@@ -14,12 +14,18 @@ _pypi_upload_suffixes = (".bz2", ".tar", ".tar.bz2", ".tar.gz", ".tar.vz2", ".zi
 def normalize_requirement_string(
     v: str | Version | Requirement,
 ) -> str:
-    """Remove trailing .0 suffixes and make it lower-case."""
+    """Remove trailing .0 suffixes and make package name lower-case."""
     v = str(v).strip().lower()
+
+    if "~=" in v:  # since .0 suffixes matter for ~= specifiers
+        return v
+
     while ".0," in v:
         v = v.replace(".0,", ",")
+
     while v.endswith(".0"):
         v = v.removesuffix(".0")
+
     return v
 
 
