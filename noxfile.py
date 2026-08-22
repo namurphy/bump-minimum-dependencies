@@ -351,12 +351,12 @@ def bump_pyproject(session: nox.Session, package: str) -> None:
     session.run("bump-minimum-dependencies", "--all-groups", "--all-extras")
 
     session.run(
-        "difft",
+        "diff",
         "--context=0",
         "pyproject.original.toml",
         "pyproject.toml",
         external=True,
-        # success_codes=[1],
+        success_codes=[1],
     )
 
 
