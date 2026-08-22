@@ -256,6 +256,7 @@ def _clean_pyproject_files(root_dir: str | Path = "example_pyprojects") -> list[
 
     return modified_files
 
+
 def _copy_pyproject_files(
     target_name: str = "pyproject.original.toml",
     root_dir: str | Path = "example_pyprojects",
@@ -300,8 +301,8 @@ def download_pyprojects(session: nox.Session) -> None:
         "django/django",
         "fastapi/fastapi",
         "home-assistant/core",
-        "indygreg/python-build-standalone",
-        "matplotlib/matplotlib",
+        # "indygreg/python-build-standalone",  # does not run cleanly
+        # "matplotlib/matplotlib",  # error; multiple entries for vtk
         "numpy/numpy",
         "pallets/flask",
         "pandas-dev/pandas",
@@ -310,13 +311,13 @@ def download_pyprojects(session: nox.Session) -> None:
         "pytest-dev/pytest",
         "python-poetry/poetry",
         "pytorch/pytorch",
-        "pyvista/pyvista",
+        # "pyvista/pyvista",  # does not run cleanly
         "scikit-image/scikit-image",
         "scikit-learn/scikit-learn",
         "scipy/scipy",
-        "sqlalchemy/sqlalchemy",
+        # "sqlalchemy/sqlalchemy",  # does not run cleanly
         "sunpy/sunpy",
-        "yt-project/yt",
+        # "yt-project/yt",  # fails but not cleanly
         "namurphy/bump-minimum-dependencies",
     ]
 
