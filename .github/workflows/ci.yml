@@ -53,5 +53,10 @@ jobs:
         enable-cache: true
         cache-suffix: ${{ matrix.nox_session }}
     - run: uv pip install . --group dev
+    - name: Install faketime (requires Ubuntu)
+      if: contains(matrix.nox_session, 'cli')
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y faketime
     - name: Run the check
       run: nox -s '${{ matrix.nox_session }}'
