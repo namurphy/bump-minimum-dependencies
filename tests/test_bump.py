@@ -48,6 +48,32 @@ def get_errmsg_from_file_comparison(
 @pytest.mark.parametrize(
     "subdir,date,kwargs",
     [
+        (
+            "bump_pyright",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 0,
+            },
+        ),
+        (
+            "bump_matplotlib",
+            "2026-08-18",
+            {
+                "drop_months": 360,
+                "cooldown_months": 360,
+            },
+        ),
+        (
+            "bump_certifi",
+            "2026-08-17",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "all_groups": True,
+                "all_extras": True,
+            },
+        ),
         ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
             "bump_all_dependency_groups",

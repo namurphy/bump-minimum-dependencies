@@ -4,17 +4,15 @@ __all__ = [
     "combine_requirements",
     "get_new_requirement_for_package",
     "logger",
-    "make_string_and_remove_dot_zero_suffixes",
-    "normalize_requirement_string",
     "requirement_already_included",
 ]
 
-
 import pathlib
+
+import click
 import requests
 
 from dep_logic.specifiers import parse_version_specifier
-import collections
 
 import datetime
 
@@ -25,7 +23,9 @@ import packaging.requirements
 from packaging.requirements import Requirement
 
 from pyproject_parser import PyProject
-import click
+
+from . import utils
+
 import logging
 
 import math
@@ -41,39 +41,6 @@ logger.propagate = True
 logger.setLevel(logging.WARNING)
 
 
-def normalize_requirement_string(v: str) -> str:
-    v = str(v).strip().lower().replace(".0,", ",")
-    while v.endswith(".0"):
-        v = v.removesuffix(".0")
-    return v
-
-
-def make_string_and_remove_dot_zero_suffixes(
-    version: packaging.version.Version | str,
-) -> str:
-    """
-    Convert the version into a string and remove '.0' suffixes.
-
-    Arguments
-    ---------
-    version : packaging.version.Version | str
-        The version to be formatted.
-
-    Examples
-    --------
-    >>> import packaging
-    >>> version = packaging.version.Version(version="1.5.0")
-    >>> make_string_and_remove_dot_zero_suffixes(version)
-    '1.5'
-    >>> make_string_and_remove_dot_zero_suffixes("1.0.0")
-    '1'
-    """
-    v = str(version).strip()
-    while v.endswith(".0"):
-        v = v.removesuffix(".0")
-    return v
-
-
 class BumpPackage:
     """
     A class used to bump minimum dependencies for a Python package.
@@ -86,61 +53,27 @@ class BumpPackage:
 
     def __init__(self, name):
         self.name = name
-        self.get_release_dates()
         self.today = datetime.datetime.now().date()
+        self.versions_to_release_dates = utils.make_version_to_release_date_dict(
+            self.response,
+            skip_yanked=True,
+            skip_prerelease=True,
+        )
+        logger.debug(f"Finding new minimum allowed version for {self.name}")
 
-    def get_release_dates(self) -> None:
-        response = requests.get(
+    @functools.cached_property
+    def response(self):
+        return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
         ).json()
 
-        file_date = collections.defaultdict(list)
-        for file in response["files"]:
-            ver = file["filename"].split("-")[1]
-            try:
-                version = packaging.version.Version(ver)
-            except packaging.version.InvalidVersion as e:
-                logger.debug(
-                    f"'{ver}' is an invalid version for '{self.name}'. Reason: {e}"
-                )
-                continue
-
-            if version.is_prerelease:
-                logger.debug(
-                    f"Excluding {ver} for {self.name} since it is a prerelease"
-                )
-                continue
-
-            release_date = None
-            for format_ in ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]:
-                try:
-                    release_date = datetime.datetime.strptime(
-                        file["upload-time"], format_
-                    )
-                except ValueError as e:
-                    logger.debug(f"Invalid date: {e}")
-
-            if not release_date:
-                continue
-
-            file_date[version].append(release_date.date())
-
-        release_date = {version: min(file_date[version]) for version in file_date}
-
-        self._release_dates: dict[packaging.version.Version, datetime.date] = {}
-        for version, release_date in release_date.items():
-            self._release_dates[version] = release_date
-
-    @property
-    def release_dates(self) -> dict[packaging.version.Version, datetime.date]:
-        """A dictionary mapping the version to the date it was released."""
-        return self._release_dates
-
     @functools.cached_property
-    def releases(self) -> list[packaging.version.Version]:
-        """The dates of all releases."""
-        return sorted(self.release_dates)
+    def released_versions(self) -> list[packaging.version.Version]:
+        """The versions of all releases."""
+        versions = sorted(self.versions_to_release_dates)
+        logger.debug(f"Most recent release of {self.name}: {versions[-1]}")
+        return versions
 
     @functools.cached_property
     def _epoch_major_minor_to_set_of_micro(
@@ -148,6 +81,7 @@ class BumpPackage:
     ) -> dict[tuple[int, int, int], set[int]]:
         """
         Dictionary to help determine the lowest micro release of each
+        major minor pair.
 
         Each key is a tuple containing the epoch, major, and minor
         version numbers and the corresponding value is a set containing
@@ -155,16 +89,43 @@ class BumpPackage:
         """
         epoch_major_minor_to_set_of_micro = {}
 
-        for version in self.releases:
+        for version in self.released_versions:
             epoch = version.epoch
             major = version.major
             minor = version.minor
             micro = version.micro
 
             if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
+                if version.post is not None:
+                    logger.warning(
+                        f"Skipping post release of {self.name}: {str(version)}"
+                    )
+                    continue
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
             else:
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] |= {micro}
+
+        # Packages like pyright have used versioning schemes that
+        # prioritize bumping the micro/patch version number rather than
+        # the minor version number, which is inconsistent with the
+        # versioning practices assumed by bump-minimum-dependencies.
+        if len(epoch_major_minor_to_set_of_micro) <= 5:
+            for x in epoch_major_minor_to_set_of_micro:
+                number_of_micros = len(epoch_major_minor_to_set_of_micro[x])
+                if number_of_micros >= 20:
+                    major_minor = f"{x[1]}.{x[2]}"
+                    first_patch = (
+                        f"{major_minor}.{min(epoch_major_minor_to_set_of_micro[x])}"
+                    )
+                    last_patch = (
+                        f"{major_minor}.{max(epoch_major_minor_to_set_of_micro[x])}"
+                    )
+                    logger.warning(
+                        f"Dependency {self.name} has {number_of_micros} releases between "
+                        f"{first_patch} and {last_patch}, and may use uncommon "
+                        f"versioning practices. Should the minimum version of {self.name} "
+                        f"be updated manually?"
+                    )
 
         return epoch_major_minor_to_set_of_micro
 
@@ -172,14 +133,22 @@ class BumpPackage:
     def minor_releases(self) -> list[packaging.version.Version]:
         """The first release of each major/minor pair."""
         minor_releases: list[packaging.version.Version] = []
-        minor_releases.extend(
-            packaging.version.Version(f"{epoch}!{major}.{minor}.{min(micros)}")
-            for (
-                epoch,
-                major,
-                minor,
-            ), micros in self._epoch_major_minor_to_set_of_micro.items()
-        )
+
+        for (
+            epoch,
+            major,
+            minor,
+        ), micros in self._epoch_major_minor_to_set_of_micro.items():
+            version_str = f"{epoch}!{major}.{minor}.{min(micros)}"
+            version = packaging.version.Version(version_str)
+            if version in self.released_versions:
+                minor_releases.append(version)
+            else:
+                logger.debug(
+                    f"{self.name} reconstructed version {version} not found "
+                    f"in released versions. Skipping."
+                )
+
         return sorted(minor_releases)
 
     def oldest_supported_minor_release(
@@ -212,27 +181,52 @@ class BumpPackage:
         drop_date: datetime.date = self.today - support_window
         cooldown_date: datetime.date = self.today - cooldown_period
 
+        logger.debug(f"{cooldown_date = !r}")
+        logger.debug(f"{drop_date = }")
+
         supported_releases_before_cooldown: list[packaging.version.Version] = []
         releases_before_drop_date: list[packaging.version.Version] = []
 
         for release in self.minor_releases:
-            release_date: datetime.date = self.release_dates[release]
+            try:
+                release_date: datetime.date = self.versions_to_release_dates[release]
+            except KeyError:
+                logger.debug(
+                    f"{self.name} {str(release)} is not in the "
+                    f"mapping from versions to release dates, possibly due "
+                    f"to non-standard versioning or that the release was "
+                    f"yanked or a prerelease. Continuing."
+                )
+                continue
 
             if drop_date <= release_date < cooldown_date:
                 supported_releases_before_cooldown.append(release)
             elif release_date < drop_date:
                 releases_before_drop_date.append(release)
 
+        if not supported_releases_before_cooldown:
+            logger.debug("No supported releases before cooldown.")
+
+        if not releases_before_drop_date:
+            logger.debug("No releases before dropdate.")
+
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            return make_string_and_remove_dot_zero_suffixes(min(self.releases))
+            logger.debug("First release of package is during the cooldown period")
+            return utils.normalize_requirement_string(min(self.released_versions))
 
-        return make_string_and_remove_dot_zero_suffixes(
+        minimum_allowed_requirement = utils.normalize_requirement_string(
             min(
                 supported_releases_before_cooldown,
                 default=max(releases_before_drop_date),
             )
         )
+
+        logger.debug(
+            f"Oldest supported release of {self.name} is {minimum_allowed_requirement}"
+        )
+
+        return minimum_allowed_requirement
 
 
 def combine_requirements(
@@ -253,7 +247,7 @@ def combine_requirements(
         logger.warning("Cannot update versions with != in supported range; skipping.")
         return None
 
-    new_specifier = normalize_requirement_string(new_specifier)
+    new_specifier = utils.normalize_requirement_string(new_specifier)
 
     return new_specifier
 
@@ -262,10 +256,12 @@ def requirement_already_included(new_requirement: str, old_requirements):
     old_requirements_set: set[Requirement] = set()
 
     for requirement in old_requirements:
-        old_requirements_set.add(Requirement(normalize_requirement_string(requirement)))
+        old_requirements_set.add(
+            Requirement(utils.normalize_requirement_string(requirement))
+        )
 
     new_requirement: Requirement = Requirement(
-        normalize_requirement_string(new_requirement)
+        utils.normalize_requirement_string(new_requirement)
     )
 
     return new_requirement in old_requirements_set
@@ -278,22 +274,26 @@ def get_new_requirement_for_package(
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(requirement.name)
+    logger.info(f"Pre-existing requirement: {str(requirement)}")
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    new_requirement = combine_requirements(
+    logger.debug(f"Time-based requirement: {time_based_requirement}")
+    combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
     )
 
-    if not requirement.extras:
-        return f"{requirement.name}{new_requirement}"
+    if requirement.extras:
+        new_requirement = f"{requirement.name}[{','.join(sorted(requirement.extras))}]{combined_requirement}"
+    else:
+        new_requirement = f"{requirement.name}{combined_requirement}"
 
-    return (
-        f"{requirement.name}[{','.join(sorted(requirement.extras))}]{new_requirement}"
-    )
+    logger.debug(f"Combined requirement: {new_requirement}")
+
+    return new_requirement
 
 
 class BumpMinimumDependencies:
@@ -386,13 +386,11 @@ class BumpMinimumDependencies:
                 )
             raise FileNotFoundError(msg) from exc
 
-        if not self.pyproject.project:
-            raise click.ClickException(
-                f"project table not defined in {pyproject_file}; aborting."
-            )
-
         if isinstance(self.project_name, str):
             self.packages_to_skip.append(self.project_name)
+
+        if not self.pyproject.project:
+            raise RuntimeError("project table not defined")
 
         logger.info(f"Bumping minimum dependencies for {self.pyproject_file}")
 
@@ -409,13 +407,9 @@ class BumpMinimumDependencies:
 
         try:
             all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable]
-        except (TypeError, AttributeError, KeyError):
-            msg = (
-                f"Unable to access project.dependencies in "
-                f"{self.pyproject_file!r}; skipping."
-            )
-            logger.warning(msg)
-            all_requirements = []
+        except (TypeError, AttributeError, KeyError) as exc:
+            errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
+            raise click.ClickException(errmsg) from exc
 
         core_requirements_to_update: list[Requirement] = []
         for requirement in all_requirements:
@@ -463,18 +457,13 @@ class BumpMinimumDependencies:
 
     def get_new_requirements(
         self,
-        requirements: list[Requirement | str],
+        requirements: list[Requirement],
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
             if isinstance(requirement, str):
-                requirement = normalize_requirement_string(requirement)
-                try:
-                    requirement = Requirement(requirement)
-                except Exception:
-                    msg = f"Unable to parse {requirement = }. Skipping."
-                    logger.warning(msg)
-                    continue
+                requirement = utils.normalize_requirement_string(requirement)
+                requirement = Requirement(requirement)
             if not isinstance(requirement, Requirement):
                 continue
             if requirement.name.lower() in self.packages_to_skip:
@@ -486,7 +475,10 @@ class BumpMinimumDependencies:
                 continue
             requirements_to_update.append(requirement)
 
-        logger.debug(f"{requirements_to_update = }")
+        logger.debug(
+            "Requirements to update: "
+            f"{', '.join([str(requirement) for requirement in requirements_to_update])}"
+        )
 
         packages_with_markers: list[str] = []
         for requirement in requirements_to_update:

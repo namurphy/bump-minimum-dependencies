@@ -1,10 +1,11 @@
-__all__ = ["bump", "main"]
+__all__ = ["bump", "main", "utils"]
 
 import pathlib
 
 import click
 
 from . import bump
+from . import utils
 
 
 DEFAULT_DROP_MONTHS = 24
@@ -54,6 +55,7 @@ DEFAULT_SKIP_CORE = False
         "Name of a package to update. May be provided multiple times. "
         "When this option is used, all other packages will be skipped."
     ),
+    multiple=True,
 )
 @click.option(
     "--skip-package",

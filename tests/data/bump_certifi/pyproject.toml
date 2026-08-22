@@ -1,0 +1,7 @@
+[project]
+name = "problems"
+version = "0.1.0"
+requires-python = ">=2"
+dependencies = [
+    "certifi>=2022.5.15.1",
+]
