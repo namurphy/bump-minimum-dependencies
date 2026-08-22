@@ -59,7 +59,6 @@ def run(session: nox.Session) -> None:
 @nox.session(python=supported_python_versions)
 def test_cli(session: nox.Session):
     session.install(".")
-    # session.install("tokenize_rt")
 
     session.run_install("bump-minimum-dependencies", "--version")
 
