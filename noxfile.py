@@ -9,9 +9,6 @@ import shutil
 import tomllib
 import warnings
 
-# from datetime import time
-import time
-
 
 import nox
 import nox_uv
@@ -332,7 +329,7 @@ def download_pyprojects(session: nox.Session) -> None:
 pyprojects_dir = Path.cwd() / "example_pyprojects"
 
 if pyprojects_dir.is_dir():
-    projects = [path.name for path in pyprojects_dir.iterdir() if path.is_dir()]
+    projects = sorted([path.name for path in pyprojects_dir.iterdir() if path.is_dir()])
 else:
     projects = []
 
