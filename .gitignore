@@ -216,4 +216,4 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-tools/pyprojects
+example_pyprojects
