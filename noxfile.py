@@ -298,8 +298,8 @@ def download_pyprojects(session: nox.Session) -> None:
         "django/django",
         "fastapi/fastapi",
         "home-assistant/core",
-        # "indygreg/python-build-standalone",  # does not run cleanly
-        # "matplotlib/matplotlib",  # error; multiple entries for vtk
+        "indygreg/python-build-standalone",  # does not run cleanly
+        "matplotlib/matplotlib",  # error; multiple entries for vtk
         "numpy/numpy",
         "pallets/flask",
         "pandas-dev/pandas",
@@ -308,13 +308,13 @@ def download_pyprojects(session: nox.Session) -> None:
         "pytest-dev/pytest",
         "python-poetry/poetry",
         "pytorch/pytorch",
-        # "pyvista/pyvista",  # does not run cleanly
+        "pyvista/pyvista",  # does not run cleanly
         "scikit-image/scikit-image",
         "scikit-learn/scikit-learn",
         "scipy/scipy",
-        # "sqlalchemy/sqlalchemy",  # does not run cleanly
+        "sqlalchemy/sqlalchemy",  # does not run cleanly
         "sunpy/sunpy",
-        # "yt-project/yt",  # fails but not cleanly
+        "yt-project/yt",  # fails but not cleanly
         "namurphy/bump-minimum-dependencies",
     ]
 
