@@ -58,9 +58,11 @@ def run(session: nox.Session) -> None:
 
 @nox.session(python=supported_python_versions)
 def test_cli(session: nox.Session):
+    """Test the command line interface."""
     session.install(".")
 
     session.run_install("bump-minimum-dependencies", "--version")
+    session.run_install("faketime", "--version", external=True)
 
     tmp_dir = Path(session.create_tmp())
     source_dir = Path("tests/data/base_case")
