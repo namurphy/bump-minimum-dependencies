@@ -416,8 +416,10 @@ class BumpMinimumDependencies:
         for requirement in all_requirements:
             if requirement.name in self.packages_to_skip:
                 continue
+
             if requirement.name == self.project_name:
                 continue
+
             if (
                 self.only_update_these_packages
                 and requirement.name not in self.only_update_these_packages
