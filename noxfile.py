@@ -329,7 +329,11 @@ def download_pyprojects(session: nox.Session) -> None:
 pyprojects_dir = Path.cwd() / "example_pyprojects"
 
 if pyprojects_dir.is_dir():
-    projects = sorted([path.name for path in pyprojects_dir.iterdir() if path.is_dir()])
+    projects = [
+        nox.param(path, id=path.name)
+        for path in pyprojects_dir.iterdir()
+        if path.is_dir()
+    ]
 else:
     projects = []
 
