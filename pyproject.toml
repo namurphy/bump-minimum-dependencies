@@ -27,7 +27,7 @@ dependencies = [
   "uv>=0.12.5",
 ]
 urls.Source = "https://github.com/namurphy/bump-minimum-dependencies"
-scripts.bump-minimum-dependencies = "bump_minimum_dependencies:main"
+scripts.bump-minimum-dependencies = "bump_minimum_dependencies.main:main"
 
 [dependency-groups]
 dev = [
