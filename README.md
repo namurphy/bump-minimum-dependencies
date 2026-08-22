@@ -2,23 +2,6 @@
 
 Automatically bump the minimum allowed minor versions of Python package dependencies based on the time since first release, with a cooldown period.
 
-## Motivation
-
-Determining the minimum allowed version of a dependency requires balancing competing tradeoffs. ⚖️
-Supporting older versions increases maintenance burden because of the need to support and test a wide range of versions, while also limiting developers from using newer features and assuming bugfixes.
-When the range of allowed versions is too large, code can become more complicated to account for various contingencies.
-Support windows that are too brief increase the risk of dependency conflicts and may cause problems for end users.
-The developer maintenance burden is further increased when developers repeatedly discuss when to drop older versions of dependencies.
-
-[SPEC 0] recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping support for older versions of dependencies.
-SPEC 0 recommends core package dependencies be dropped 24 months after their initial minor release.
-NumPy `v2.1.0` was released on 2024-08-18, so SPEC 0 recommends that packages drop support for `v2.1.*` of NumPy after 2026-08-18.
-
-A limitation of SPEC 0 is that when a dependency goes more than 24 months between releases, a new release can immediately become the minimum supported version.
-This limitation can be mitigated by providing a cooldown period so that new releases do not become the minimum supported version until a certain time period has passed (such as 12 months).
-
-Because dependency updates have often needed to be performed manually (such as by looking up release times on the Python Package Index and editing `pyproject.toml` accordingly), a tool that automates these updates will save developer time, especially when accounting for edge cases.
-
 ## Usage
 
 ```groff
@@ -151,13 +134,22 @@ bump-minimum-dependencies --extra dev
 
   - Run `uv lock --dry-run` to test that the requirements can produce a self-consistent environment.
 
-  - Run `uv lock --resolution=lowest-direct --dry-run` to test that the minimum allowed versions of direct dependencies can produce a self-consistent environment.
+## Motivation
 
-- This tool does not update `build-system.requires`, as these updates cannot be performed with `uv add` as of `uv==0.12.5`.
+Determining the minimum allowed version of a dependency requires balancing competing tradeoffs. ⚖️
+Supporting older versions increases maintenance burden because of the need to support and test a wide range of versions, while also limiting developers from using newer features and assuming bugfixes.
+When the range of allowed versions is too large, code can become more complicated to account for various contingencies.
+Support windows that are too brief increase the risk of dependency conflicts and may cause problems for end users.
+The developer maintenance burden is further increased when developers repeatedly discuss when to drop older versions of dependencies.
 
-- If README and/or license files are declared in `pyproject.toml`, they must be present so that `pyproject.toml` can be loaded by [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
+[SPEC 0] recommends that projects across the scientific pythoniverse adopt a common time-based policy for dropping support for older versions of dependencies.
+SPEC 0 recommends core package dependencies be dropped 24 months after their initial minor release.
+NumPy `v2.1.0` was released on 2024-08-18, so SPEC 0 recommends that packages drop support for `v2.1.*` of NumPy after 2026-08-18.
 
-- This tool does not upgrade the minimum required version of Python.
+A limitation of SPEC 0 is that when a dependency goes more than 24 months between releases, a new release can immediately become the minimum supported version.
+This limitation can be mitigated by providing a cooldown period so that new releases do not become the minimum supported version until a certain time period has passed (such as 12 months).
+
+Because dependency updates have often needed to be performed manually (such as by looking up release times on the Python Package Index and editing `pyproject.toml` accordingly), a tool that automates these updates will save developer time, especially when accounting for edge cases.
 
 ## Feature requests and bug reports
 
