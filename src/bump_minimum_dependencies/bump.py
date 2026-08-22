@@ -522,7 +522,7 @@ class BumpMinimumDependencies:
 
         return new_requirements
 
-    def run_uv_command(
+    def run_uv_commands(
         self,
         new_requirements: list[str],
         *,
@@ -547,18 +547,21 @@ class BumpMinimumDependencies:
             logger.info(msg)
             return
 
-        command = [
-            "uv",
-            "add",
-            "--frozen",
-            "--quiet",
-            *flag,
-            *new_requirements,
-        ]
+        for new_requirement in new_requirements:
+            # Run a separate `uv add` command for each requirement
+            # so that the other updates will be performed.
+            command = [
+                "uv",
+                "add",
+                "--frozen",
+                "--quiet",
+                *flag,
+                new_requirement,
+            ]
 
-        msg = f"Running: {' '.join(command)}"
-        logger.info(msg)
-        subprocess.run(command)
+            msg = f"Running: {' '.join(command)}"
+            logger.info(msg)
+            subprocess.run(command)
 
     def bump_core_requirements(self) -> None:
         """Bump the core package requirements."""
@@ -566,7 +569,7 @@ class BumpMinimumDependencies:
             return
 
         new_requirements = self.get_new_requirements(self.core_requirements_to_update)
-        self.run_uv_command(new_requirements)
+        self.run_uv_commands(new_requirements)
 
     def bump_dependency_groups(self):
         """Bump requirements in dependency groups."""
@@ -576,7 +579,7 @@ class BumpMinimumDependencies:
         for dependency_group in self.dependency_groups_to_update:
             requirements = self.pyproject.dependency_groups[dependency_group]  # ty:ignore[not-subscriptable]
             new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
-            self.run_uv_command(new_requirements, dependency_group=dependency_group)
+            self.run_uv_commands(new_requirements, dependency_group=dependency_group)
 
     def bump_optional_dependencies(self):
         """Bump requirements in optional dependencies."""
@@ -591,7 +594,7 @@ class BumpMinimumDependencies:
         for category in self.optional_categories_to_update:
             requirements = optionals[category]
             new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
-            self.run_uv_command(new_requirements, extras_category=category)
+            self.run_uv_commands(new_requirements, extras_category=category)
 
     def run(self):
         """Perform all the requested and necessary updates."""
