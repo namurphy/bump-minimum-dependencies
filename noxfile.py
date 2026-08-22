@@ -32,7 +32,13 @@ maxpython: str = sorted(supported_python_versions)[-1]
 @nox_uv.session(python=maxpython, uv_groups=["dev"])
 def lint(session: nox.Session) -> None:
     """Run prek on all files."""
-    session.run("prek", "run", "--all-files", "--quiet")
+    session.run(
+        "prek",
+        "run",
+        "--all-files",
+        "--quiet",
+        *session.posargs,
+    )
 
 
 @nox_uv.session(python=supported_python_versions, uv_groups=["dev"])
@@ -44,6 +50,7 @@ def test(session: nox.Session) -> None:
         "--tb=short",
         "--doctest-modules",
         "--doctest-continue-on-failure",
+        *session.posargs,
     )
 
 
@@ -57,14 +64,14 @@ def ty(session: nox.Session) -> None:
 @nox.session(python=supported_python_versions)
 def build(session: nox.Session) -> None:
     """Build the package."""
-    session.run("uv", "build")
+    session.run("uv", "build", *session.posargs)
 
 
 @nox.session(python=supported_python_versions)
 def run(session: nox.Session) -> None:
     """Run the package."""
     session.install(".")
-    session.run("bump-minimum-dependencies")
+    session.run("bump-minimum-dependencies", session.posargs)
 
 
 @nox.session(python=supported_python_versions)
@@ -87,7 +94,6 @@ def test_cli(session: nox.Session) -> None:
         "--cooldown-months=21",
     ]
 
-    # Prepend faketime CLI wrapper to intercept child process OS calls
     session.run(
         "faketime",
         "2026-01-01",
