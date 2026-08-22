@@ -6,9 +6,20 @@
 import difflib
 import filecmp
 import shutil
+import tomllib
+import warnings
+
+
 import nox
 import nox_uv
 from pathlib import Path
+
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
+import tomli_w
 
 nox.options.default_venv_backend = "uv"
 
@@ -57,7 +68,7 @@ def run(session: nox.Session) -> None:
 
 
 @nox.session(python=supported_python_versions)
-def test_cli(session: nox.Session):
+def test_cli(session: nox.Session) -> None:
     """Test the command line interface."""
     session.install(".")
 
@@ -101,6 +112,251 @@ def test_cli(session: nox.Session):
 
     session.error(
         "The resulting pyproject.toml does not match pyproject.expected.toml."
+    )
+
+
+def _get_retry_session(
+    retries: int = 3, backoff_factor: float = 1.0
+) -> requests.Session:
+    """Create a requests Session configured with exponential backoff retries."""
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+
+def _download_pyproject(
+    repo_slug: str,
+    session: requests.Session | None = None,
+) -> list[Path]:
+    """Download the `pyproject.toml` file from a GitHub repository.
+
+    Parameters
+    ----------
+    repo_slug : str
+        The GitHub repository target formatted as "OWNER/REPO".
+    session : requests.Session, optional
+        A session with pre-configured retry behavior.
+
+    Returns
+    -------
+    list of Path
+        Paths to the downloaded local files, or an empty list if not found.
+    """
+    file_name = "pyproject.toml"
+    # Direct raw endpoint bypasses API overhead and rate limits
+    raw_url = f"https://raw.githubusercontent.com/{repo_slug}/HEAD/{file_name}"
+    headers = {"User-Agent": "Python-GH-File-Fetcher"}
+
+    http = session or _get_retry_session()
+
+    try:
+        # Tuple timeout: (connect_timeout, read_timeout)
+        response = http.get(raw_url, headers=headers, timeout=(5, 30))
+    except requests.RequestException as exc:
+        warnings.warn(
+            f"Network error downloading '{file_name}' from '{repo_slug}': {exc}",
+            UserWarning,
+            stacklevel=2,
+        )
+        return []
+
+    if response.status_code == 404:
+        warnings.warn(
+            f"'{file_name}' not found in repository '{repo_slug}'. Skipping download.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return []
+
+    if not response.ok:
+        warnings.warn(
+            f"HTTP {response.status_code} downloading '{file_name}' from '{repo_slug}'. Skipping.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return []
+
+    repo_name = repo_slug.split("/")[1]
+    output_path = Path("example_pyprojects") / repo_name
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    dest_file = output_path / file_name
+    dest_file.write_bytes(response.content)
+
+    return [dest_file]
+
+
+def _clean_pyproject_files(root_dir: str | Path = "example_pyprojects") -> list[Path]:
+    """
+    Recursively find pyproject.toml files in subdirectories and remove
+    `project.license-files`, `project.readme`, `project.license.file`,
+    and `project.authors` fields.
+
+    Parameters
+    ----------
+    root_dir : str or Path, default="."
+        The root directory to search from.
+
+    Returns
+    -------
+    list of Path
+        List of paths to files that were modified.
+    """
+    root_path = Path(root_dir).resolve()
+    modified_files: list[Path] = []
+
+    for file_path in root_path.rglob("pyproject.toml"):
+        if file_path.parent == root_path:
+            continue
+
+        with file_path.open("rb") as f:
+            data = tomllib.load(f)
+
+        project_table = data.get("project")
+        if not isinstance(project_table, dict):
+            continue
+
+        modified = False
+
+        # Remove top-level project keys
+        for key in ("license-files", "readme", "authors"):
+            if key in project_table:
+                project_table.pop(key)
+                modified = True
+
+        # Remove project.license.file if project.license is a dict/table
+        license_table = project_table.get("license")
+        if isinstance(license_table, dict) and "file" in license_table:
+            license_table.pop("file")
+            modified = True
+
+            # Clean up project.license table if it is now empty
+            if not license_table:
+                project_table.pop("license")
+
+        if not modified:
+            continue
+
+        with file_path.open("wb") as f:
+            tomli_w.dump(data, f)
+
+        modified_files.append(file_path)
+
+    return modified_files
+
+
+def _copy_pyproject_files(
+    target_name: str = "pyproject.original.toml",
+    root_dir: str | Path = "example_pyprojects",
+) -> list[Path]:
+    """Recursively search subdirectories for `pyproject.toml` and copy
+
+    each to `target_name` within the same directory.
+
+    Parameters
+    ----------
+    target_name : str
+        The destination filename (e.g., "pyproject.original.toml" or
+        "pyproject.result.toml").
+    root_dir : str or Path, default="."
+        The root directory to search from.
+
+    Returns
+    -------
+    list of Path
+        Paths to the newly created target files.
+    """
+    root_path = Path(root_dir).resolve()
+    created_files: list[Path] = []
+
+    for src_path in root_path.rglob("pyproject.toml"):
+        # Skip pyproject.toml in the root directory itself
+        if src_path.parent == root_path:
+            continue
+
+        dest_path = src_path.with_name(target_name)
+        shutil.copy2(src_path, dest_path)
+        created_files.append(dest_path)
+
+    return created_files
+
+
+@nox.session()
+def download_pyprojects(session: nox.Session) -> None:
+    repositories = [
+        "apache/airflow",
+        "astropy/astropy",
+        "django/django",
+        "fastapi/fastapi",
+        "home-assistant/core",
+        "indygreg/python-build-standalone",  # does not run cleanly
+        "matplotlib/matplotlib",  # error; multiple entries for vtk
+        "numpy/numpy",
+        "pallets/flask",
+        "pandas-dev/pandas",
+        "PlasmaPy/PlasmaPy",
+        "pydantic/pydantic",
+        "pytest-dev/pytest",
+        "python-poetry/poetry",
+        "pytorch/pytorch",
+        "pyvista/pyvista",  # does not run cleanly
+        "scikit-image/scikit-image",
+        "scikit-learn/scikit-learn",
+        "scipy/scipy",
+        "sqlalchemy/sqlalchemy",  # does not run cleanly
+        "sunpy/sunpy",
+        "yt-project/yt",  # fails but not cleanly
+        "namurphy/bump-minimum-dependencies",
+    ]
+
+    for repository in repositories:
+        downloaded = _download_pyproject(repo_slug=repository)
+        session.log("\n".join([str(d) for d in downloaded]))
+
+    _clean_pyproject_files()
+    _copy_pyproject_files()
+
+
+pyprojects_dir = Path.cwd() / "example_pyprojects"
+
+if pyprojects_dir.is_dir():
+    projects = [
+        nox.param(path, id=path.name)
+        for path in pyprojects_dir.iterdir()
+        if path.is_dir()
+    ]
+else:
+    projects = []
+
+
+@nox.session()
+@nox.parametrize("package", projects)
+def bump_pyproject(session: nox.Session, package: str) -> None:
+    session.install(".")
+
+    path = pyprojects_dir / package
+    session.chdir(path)
+    session.log(f"Project: {path.name}")
+    shutil.copy2("pyproject.original.toml", "pyproject.toml")
+
+    session.run("bump-minimum-dependencies", "--all-groups", "--all-extras")
+
+    session.run(
+        "diff",
+        "--context=0",
+        "pyproject.original.toml",
+        "pyproject.toml",
+        external=True,
+        success_codes=[1],
     )
 
 

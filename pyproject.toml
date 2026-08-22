@@ -38,5 +38,7 @@ dev = [
   "pytest==9.0.3",
   "pytest-freezer==0.4.9",
   "python-dateutil==2.8.2",
+  "rich>=15",
+  "tomli-w>=1.2",
   "ty>=0.0.69",
 ]
