@@ -328,5 +328,35 @@ def download_pyprojects(session: nox.Session) -> None:
     _copy_pyproject_files()
 
 
+pyprojects_dir = Path.cwd() / "example_pyprojects"
+
+if pyprojects_dir.is_dir():
+    projects = [path.name for path in pyprojects_dir.iterdir() if path.is_dir()]
+else:
+    projects = []
+
+
+@nox.session()
+@nox.parametrize("package", projects)
+def bump_pyproject(session: nox.Session, package: str) -> None:
+    session.install(".")
+
+    path = pyprojects_dir / package
+    session.chdir(path)
+    session.log(f"Project: {path.name}")
+    shutil.copy2("pyproject.original.toml", "pyproject.toml")
+
+    session.run("bump-minimum-dependencies", "--all-groups", "--all-extras")
+
+    session.run(
+        "difft",
+        "--context=0",
+        "pyproject.original.toml",
+        "pyproject.toml",
+        external=True,
+        # success_codes=[1],
+    )
+
+
 if __name__ == "__main__":
     nox.main()
