@@ -109,10 +109,10 @@ class BumpPackage:
         # prioritize bumping the micro/patch version number rather than
         # the minor version number, which is inconsistent with the
         # versioning practices assumed by bump-minimum-dependencies.
-        if len(epoch_major_minor_to_set_of_micro) <= 5:
+        if len(epoch_major_minor_to_set_of_micro) <= 6:
             for x in epoch_major_minor_to_set_of_micro:
                 number_of_micros = len(epoch_major_minor_to_set_of_micro[x])
-                if number_of_micros >= 20:
+                if number_of_micros >= 15:
                     major_minor = f"{x[1]}.{x[2]}"
                     first_patch = (
                         f"{major_minor}.{min(epoch_major_minor_to_set_of_micro[x])}"
@@ -121,10 +121,11 @@ class BumpPackage:
                         f"{major_minor}.{max(epoch_major_minor_to_set_of_micro[x])}"
                     )
                     logger.warning(
-                        f"Dependency {self.name} has {number_of_micros} releases between "
-                        f"{first_patch} and {last_patch}, and may use uncommon "
-                        f"versioning practices. Should the minimum version of {self.name} "
-                        f"be updated manually?"
+                        f"{self.name} has {number_of_micros} releases between "
+                        f"{first_patch} and {last_patch}, suggesting a versioning "
+                        f"practice of bumping micro rather than minor release "
+                        f"numbers, and that it may be worthwhile to adjust the "
+                        f"minimum allowed version of {self.name} manually."
                     )
 
         return epoch_major_minor_to_set_of_micro
