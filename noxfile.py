@@ -63,31 +63,24 @@ def test_cli(session: nox.Session):
     session.run_install("bump-minimum-dependencies", "--version")
 
     tmp_dir = Path(session.create_tmp())
-    source_dir = Path("tests/data/astropy")
-    target_dir = tmp_dir / "astropy"
+    source_dir = Path("tests/data/base_case")
+    target_dir = tmp_dir / "base_case"
     shutil.copytree(source_dir, target_dir)
     session.chdir(target_dir)
 
     bump_command = [
         "bump-minimum-dependencies",
-        "--drop-months=12",
-        "--cooldown-months=6",
-        "--all-groups",
-        "--all-extras",
+        "--drop-months=24",
+        "--cooldown-months=21",
     ]
 
     # Prepend faketime CLI wrapper to intercept child process OS calls
     session.run(
         "faketime",
-        "2026-08-17",
+        "2026-01-01",
         *bump_command,
         external=True,
     )
-
-    # result = "pyproject.toml"
-    # expected = "pyproject.expected.toml"
-
-    # session.run("diff", "pyproject.toml", "pyproject.expected.toml", external=True)
 
     result = Path("pyproject.toml").read_text().splitlines(keepends=True)
     expected = Path("pyproject.expected.toml").read_text().splitlines(keepends=True)
@@ -96,13 +89,13 @@ def test_cli(session: nox.Session):
         return
 
     diff = list(
-        difflib.unified_diff(
-            result, expected, fromfile=str(result), tofile=str(expected)
-        )
-    )
+         difflib.unified_diff(
+             result, expected, fromfile=str(result), tofile=str(expected)
+         )
+     )
 
     for x in diff[2:]:
-        print(x.removesuffix("\n"))
+         print(x.removesuffix("\n"))
 
     session.error(
         "The resulting pyproject.toml does not match pyproject.expected.toml."
