@@ -9,7 +9,6 @@ __all__ = [
 
 import pathlib
 
-import click
 import requests
 
 from dep_logic.specifiers import parse_version_specifier
@@ -408,9 +407,11 @@ class BumpMinimumDependencies:
 
         try:
             all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable]
-        except (TypeError, AttributeError, KeyError) as exc:
-            errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
-            raise click.ClickException(errmsg) from exc
+        except (TypeError, AttributeError, KeyError):
+            errmsg = (
+                f"Unable to access dependencies in {self.pyproject_file!r}; skipping."
+            )
+            return []
 
         core_requirements_to_update: list[Requirement] = []
         for requirement in all_requirements:
