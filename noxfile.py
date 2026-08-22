@@ -304,9 +304,8 @@ def download_pyprojects(session: nox.Session) -> None:
         "django/django",
         "fastapi/fastapi",
         "home-assistant/core",
-        "indygreg/python-build-standalone",  # does not run cleanly
-        "matplotlib/matplotlib",  # error; multiple entries for vtk
-        "numpy/numpy",
+        "indygreg/python-build-standalone",
+        "matplotlib/matplotlib",
         "pallets/flask",
         "pandas-dev/pandas",
         "PlasmaPy/PlasmaPy",
@@ -314,14 +313,13 @@ def download_pyprojects(session: nox.Session) -> None:
         "pytest-dev/pytest",
         "python-poetry/poetry",
         "pytorch/pytorch",
-        "pyvista/pyvista",  # does not run cleanly
+        "pyvista/pyvista",
         "scikit-image/scikit-image",
         "scikit-learn/scikit-learn",
         "scipy/scipy",
-        "sqlalchemy/sqlalchemy",  # does not run cleanly
+        "sqlalchemy/sqlalchemy",  # failed to parse pyproject.toml
         "sunpy/sunpy",
-        "yt-project/yt",  # fails but not cleanly
-        "namurphy/bump-minimum-dependencies",
+        "yt-project/yt",
     ]
 
     for repository in repositories:
