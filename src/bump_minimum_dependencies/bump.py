@@ -423,7 +423,7 @@ class BumpMinimumDependencies:
                 and requirement.name not in self.only_update_these_packages
             ):
                 continue
-            core_requirements_to_update.append(requirement)
+            core_requirements_to_update.add(requirement)
 
         return core_requirements_to_update
 
@@ -456,7 +456,7 @@ class BumpMinimumDependencies:
 
     def get_new_requirements(
         self,
-        requirements: list[Requirement],
+        requirements: set[Requirement],
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
