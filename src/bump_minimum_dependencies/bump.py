@@ -193,7 +193,7 @@ class BumpPackage:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
                 logger.info(
-                    f"{self.name} {str(release)} is not in the "
+                    f"Version {str(release)} of {self.name}  is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
                     f"yanked or a prerelease. Continuing."
@@ -206,14 +206,15 @@ class BumpPackage:
                 releases_before_drop_date.append(release)
 
         if not supported_releases_before_cooldown:
-            logger.debug("No supported releases before cooldown.")
+            logger.debug(
+                f"No supported releases before cooldown. [{self.name}]")
 
         if not releases_before_drop_date:
-            logger.debug("No releases before dropdate.")
+            logger.debug(f"No releases before drop date. [{self.name}]")
 
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            logger.debug("First release of package is during the cooldown period")
+            logger.debug(f"First release is during the cooldown period. [{self.name}]")
             return utils.normalize_requirement_string(min(self.released_versions))
 
         minimum_allowed_requirement = utils.normalize_requirement_string(
@@ -223,8 +224,8 @@ class BumpPackage:
             )
         )
 
-        logger.debug(
-            f"Oldest supported release of {self.name} is {minimum_allowed_requirement}"
+        logger.info(
+            f"Oldest supported release: {minimum_allowed_requirement} [{self.name}]"
         )
 
         return minimum_allowed_requirement
