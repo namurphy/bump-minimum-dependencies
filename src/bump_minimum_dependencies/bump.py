@@ -464,11 +464,13 @@ class BumpMinimumDependencies:
                 logger.warning(f"{requirement = } is not a Requirement")
             if requirement.name.lower() in self.packages_to_skip:
                 continue
+
             if (
                 self.only_update_these_packages
                 and requirement.name.lower() not in self.only_update_these_packages
             ):
                 continue
+
             requirements_to_update.append(requirement)
 
         logger.debug(
