@@ -225,9 +225,10 @@ class BumpPackage:
         ]
 
         logger.info(
-            f"[{self.name}] "
+            f"[blue]({self.name.strip()})[/] "
             f"New minimum version: {str(new_minimum_version)} "
-            f"({release_date.isoformat()})."
+            f"({release_date.isoformat()}).",
+            extra={"markup": True},
         )
 
         return utils.normalize_requirement_string(new_minimum_version)
