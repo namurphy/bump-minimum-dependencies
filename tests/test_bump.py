@@ -48,6 +48,7 @@ def get_errmsg_from_file_comparison(
 @pytest.mark.parametrize(
     "subdir,date,kwargs",
     [
+        ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
                 "no_project_table",
                 "2026-08-18",
@@ -81,7 +82,6 @@ def get_errmsg_from_file_comparison(
                 "all_extras": True,
             },
         ),
-        ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
             "bump_all_dependency_groups",
             "2026-01-01",
