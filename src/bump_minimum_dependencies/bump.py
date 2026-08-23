@@ -22,8 +22,8 @@ import packaging.requirements
 
 from packaging.requirements import Requirement
 
-from pyproject_parser import PyProject
 
+from bump_minimum_dependencies.pyproject import PyProject
 from . import utils
 
 import logging
@@ -376,29 +376,23 @@ class BumpMinimumDependencies:
         ]
 
         try:
-            self.pyproject: PyProject = PyProject.load(pyproject_file)
+            self.pyproject: PyProject = PyProject(pyproject_file)
         except FileNotFoundError as exc:
-            exception_message = str(exc).lower()
-            msg = f"Unable to load {pyproject_file} with pyproject_parser.PyProject.load()."
-            if "readme" in exception_message or "license" in exception_message:
-                msg += (
-                    " If a readme or license file is declared in a pyproject.toml, "
-                    "these files must be present alongside pyproject.toml."
-                )
+            msg = f"Unable to load {pyproject_file}."
             raise FileNotFoundError(msg) from exc
 
-        if isinstance(self.project_name, str):
+        if self.project_name:
             self.packages_to_skip.append(self.project_name)
 
         if not self.pyproject.project:
             raise RuntimeError("project table not defined")
 
-        logger.info(f"Bumping minimum dependencies for {self.pyproject_file}")
+        logger.info(f"Bumping minimum dependencies for {pyproject_file}")
 
     @property
     def project_name(self) -> str | None:
         """The name of the project, if available."""
-        return self.pyproject.project.get("name", None)  # ty: ignore[unresolved-attribute]
+        return self.pyproject.project_name
 
     @property
     def core_requirements_to_update(self) -> list[Requirement]:
@@ -407,7 +401,7 @@ class BumpMinimumDependencies:
             return []
 
         try:
-            all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable]
+            all_requirements = self.pyproject.core_requirements
         except (TypeError, AttributeError, KeyError) as exc:
             errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
             raise click.ClickException(errmsg) from exc
