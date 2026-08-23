@@ -9,6 +9,7 @@ __all__ = [
 
 import pathlib
 
+import click
 import requests
 
 from dep_logic.specifiers import parse_version_specifier
@@ -378,8 +379,8 @@ class BumpMinimumDependencies:
         try:
             self.pyproject: PyProject = PyProject(pyproject_file)
         except FileNotFoundError as exc:
-            msg = f"Unable to load {pyproject_file}."
-            raise FileNotFoundError(msg) from exc
+            msg = f"Unable to load {pyproject_file}. Stopping."
+            raise click.ClickException(msg) from exc
 
         if self.project_name:
             self.packages_to_skip.append(self.project_name)
