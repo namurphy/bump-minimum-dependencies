@@ -22,9 +22,6 @@ def test_core_requirements(simple_pyproject: PyProject):
 
 def test_optionals(simple_pyproject: PyProject):
     expected = {"optional": {Requirement("sunpy")}}
-    print(simple_pyproject.optional_dependencies)
-    print(expected)
-
     assert simple_pyproject.optional_dependencies == expected
 
 
