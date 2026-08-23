@@ -192,7 +192,7 @@ class BumpPackage:
             try:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
-                logger.debug(
+                logger.info(
                     f"{self.name} {str(release)} is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
@@ -275,7 +275,7 @@ def get_new_requirement_for_package(
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(requirement.name)
-    logger.info(f"Pre-existing requirement: {str(requirement)}")
+    logger.debug(f"Pre-existing requirement: {str(requirement)}")
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
