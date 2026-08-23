@@ -395,10 +395,10 @@ class BumpMinimumDependencies:
         return self.pyproject.project_name
 
     @property
-    def core_requirements_to_update(self) -> list[Requirement]:
+    def core_requirements_to_update(self) -> set[Requirement]:
         """Core project dependencies to be updated if necessary."""
         if self.skip_core_requirements:
-            return []
+            return set()
 
         try:
             all_requirements = self.pyproject.core_requirements
@@ -406,7 +406,7 @@ class BumpMinimumDependencies:
             errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
             raise click.ClickException(errmsg) from exc
 
-        core_requirements_to_update: list[Requirement] = []
+        core_requirements_to_update: set[Requirement] = set()
         for requirement in all_requirements:
             if requirement.name in self.packages_to_skip:
                 continue
