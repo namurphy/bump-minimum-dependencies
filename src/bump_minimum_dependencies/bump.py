@@ -575,13 +575,8 @@ class BumpMinimumDependencies:
         if not self.update_all_optionals and not self.optional_categories_to_update:
             return
 
-        optionals = self.pyproject.project.get("optional-dependencies")  # ty:ignore[unresolved-attribute]
-        if not optionals:
-            logger.info("No optional dependencies found.")
-            return
-
         for category in self.optional_categories_to_update:
-            requirements = optionals[category]
+            requirements = self.pyproject.optional_dependencies[category]
             new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
             self.run_uv_commands(new_requirements, extras_category=category)
 
