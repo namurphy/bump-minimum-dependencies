@@ -1,4 +1,4 @@
-__all__ = ["logger"]
+__all__ = ["logger", "package_prefix"]
 
 import logging
 from rich.logging import RichHandler
@@ -14,3 +14,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger("bump-minimum-dependencies")
+
+
+def package_prefix(package: str) -> str:
+    return f"[{package}] ****"   # add formatting
