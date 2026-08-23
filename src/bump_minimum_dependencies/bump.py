@@ -212,17 +212,25 @@ class BumpPackage:
             logger.debug(f"[{self.name}] First release is during the cooldown period.")
             return utils.normalize_requirement_string(min(self.released_versions))
 
-        minimum_allowed_requirement = utils.normalize_requirement_string(
-            min(
-                supported_releases_before_cooldown,
-                default=max(
-                    releases_before_drop_date,
-                    default=min(self.minor_releases),
-                ),
-            )
+        new_minimum_version = min(
+            supported_releases_before_cooldown,
+            default=max(
+                releases_before_drop_date,
+                default=min(self.minor_releases),
+            ),
         )
 
-        return minimum_allowed_requirement
+        release_date: datetime.date = self.versions_to_release_dates[
+            new_minimum_version
+        ]
+
+        logger.info(
+            f"[{self.name}] "
+            f"New minimum version: {str(new_minimum_version)} "
+            f"({release_date.isoformat()})."
+        )
+
+        return utils.normalize_requirement_string(new_minimum_version)
 
 
 def combine_requirements(
