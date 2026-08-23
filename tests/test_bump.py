@@ -49,6 +49,13 @@ def get_errmsg_from_file_comparison(
     "subdir,date,kwargs",
     [
         (
+                "no_project_table",
+                "2026-08-18",
+                {
+
+                },
+        ),
+        (
             "bump_pyright",
             "2026-08-18",
             {
