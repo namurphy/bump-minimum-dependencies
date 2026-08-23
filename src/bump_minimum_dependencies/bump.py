@@ -58,7 +58,6 @@ class BumpPackage:
             skip_yanked=True,
             skip_prerelease=True,
         )
-        logger.debug(f"Finding new minimum allowed version for {self.name}")
 
     @functools.cached_property
     def response(self):
@@ -95,9 +94,7 @@ class BumpPackage:
 
             if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
                 if version.post is not None:
-                    logger.warning(
-                        f"Skipping post release of {self.name}: {str(version)}"
-                    )
+                    logger.info(f"[{self.name}] Skipping post release: {str(version)}")
                     continue
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
             else:
@@ -144,8 +141,8 @@ class BumpPackage:
                 minor_releases.append(version)
             else:
                 logger.debug(
-                    f"Reconstructed version {version} not found "
-                    f"in released versions. Skipping. [{self.name}]"
+                    f"[{self.name}] Reconstructed version {version} not found "
+                    f"in released versions. Skipping."
                 )
 
         return sorted(minor_releases)
@@ -171,7 +168,7 @@ class BumpPackage:
         """
 
         if not self.minor_releases:
-            msg = f"No releases identified for {self.name}."
+            msg = f"[{self.name}] No minor releases identified."
             raise NoReleasesError(msg)
 
         support_window = datetime.timedelta(
@@ -205,14 +202,14 @@ class BumpPackage:
                 releases_before_drop_date.append(release)
 
         if not supported_releases_before_cooldown:
-            logger.debug(f"No supported releases before cooldown. [{self.name}]")
+            logger.debug(f"[{self.name}] No supported releases before cooldown.")
 
         if not releases_before_drop_date:
-            logger.debug(f"No releases before drop date. [{self.name}]")
+            logger.debug(f"[{self.name}] No releases before drop date.")
 
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            logger.debug(f"First release is during the cooldown period. [{self.name}]")
+            logger.debug(f"[{self.name}] First release is during the cooldown period.")
             return utils.normalize_requirement_string(min(self.released_versions))
 
         minimum_allowed_requirement = utils.normalize_requirement_string(
@@ -223,10 +220,6 @@ class BumpPackage:
                     default=min(self.minor_releases),
                 ),
             )
-        )
-
-        logger.info(
-            f"Oldest supported release: {minimum_allowed_requirement} [{self.name}]"
         )
 
         return minimum_allowed_requirement
@@ -278,15 +271,16 @@ def get_new_requirement_for_package(
     cooldown_months: float | int,
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
-    logger.debug(f"Getting new requirement for {requirement.name}")
     package = BumpPackage(requirement.name)
-    logger.debug(f"Pre-existing requirement: {str(requirement)}")
+    logger.debug(
+        f"[{requirement.name}] Original specifier: {str(requirement.specifier)}"
+    )
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    logger.debug(f"Time-based requirement: {requirement.name}{time_based_requirement}")
+    logger.debug(f"[{requirement.name}] Time-based specifier: {time_based_requirement}")
     combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
@@ -297,7 +291,7 @@ def get_new_requirement_for_package(
     else:
         new_requirement = f"{requirement.name}{combined_requirement}"
 
-    logger.debug(f"Combined requirement: {new_requirement}")
+    logger.info(f"[{requirement.name}] Combined requirement: {new_requirement}")
 
     return new_requirement
 
@@ -472,10 +466,10 @@ class BumpMinimumDependencies:
             # and is intended as a safeguard.
             if not isinstance(requirement, Requirement):
                 try:
-                    logger.warning(f"{requirement = } is not a Requirement object.")
+                    logger.debug(f"{requirement = } is not a Requirement object.")
                     requirement = Requirement(requirement)
                 except (InvalidRequirement, TypeError):
-                    logger.error(
+                    logger.warning(
                         f"{requirement = } cannot be converted into a "
                         f"Requirement. Continuing"
                     )
