@@ -581,11 +581,7 @@ class BumpMinimumDependencies:
             logger.info(msg)
 
             try:
-                subprocess.run(
-                    command,
-                    check=True,
-                    capture_output=True,
-                )
+                subprocess.run(command, check=True, capture_output=True)
             except subprocess.CalledProcessError as exc_info:
                 logger.error(
                     f"Command failed: {command_string}",
