@@ -22,8 +22,8 @@ import packaging.requirements
 
 from packaging.requirements import Requirement
 
-from pyproject_parser import PyProject
 
+from bump_minimum_dependencies.pyproject import PyProject
 from . import utils
 
 import logging
@@ -192,7 +192,7 @@ class BumpPackage:
             try:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
-                logger.debug(
+                logger.info(
                     f"{self.name} {str(release)} is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
@@ -275,7 +275,7 @@ def get_new_requirement_for_package(
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(requirement.name)
-    logger.info(f"Pre-existing requirement: {str(requirement)}")
+    logger.debug(f"Pre-existing requirement: {str(requirement)}")
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
@@ -376,29 +376,23 @@ class BumpMinimumDependencies:
         ]
 
         try:
-            self.pyproject: PyProject = PyProject.load(pyproject_file)
+            self.pyproject: PyProject = PyProject(pyproject_file)
         except FileNotFoundError as exc:
-            exception_message = str(exc).lower()
-            msg = f"Unable to load {pyproject_file} with pyproject_parser.PyProject.load()."
-            if "readme" in exception_message or "license" in exception_message:
-                msg += (
-                    " If a readme or license file is declared in a pyproject.toml, "
-                    "these files must be present alongside pyproject.toml."
-                )
+            msg = f"Unable to load {pyproject_file}."
             raise FileNotFoundError(msg) from exc
 
-        if isinstance(self.project_name, str):
+        if self.project_name:
             self.packages_to_skip.append(self.project_name)
 
         if not self.pyproject.project:
             raise RuntimeError("project table not defined")
 
-        logger.info(f"Bumping minimum dependencies for {self.pyproject_file}")
+        logger.info(f"Bumping minimum dependencies for {pyproject_file}")
 
     @property
     def project_name(self) -> str | None:
         """The name of the project, if available."""
-        return self.pyproject.project.get("name", None)  # ty: ignore[unresolved-attribute]
+        return self.pyproject.project_name
 
     @property
     def core_requirements_to_update(self) -> list[Requirement]:
@@ -407,7 +401,7 @@ class BumpMinimumDependencies:
             return []
 
         try:
-            all_requirements = self.pyproject.project["dependencies"]  # ty:ignore[not-subscriptable]
+            all_requirements = self.pyproject.core_requirements
         except (TypeError, AttributeError, KeyError) as exc:
             errmsg = f"Unable to access dependencies in {self.pyproject_file!r}"
             raise click.ClickException(errmsg) from exc
@@ -435,7 +429,7 @@ class BumpMinimumDependencies:
         if not self.pyproject.dependency_groups:
             return []
 
-        all_dependency_groups: list[str] = sorted(self.pyproject.dependency_groups)
+        all_dependency_groups: list[str] = sorted(self.pyproject.dependency_group_names)
 
         if undefined := set(self.dependency_groups) - set(all_dependency_groups):
             msg = f"the following dependency groups are not defined: {undefined}"
@@ -448,9 +442,7 @@ class BumpMinimumDependencies:
     @property
     def optional_categories_to_update(self) -> list[str]:
         """Names of categories of optional dependencies to be updated if necessary."""
-        all_optionals: list[str] = sorted(
-            self.pyproject.project.get("optional-dependencies", [])  # ty: ignore[unresolved-attribute]
-        )
+        all_optionals: list[str] = self.pyproject.optional_category_names
         if undefined := set(self.optional_categories) - set(all_optionals):
             raise ValueError(
                 f"the following optional dependency categories are not "
@@ -464,11 +456,8 @@ class BumpMinimumDependencies:
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
-            if isinstance(requirement, str):
-                requirement = utils.normalize_requirement_string(requirement)
-                requirement = Requirement(requirement)
             if not isinstance(requirement, Requirement):
-                continue
+                logger.warning(f"{requirement = } is not a Requirement")
             if requirement.name.lower() in self.packages_to_skip:
                 continue
             if (
@@ -574,7 +563,7 @@ class BumpMinimumDependencies:
             return
 
         for dependency_group in self.dependency_groups_to_update:
-            requirements = self.pyproject.dependency_groups[dependency_group]  # ty:ignore[not-subscriptable]
+            requirements = self.pyproject.dependency_groups[dependency_group]
             new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
             self.run_uv_command(new_requirements, dependency_group=dependency_group)
 
@@ -583,7 +572,7 @@ class BumpMinimumDependencies:
         if not self.update_all_optionals and not self.optional_categories_to_update:
             return
 
-        optionals = self.pyproject.project.get("optional-dependencies")  # ty:ignore[unresolved-attribute]
+        optionals = self.pyproject.optional_dependencies
         if not optionals:
             logger.info("No optional dependencies found.")
             return
