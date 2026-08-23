@@ -460,8 +460,19 @@ class BumpMinimumDependencies:
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
+            # The following error-handling code should never be reached,
+            # and is intended as a safeguard.
             if not isinstance(requirement, Requirement):
-                logger.warning(f"{requirement = } is not a Requirement")
+                try:
+                    logger.warning(f"{requirement = } is not a Requirement object.")
+                    requirement = Requirement(requirement)
+                except (InvalidRequirement, TypeError):
+                    logger.error(
+                        f"{requirement = } cannot be converted into a "
+                        f"Requirement. Continuing"
+                    )
+                    continue
+
             if requirement.name.lower() in self.packages_to_skip:
                 continue
 
