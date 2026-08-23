@@ -560,9 +560,6 @@ class BumpMinimumDependencies:
 
     def bump_core_requirements(self) -> None:
         """Bump the core package requirements."""
-        if self.skip_core_requirements:
-            return
-
         new_requirements = self.get_new_requirements(self.core_requirements_to_update)
         self.run_uv_commands(new_requirements)
 
