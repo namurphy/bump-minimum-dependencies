@@ -41,6 +41,7 @@ logger = logging.getLogger("bump")
 logger.propagate = True
 logger.setLevel(logging.WARNING)
 
+
 class NoReleasesError(Exception):
     """When no releases of a package can be identified."""
 
@@ -252,7 +253,9 @@ def combine_requirements(
     combined = parsed_original & parsed_new
     new_specifier = str(original) if combined.is_empty() else str(combined)
     if "||" in new_specifier:
-        logger.warning("Cannot update versions with != in supported range; skipping.")
+        logger.warning(
+            "Cannot update versions with multiple != in supported range; skipping."
+        )
         return None
 
     new_specifier = utils.normalize_requirement_string(new_specifier)
@@ -512,20 +515,21 @@ class BumpMinimumDependencies:
                     cooldown_months=self.cooldown_months,
                 )
             except NoReleasesError:
-                logger.warning(f"[{requirement.name}] No releases identified "
-                               "from PyPI; skipping.")
+                logger.warning(
+                    f"[{requirement.name}] No releases identified from PyPI; skipping."
+                )
             except requests.exceptions.JSONDecodeError:
                 logger.warning(
-                    f"[{requirement.name}] Cannot access metadata from "
+                    f"[{requirement.name}] Cannot decode JSON metadata from "
                     f"PyPI; skipping.",
                 )
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
-            except Exception:
+            except Exception as exc_info:
                 warning_message = (
-                    f"[{requirement.name}] Unable to update requirement. Skipping."
+                    f"[{requirement.name}] Unable to update requirement. Skipping.",
                 )
-                logger.warning(warning_message)
+                logger.warning(warning_message, exc_info=exc_info)
             else:
                 if not new_requirement:
                     continue
@@ -577,9 +581,22 @@ class BumpMinimumDependencies:
                 new_requirement,
             ]
 
-            msg = f"Running: {' '.join(command)}"
+            command_string = " ".join(command)
+
+            msg = f"Running: {command_string}"
             logger.info(msg)
-            subprocess.run(command)
+
+            try:
+                result = subprocess.run(
+                    command,
+                    check=True,
+                    capture_output=True,
+                )
+            except subprocess.CalledProcessError as exc_info:
+                logger.error(
+                    f"Command failed: {command_string}",
+                    exc_info=exc_info,
+                )
 
     def bump_core_requirements(self) -> None:
         """Bump the core package requirements."""
