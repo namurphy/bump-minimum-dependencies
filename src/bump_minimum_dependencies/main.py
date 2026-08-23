@@ -6,6 +6,7 @@ import click
 
 from . import bump
 
+from typing import Literal
 
 DEFAULT_DROP_MONTHS = 24
 DEFAULT_COOLDOWN_MONTHS = 12
@@ -95,6 +96,14 @@ DEFAULT_SKIP_CORE = False
     is_flag=True,
     help="If provided, core project dependencies will not be updated.",
 )
+@click.option(
+    "--verbosity",
+    default="WARNING",
+    type=click.Choice(
+        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
+    ),
+    help="Logging verbosity level. Defaults to WARNING.",
+)
 @click.version_option(package_name="bump_minimum_dependencies")
 def main(
     pyproject_file: str | pathlib.Path,
@@ -107,6 +116,7 @@ def main(
     group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
     only_package: tuple[str, ...] | list[str],
+    verbosity: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
 ) -> None:
     """
     Bump the minimum allowed minor versions of package dependencies.
@@ -137,6 +147,7 @@ def main(
         skip_package=skip_package,
         skip_core=skip_core,
         only_package=only_package,
+        verbosity=verbosity,
     )
 
     bump_minimum_dependencies.run()

@@ -7,6 +7,7 @@ __all__ = [
 ]
 
 import pathlib
+from typing import Literal
 
 import click
 import requests
@@ -355,7 +356,13 @@ class BumpMinimumDependencies:
         group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
         only_package: tuple[str, ...] | list[str] = (),
+        verbosity: Literal[
+            "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
+        ] = "WARNING",
     ):
+        logger.debug(f"Setting logging level to {verbosity}")
+        logger.setLevel(verbosity)
+
         if cooldown_months > drop_months:
             # issue a warning when cooldown_months ≠ the default value
             if cooldown_months != 12:
