@@ -71,7 +71,7 @@ def build(session: nox.Session) -> None:
 def run(session: nox.Session) -> None:
     """Run the package."""
     session.install(".")
-    session.run("bump-minimum-dependencies", session.posargs)
+    session.run("bump-minimum-dependencies", *session.posargs)
 
 
 @nox.session(python=supported_python_versions)
