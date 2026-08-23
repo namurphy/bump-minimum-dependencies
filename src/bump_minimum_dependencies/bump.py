@@ -562,20 +562,16 @@ class BumpMinimumDependencies:
 
     def bump_dependency_groups(self):
         """Bump requirements in dependency groups."""
-        # if not self.update_all_dependency_groups and not self.dependency_groups:
-        #     return
         for dependency_group in self.dependency_groups_to_update:
-            requirements = self.pyproject.dependency_groups[dependency_group]  # ty:ignore[not-subscriptable]
-            new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
+            requirements = self.pyproject.dependency_groups[dependency_group]
+            new_requirements = self.get_new_requirements(requirements)
             self.run_uv_commands(new_requirements, dependency_group=dependency_group)
 
     def bump_optional_dependencies(self):
         """Bump requirements in optional dependencies."""
-        # if not self.update_all_optionals and not self.optional_categories_to_update:
-        #     return
         for category in self.optional_categories_to_update:
             requirements = self.pyproject.optional_dependencies[category]
-            new_requirements = self.get_new_requirements(requirements)  # ty:ignore[invalid-argument-type]
+            new_requirements = self.get_new_requirements(requirements)
             self.run_uv_commands(new_requirements, extras_category=category)
 
     def run(self):
