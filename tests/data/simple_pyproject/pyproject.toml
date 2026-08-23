@@ -1,0 +1,17 @@
+[project]
+name = "simple-pyproject"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2",
+]
+
+[project.optional-dependencies]
+optional = [
+    "sunpy",
+]
+
+[dependency-groups]
+group = [
+    "plasmapy>=0.8.1",
+]

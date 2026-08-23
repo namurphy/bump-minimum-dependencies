@@ -163,7 +163,9 @@ def get_errmsg_from_file_comparison(
         ),
     ],
 )
-def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None:
+def test_bumping_minimum_requirements(
+    tmp_path, monkeypatch, freezer, subdir, kwargs, date
+) -> None:
     freezer.move_to(date)
 
     data_dir: Path = Path(__file__).parent / "data" / subdir
@@ -196,7 +198,7 @@ def test_pyproject(tmp_path, monkeypatch, freezer, subdir, kwargs, date) -> None
         ("pyproject-fmt", 100, 100, "0.1"),
     ],
 )
-def test_bump(
+def test_bumping_single_package(
     name: str, drop_months: int, cooldown_months: int, expected: str, freezer
 ) -> None:
     freezer.move_to("2026-01-01")
