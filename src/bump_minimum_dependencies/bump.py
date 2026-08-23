@@ -3,7 +3,6 @@ __all__ = [
     "BumpPackage",
     "combine_requirements",
     "get_new_requirement_for_package",
-    "logger",
     "requirement_already_included",
 ]
 
@@ -25,9 +24,8 @@ from packaging.requirements import Requirement
 
 
 from bump_minimum_dependencies.pyproject import PyProject
-from . import utils
-
-import logging
+from bump_minimum_dependencies.logging import logger
+from bump_minimum_dependencies import utils
 
 import math
 
@@ -35,11 +33,6 @@ import subprocess
 import functools
 
 DAYS_PER_MONTH = 30.436875
-
-
-logger = logging.getLogger("bump")
-logger.propagate = True
-logger.setLevel(logging.WARNING)
 
 
 class NoReleasesError(Exception):
