@@ -1,0 +1,4 @@
+[dependency-groups]
+group = [
+    "numpy>=2.1",
+]

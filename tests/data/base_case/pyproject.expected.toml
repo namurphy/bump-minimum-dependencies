@@ -11,6 +11,7 @@ dependencies = [
   "astropy>=6",
   "docutils>=0.20,<2",
   "heliopy>=1,<2",
+  "nose~=1.0.0",
   "nox>=2025.10.16",
   "numpy>=1.26",
   "plasmapy>=2024.2",
