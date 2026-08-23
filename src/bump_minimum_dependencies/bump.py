@@ -215,7 +215,10 @@ class BumpPackage:
         minimum_allowed_requirement = utils.normalize_requirement_string(
             min(
                 supported_releases_before_cooldown,
-                default=max(releases_before_drop_date),
+                default=max(
+                    releases_before_drop_date,
+                    default=min(self.minor_releases),
+                ),
             )
         )
 
@@ -504,13 +507,18 @@ class BumpMinimumDependencies:
                     cooldown_months=self.cooldown_months,
                 )
 
-            # Catch any exception since if a package cannot be updated
+            except requests.exceptions.JSONDecodeError:
+                logger.warning(
+                    f"Unable to access release metadata for {requirement} from"
+                    f"the Python Package Index; skipping.",
+                )
+            # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
-            except Exception:
+            except Exception as exc_info:
                 warning_message = (
                     f"Unable to update dependency {requirement}. Skipping."
                 )
-                logger.warning(warning_message)
+                logger.warning(warning_message, exc_info=exc_info)
             else:
                 if not new_requirement:
                     continue
