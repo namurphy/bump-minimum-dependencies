@@ -41,6 +41,9 @@ logger = logging.getLogger("bump")
 logger.propagate = True
 logger.setLevel(logging.WARNING)
 
+class NoReleasesError(Exception):
+    """When no releases of a package can be identified."""
+
 
 class BumpPackage:
     """
@@ -171,6 +174,10 @@ class BumpPackage:
             releases.  If possible, the oldest supported minor release
             will be at least `cooldown_months` old.
         """
+
+        if not self.minor_releases:
+            msg = f"No releases identified for {self.name}."
+            raise NoReleasesError(msg)
 
         support_window = datetime.timedelta(
             days=math.ceil(drop_months * DAYS_PER_MONTH)
@@ -504,7 +511,9 @@ class BumpMinimumDependencies:
                     drop_months=self.drop_months,
                     cooldown_months=self.cooldown_months,
                 )
-
+            except NoReleasesError:
+                logger.warning(f"[{requirement.name}] No releases identified "
+                               "from PyPI; skipping.")
             except requests.exceptions.JSONDecodeError:
                 logger.warning(
                     f"Unable to access release metadata for {requirement} from"
