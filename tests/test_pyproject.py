@@ -31,3 +31,11 @@ def test_optionals(simple_pyproject: PyProject):
 def test_groups(simple_pyproject: PyProject):
     expected = {"group": {Requirement("plasmapy>=0.8.1")}}
     assert simple_pyproject.dependency_groups == expected
+
+
+def test_dependency_group_names(simple_pyproject: PyProject):
+    assert simple_pyproject.dependency_group_names == ["group"]
+
+
+def test_optional_category_names(simple_pyproject: PyProject):
+    assert simple_pyproject.optional_category_names == ["optional"]

@@ -38,7 +38,7 @@ class PyProject:
         """
         core_requirements = set()
         for requirement in self.project.get("dependencies", set()):
-            with contextlib.suppress(InvalidRequirement):
+            with contextlib.suppress(InvalidRequirement, TypeError):
                 core_requirements.add(Requirement(requirement))
         return core_requirements
 
@@ -53,11 +53,21 @@ class PyProject:
         for extra in original_extras:
             optional_dependencies[extra] = set()
             for dependency in original_extras[extra]:
-                with contextlib.suppress(InvalidRequirement):
+                with contextlib.suppress(InvalidRequirement, TypeError):
                     optional_dependencies[extra].add(
                         Requirement(dependency),
                     )
         return optional_dependencies
+
+    @functools.cached_property
+    def optional_category_names(self) -> list[str]:
+        """The category names for optional dependencies."""
+        return sorted(self.optional_dependencies.keys())
+
+    @functools.cached_property
+    def dependency_group_names(self) -> list[str]:
+        """The names of dependency groups."""
+        return sorted(self.dependency_groups.keys())
 
     @functools.cached_property
     def dependency_groups(self) -> dict[str, set[Requirement]]:
@@ -72,7 +82,7 @@ class PyProject:
         for group in original_groups:
             dependency_groups[group] = set()
             for dependency in original_groups[group]:
-                with contextlib.suppress(InvalidRequirement):
+                with contextlib.suppress(InvalidRequirement, TypeError):
                     dependency_groups[group].add(Requirement(dependency))
 
         return dependency_groups
