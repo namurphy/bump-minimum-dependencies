@@ -50,11 +50,11 @@ def get_errmsg_from_file_comparison(
     [
         ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
         (
-                "no_project_table",
-                "2026-08-18",
-                {
-
-                },
+            "no_project_table",
+            "2026-08-18",
+            {
+                "group": ["group"],
+            },
         ),
         (
             "bump_pyright",
