@@ -587,7 +587,7 @@ class BumpMinimumDependencies:
             logger.info(msg)
 
             try:
-                result = subprocess.run(
+                subprocess.run(
                     command,
                     check=True,
                     capture_output=True,
@@ -597,6 +597,7 @@ class BumpMinimumDependencies:
                     f"Command failed: {command_string}",
                     exc_info=exc_info,
                 )
+                logger.warning(f"Update not performed: {new_requirement}. Continuing.")
 
     def bump_core_requirements(self) -> None:
         """Bump the core package requirements."""
