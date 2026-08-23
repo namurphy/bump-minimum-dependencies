@@ -386,7 +386,7 @@ class BumpMinimumDependencies:
         try:
             self.pyproject: PyProject = PyProject(pyproject_file)
         except FileNotFoundError as exc:
-            msg = f"Unable to load {pyproject_file}. Stopping."
+            msg = f"Cannot load {pyproject_file}. Stopping."
             raise click.ClickException(msg) from exc
 
         if self.project_name:
@@ -516,16 +516,16 @@ class BumpMinimumDependencies:
                                "from PyPI; skipping.")
             except requests.exceptions.JSONDecodeError:
                 logger.warning(
-                    f"Unable to access release metadata for {requirement} from"
-                    f"the Python Package Index; skipping.",
+                    f"[{requirement.name}] Cannot access metadata from "
+                    f"PyPI; skipping.",
                 )
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
-            except Exception as exc_info:
+            except Exception:
                 warning_message = (
-                    f"Unable to update dependency {requirement}. Skipping."
+                    f"[{requirement.name}] Unable to update requirement. Skipping."
                 )
-                logger.warning(warning_message, exc_info=exc_info)
+                logger.warning(warning_message)
             else:
                 if not new_requirement:
                     continue
