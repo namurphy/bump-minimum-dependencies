@@ -456,11 +456,8 @@ class BumpMinimumDependencies:
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
-            if isinstance(requirement, str):
-                requirement = utils.normalize_requirement_string(requirement)
-                requirement = Requirement(requirement)
             if not isinstance(requirement, Requirement):
-                continue
+                logger.warning(f"{requirement = } is not a Requirement")
             if requirement.name.lower() in self.packages_to_skip:
                 continue
             if (
