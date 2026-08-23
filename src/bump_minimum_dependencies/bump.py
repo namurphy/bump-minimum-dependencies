@@ -72,7 +72,6 @@ class BumpPackage:
     def released_versions(self) -> list[packaging.version.Version]:
         """The versions of all releases."""
         versions = sorted(self.versions_to_release_dates)
-        logger.debug(f"Most recent release of {self.name}: {versions[-1]}")
         return versions
 
     @functools.cached_property
@@ -146,8 +145,8 @@ class BumpPackage:
                 minor_releases.append(version)
             else:
                 logger.debug(
-                    f"{self.name} reconstructed version {version} not found "
-                    f"in released versions. Skipping."
+                    f"Reconstructed version {version} not found "
+                    f"in released versions. Skipping. [{self.name}]"
                 )
 
         return sorted(minor_releases)
@@ -182,9 +181,6 @@ class BumpPackage:
         drop_date: datetime.date = self.today - support_window
         cooldown_date: datetime.date = self.today - cooldown_period
 
-        logger.debug(f"{cooldown_date = !r}")
-        logger.debug(f"{drop_date = }")
-
         supported_releases_before_cooldown: list[packaging.version.Version] = []
         releases_before_drop_date: list[packaging.version.Version] = []
 
@@ -192,11 +188,11 @@ class BumpPackage:
             try:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
-                logger.info(
-                    f"Version {str(release)} of {self.name}  is not in the "
+                logger.debug(
+                    f"Version {str(release)} is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
-                    f"yanked or a prerelease. Continuing."
+                    f"yanked or a prerelease. Continuing. [{self.name}]"
                 )
                 continue
 
@@ -206,8 +202,7 @@ class BumpPackage:
                 releases_before_drop_date.append(release)
 
         if not supported_releases_before_cooldown:
-            logger.debug(
-                f"No supported releases before cooldown. [{self.name}]")
+            logger.debug(f"No supported releases before cooldown. [{self.name}]")
 
         if not releases_before_drop_date:
             logger.debug(f"No releases before drop date. [{self.name}]")
@@ -275,6 +270,7 @@ def get_new_requirement_for_package(
     cooldown_months: float | int,
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
+    logger.debug(f"Getting new requirement for {requirement.name}")
     package = BumpPackage(requirement.name)
     logger.debug(f"Pre-existing requirement: {str(requirement)}")
     calculated_minimum_version = package.oldest_supported_minor_release(
@@ -282,7 +278,7 @@ def get_new_requirement_for_package(
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    logger.debug(f"Time-based requirement: {time_based_requirement}")
+    logger.debug(f"Time-based requirement: {requirement.name}{time_based_requirement}")
     combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
