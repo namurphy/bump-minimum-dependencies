@@ -222,6 +222,17 @@ def get_errmsg_from_file_comparison(
                     "verbosity": DEFAULT_TEST_VERBOSITY,
                 },
         ),
+        (
+                "skip_two_extras_categories",
+                "2026-08-18",
+                {
+                    "drop_months": 12,
+                    "cooldown_months": 6,
+                    "all_extras": True,
+                    "skip_two_extras": ["skip-this", "skip-this-too"],
+                    "verbosity": DEFAULT_TEST_VERBOSITY,
+                },
+        ),
     ],
 )
 def test_bumping_minimum_requirements(
