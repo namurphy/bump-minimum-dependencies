@@ -1,6 +1,6 @@
 # /// script
 # python_version = ">=3.13"
-# dependencies = ["nox", "nox-uv"]
+# dependencies = ["nox", "nox-uv", "requests"]
 # ///
 
 import difflib
