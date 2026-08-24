@@ -191,7 +191,8 @@ class BumpPackage:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
                 logger.debug(
-                    f"{package_prefix(self.name)} Version {str(release)} is not in the "
+                    f"{package_prefix(self.name)} "
+                    f"Version {str(release)} is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
                     f"yanked or a prerelease. Continuing.",
@@ -205,14 +206,15 @@ class BumpPackage:
 
         if not supported_releases_before_cooldown:
             logger.debug(
-                f"{package_prefix(self.name)} No supported releases before cooldown.",
-                extra={"markup": True},
+                f"{package_prefix(self.name)} "
+                f"No supported releases prior to cooldown. "
+                f"({cooldown_date.isoformat()})",
             )
 
         if not releases_before_drop_date:
             logger.debug(
-                f"{package_prefix(self.name)} No releases before drop date.",
-                extra={"markup": True},
+                f"{package_prefix(self.name)} "
+                f"No releases prior to drop date ({drop_date.isoformat()}).",
             )
 
         # when a package's first release is during the cooldown period
@@ -581,7 +583,7 @@ class BumpMinimumDependencies:
             clause = f"dependency group {dependency_group!r}"
         elif extras_category:
             flag = [f"--optional={extras_category}"]
-            clause = f"optional dependencies category {extras_category}"
+            clause = f"optional dependencies category {extras_category!r}"
         else:
             flag = []
             clause = "core dependencies"
