@@ -64,4 +64,4 @@ jobs:
         sudo apt-get install -y faketime
 
     - name: Run the check
-      run: nox -s '${{ matrix.nox_session }}'
+      run: uv run noxfile.py -s '${{ matrix.nox_session }}'
