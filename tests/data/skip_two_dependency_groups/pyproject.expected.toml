@@ -12,5 +12,5 @@ skip-this-too = [
     "numpy>1.21",
 ]
 update-this = [
-    "numpy>2.4",
+    "numpy>=2.4.1",
 ]
