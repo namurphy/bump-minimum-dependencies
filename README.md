@@ -24,31 +24,34 @@ Usage: bump-minimum-dependencies [OPTIONS]
   warning.
 
 Options:
-  --pyproject-file FILE          Path to pyproject.toml. Default is
-                                 pyproject.toml in current directory.
-  --drop-months FLOAT RANGE      Drop minor releases older than this many
-                                 months ago. Defaults to 24.  [x>=0]
-  --cooldown-months FLOAT RANGE  Ensure that there is at least one release
-                                 this many months old, if possible. Defaults
-                                 to 12 or the value provided to --drop-months,
-                                 whichever is smaller.  [x>=0]
-  --only-package TEXT            Name of a package to update. May be provided
-                                 multiple times. When this option is used, all
-                                 other packages will be skipped.
-  --skip-package TEXT            Name of a package to skip when performing
-                                 updates. May be provided multiple times.
-  --extra TEXT                   Name of an optional dependencies category to
-                                 update. May be provided multiple times.
-  --all-extras                   If provided, all optional dependency
-                                 categories will be updated.
-  --group TEXT                   Name of a dependency group to update. May be
-                                 provided multiple times.
-  --all-groups                   If provided, all dependency groups will be
-                                 updated.
-  --skip-core                    If provided, core project dependencies will
-                                 not be updated.
-  --version                      Show the version and exit.
-  --help                         Show this message and exit.
+  --pyproject-file FILE           Path to pyproject.toml. Default is
+                                  pyproject.toml in current directory.
+  --drop-months FLOAT RANGE       Drop minor releases older than this many
+                                  months ago. Defaults to 24.  [x>=0]
+  --cooldown-months FLOAT RANGE   Ensure that there is at least one release
+                                  this many months old, if possible. Defaults
+                                  to 12 or the value provided to --drop-
+                                  months, whichever is smaller.  [x>=0]
+  --only-package TEXT             Name of a package to update. May be provided
+                                  multiple times. When this option is used,
+                                  all other packages will be skipped.
+  --skip-package TEXT             Name of a package to skip when performing
+                                  updates. May be provided multiple times.
+  --extra TEXT                    Name of an optional dependencies category to
+                                  update. May be provided multiple times.
+  --all-extras                    If provided, all optional dependency
+                                  categories will be updated.
+  --group TEXT                    Name of a dependency group to update. May be
+                                  provided multiple times.
+  --all-groups                    If provided, all dependency groups will be
+                                  updated.
+  --skip-core                     If provided, core project dependencies will
+                                  not be updated.
+  --verbosity [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]
+                                  Logging verbosity level. Defaults to
+                                  WARNING.
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
 ```
 
 ## Examples
