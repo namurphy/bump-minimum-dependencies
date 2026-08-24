@@ -5,7 +5,7 @@
 #     "nox-uv",
 #     "requests",
 #     "tomli_w",
-#     "distlib==0.4.3",
+#     "distlib>=0.4.2,!=0.4.3,!=0.4.4",
 # ]
 # ///
 
