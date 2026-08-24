@@ -151,8 +151,8 @@ class BumpPackage:
 
     def oldest_supported_minor_release(
         self,
-        drop_months: float = 24,
-        cooldown_months: float = 18,
+        drop_months: float,
+        cooldown_months: float,
     ) -> str:
         """
         Get the oldest supported minor release of the package.
