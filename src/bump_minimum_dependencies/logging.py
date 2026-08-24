@@ -18,6 +18,7 @@ rich_handler = RichHandler(
     show_time=False,
     markup=True,
     keywords=keywords,
+    show_path=False,  # set to True when actively debugging
 )
 
 
