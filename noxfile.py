@@ -352,7 +352,12 @@ def bump_pyproject(session: nox.Session, package: str) -> None:
     session.log(f"Project: {path.name}")
     shutil.copy2("pyproject.original.toml", "pyproject.toml")
 
-    session.run("bump-minimum-dependencies", "--all-groups", "--all-extras")
+    session.run(
+        "bump-minimum-dependencies",
+        "--all-groups",
+        "--all-extras",
+        *session.posargs,
+    )
 
     session.run(
         "diff",

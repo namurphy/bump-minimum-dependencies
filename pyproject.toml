@@ -23,6 +23,7 @@ dependencies = [
   "dep-logic>=0.7.1",
   "requests>=2.34.2",
   # older version of uv shift positions of certain inline comments
+  "rich>=15",
   "uv>=0.12.5",
 ]
 urls.Source = "https://github.com/namurphy/bump-minimum-dependencies"

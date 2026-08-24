@@ -24,31 +24,34 @@ Usage: bump-minimum-dependencies [OPTIONS]
   warning.
 
 Options:
-  --pyproject-file FILE          Path to pyproject.toml. Default is
-                                 pyproject.toml in current directory.
-  --drop-months FLOAT RANGE      Drop minor releases older than this many
-                                 months ago. Defaults to 24.  [x>=0]
-  --cooldown-months FLOAT RANGE  Ensure that there is at least one release
-                                 this many months old, if possible. Defaults
-                                 to 12 or the value provided to --drop-months,
-                                 whichever is smaller.  [x>=0]
-  --only-package TEXT            Name of a package to update. May be provided
-                                 multiple times. When this option is used, all
-                                 other packages will be skipped.
-  --skip-package TEXT            Name of a package to skip when performing
-                                 updates. May be provided multiple times.
-  --extra TEXT                   Name of an optional dependencies category to
-                                 update. May be provided multiple times.
-  --all-extras                   If provided, all optional dependency
-                                 categories will be updated.
-  --group TEXT                   Name of a dependency group to update. May be
-                                 provided multiple times.
-  --all-groups                   If provided, all dependency groups will be
-                                 updated.
-  --skip-core                    If provided, core project dependencies will
-                                 not be updated.
-  --version                      Show the version and exit.
-  --help                         Show this message and exit.
+  --pyproject-file FILE           Path to pyproject.toml. Default is
+                                  pyproject.toml in current directory.
+  --drop-months FLOAT RANGE       Drop minor releases older than this many
+                                  months ago. Defaults to 24.  [x>=0]
+  --cooldown-months FLOAT RANGE   Ensure that there is at least one release
+                                  this many months old, if possible. Defaults
+                                  to 12 or the value provided to --drop-
+                                  months, whichever is smaller.  [x>=0]
+  --only-package TEXT             Name of a package to update. May be provided
+                                  multiple times. When this option is used,
+                                  all other packages will be skipped.
+  --skip-package TEXT             Name of a package to skip when performing
+                                  updates. May be provided multiple times.
+  --extra TEXT                    Name of an optional dependencies category to
+                                  update. May be provided multiple times.
+  --all-extras                    If provided, all optional dependency
+                                  categories will be updated.
+  --group TEXT                    Name of a dependency group to update. May be
+                                  provided multiple times.
+  --all-groups                    If provided, all dependency groups will be
+                                  updated.
+  --skip-core                     If provided, core project dependencies will
+                                  not be updated.
+  --verbosity [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]
+                                  Logging verbosity level. Defaults to
+                                  WARNING.
+  --version                       Show the version and exit.
+  --help                          Show this message and exit.
 ```
 
 ## Examples
@@ -108,7 +111,7 @@ bump-minimum-dependencies --extra dev
 
 - This tool invokes `uv add --frozen` to update dependencies in `pyproject.toml` without updating lock files or syncing virtual environments.
 
-- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows bump-minimum-dependencies to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
+- Using [`dep-logic`](https://github.com/pdm-project/dep-logic) allows bump-minimum-dependencies to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`. Some requirements might not be updated, such as those using `==` or `~=`.
 
 - If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
 
@@ -116,24 +119,15 @@ bump-minimum-dependencies --extra dev
 
 - Within a given category, dependencies with markers (such as `'setuptools; python_version > "3.11"'`) will not be updated.
 
-- Requirements may be normalized upon updates by `uv add`. Opinionated autoformatters like [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/index.html) reduce the need for requirements normalization. Example normalizations include:
-
-  - `.0` suffixes may be removed, since `X.Y` and `X.Y.0` "are not considered distinct release numbers" as per [PEP 440](https://peps.python.org/pep-0440).
-  - Package names may be made lower case.
-  - Single quotes may be changed to double quotes.
+- Requirements may be normalized upon updates by `uv add` (e.g., removal of `.0` suffixes and making package names lower case).
 
 ## Limitations and caveats
 
-- This tool may be unable to update certain dependencies that:
+- This tool may be unable to update certain dependencies that use non-standard [version specifiers](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers) or use `!=` multiple times.
 
-  - Use non-standard [version specifiers](https://packaging.python.org/en/latest/specifications/version-specifiers/#version-specifiers).
-  - Have resulting requirements with multiple `!=` operators (as of `dep-logic==0.7.1`).
-
-- This tool does not guarantee that an environment can be created that includes the minimum allowed versions of all direct dependencies, but this can be tested with `uv lock --resolution=lowest-direct --dry-run`.
+- This tool does not guarantee that an environment can be created that includes the minimum allowed versions of all direct dependencies, but this can be tested with `uv lock --resolution=lowest-direct --dry-run` and then manually fixed.
 
 - This tool does not update `build-system.requires`.
-
-- README and license files declared in `pyproject.toml` must be present so that `pyproject.toml` due to an upstream limitation with [pyproject-parser.PyProject.load()](https://pyproject-parser.readthedocs.io/en/latest/api/pyproject-parser.html#pyproject_parser.PyProject.load).
 
 ## Motivation
 

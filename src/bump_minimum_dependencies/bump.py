@@ -3,11 +3,11 @@ __all__ = [
     "BumpPackage",
     "combine_requirements",
     "get_new_requirement_for_package",
-    "logger",
     "requirement_already_included",
 ]
 
 import pathlib
+from typing import Literal
 
 import click
 import requests
@@ -25,9 +25,8 @@ from packaging.requirements import Requirement
 
 
 from bump_minimum_dependencies.pyproject import PyProject
-from . import utils
-
-import logging
+from bump_minimum_dependencies.logging import logger, package_prefix, log_uv_command
+from bump_minimum_dependencies import utils
 
 import math
 
@@ -35,11 +34,6 @@ import subprocess
 import functools
 
 DAYS_PER_MONTH = 30.436875
-
-
-logger = logging.getLogger("bump")
-logger.propagate = True
-logger.setLevel(logging.WARNING)
 
 
 class NoReleasesError(Exception):
@@ -64,7 +58,6 @@ class BumpPackage:
             skip_yanked=True,
             skip_prerelease=True,
         )
-        logger.debug(f"Finding new minimum allowed version for {self.name}")
 
     @functools.cached_property
     def response(self):
@@ -101,8 +94,8 @@ class BumpPackage:
 
             if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
                 if version.post is not None:
-                    logger.warning(
-                        f"Skipping post release of {self.name}: {str(version)}"
+                    logger.info(
+                        f"{package_prefix(self.name)} Skipping post release: {str(version)}",
                     )
                     continue
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
@@ -129,7 +122,7 @@ class BumpPackage:
                         f"between {first_patch} and {last_patch}, suggesting a "
                         f"versioning practice of bumping micro rather than minor "
                         f"release numbers. Consider adjusting "
-                        f"the minimum allowed version of {self.name} manually."
+                        f"the minimum allowed version of {self.name} manually.",
                     )
 
         return epoch_major_minor_to_set_of_micro
@@ -150,16 +143,16 @@ class BumpPackage:
                 minor_releases.append(version)
             else:
                 logger.debug(
-                    f"Reconstructed version {version} not found "
-                    f"in released versions. Skipping. [{self.name}]"
+                    f"{package_prefix(self.name)} Reconstructed version {version} not found "
+                    f"in released versions. Skipping.",
                 )
 
         return sorted(minor_releases)
 
     def oldest_supported_minor_release(
         self,
-        drop_months: float = 24,
-        cooldown_months: float = 18,
+        drop_months: float,
+        cooldown_months: float,
     ) -> str:
         """
         Get the oldest supported minor release of the package.
@@ -177,7 +170,7 @@ class BumpPackage:
         """
 
         if not self.minor_releases:
-            msg = f"No releases identified for {self.name}."
+            msg = f"[{self.name}] No minor releases identified."
             raise NoReleasesError(msg)
 
         support_window = datetime.timedelta(
@@ -198,10 +191,11 @@ class BumpPackage:
                 release_date: datetime.date = self.versions_to_release_dates[release]
             except KeyError:
                 logger.debug(
+                    f"{package_prefix(self.name)} "
                     f"Version {str(release)} is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
-                    f"yanked or a prerelease. Continuing. [{self.name}]"
+                    f"yanked or a prerelease. Continuing.",
                 )
                 continue
 
@@ -211,31 +205,44 @@ class BumpPackage:
                 releases_before_drop_date.append(release)
 
         if not supported_releases_before_cooldown:
-            logger.debug(f"No supported releases before cooldown. [{self.name}]")
+            logger.debug(
+                f"{package_prefix(self.name)} "
+                f"No supported releases prior to cooldown. "
+                f"({cooldown_date.isoformat()})",
+            )
 
         if not releases_before_drop_date:
-            logger.debug(f"No releases before drop date. [{self.name}]")
+            logger.debug(
+                f"{package_prefix(self.name)} "
+                f"No releases prior to drop date ({drop_date.isoformat()}).",
+            )
 
         # when a package's first release is during the cooldown period
         if not supported_releases_before_cooldown and not releases_before_drop_date:
-            logger.debug(f"First release is during the cooldown period. [{self.name}]")
+            logger.debug(
+                f"{package_prefix(self.name)} First release is during the cooldown period.",
+            )
             return utils.normalize_requirement_string(min(self.released_versions))
 
-        minimum_allowed_requirement = utils.normalize_requirement_string(
-            min(
-                supported_releases_before_cooldown,
-                default=max(
-                    releases_before_drop_date,
-                    default=min(self.minor_releases),
-                ),
-            )
+        new_minimum_version = min(
+            supported_releases_before_cooldown,
+            default=max(
+                releases_before_drop_date,
+                default=min(self.minor_releases),
+            ),
         )
+
+        release_date: datetime.date = self.versions_to_release_dates[
+            new_minimum_version
+        ]
 
         logger.info(
-            f"Oldest supported release: {minimum_allowed_requirement} [{self.name}]"
+            f"{package_prefix(self.name)} "
+            f"New minimum version: {str(new_minimum_version)} "
+            f"({release_date.isoformat()})",
         )
 
-        return minimum_allowed_requirement
+        return utils.normalize_requirement_string(new_minimum_version)
 
 
 def combine_requirements(
@@ -254,7 +261,7 @@ def combine_requirements(
     new_specifier = str(original) if combined.is_empty() else str(combined)
     if "||" in new_specifier:
         logger.warning(
-            "Cannot update versions with multiple != in supported range; skipping."
+            "Cannot update versions with multiple != in supported range. Skipping.",
         )
         return None
 
@@ -284,15 +291,18 @@ def get_new_requirement_for_package(
     cooldown_months: float | int,
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
-    logger.debug(f"Getting new requirement for {requirement.name}")
     package = BumpPackage(requirement.name)
-    logger.debug(f"Pre-existing requirement: {str(requirement)}")
+    logger.debug(
+        f"{package_prefix(requirement.name)} Original specifier: {str(requirement.specifier)}",
+    )
     calculated_minimum_version = package.oldest_supported_minor_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
     time_based_requirement = f">={calculated_minimum_version}"
-    logger.debug(f"Time-based requirement: {requirement.name}{time_based_requirement}")
+    logger.debug(
+        f"{package_prefix(requirement.name)} Time-based specifier: {time_based_requirement}",
+    )
     combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
@@ -303,7 +313,9 @@ def get_new_requirement_for_package(
     else:
         new_requirement = f"{requirement.name}{combined_requirement}"
 
-    logger.debug(f"Combined requirement: {new_requirement}")
+    logger.info(
+        f"{package_prefix(requirement.name)} Combined requirement: {new_requirement}",
+    )
 
     return new_requirement
 
@@ -362,12 +374,17 @@ class BumpMinimumDependencies:
         group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
         only_package: tuple[str, ...] | list[str] = (),
+        verbosity: Literal[
+            "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
+        ] = "WARNING",
     ):
+        logger.setLevel(verbosity)
+
         if cooldown_months > drop_months:
             # issue a warning when cooldown_months ≠ the default value
             if cooldown_months != 12:
                 msg = f"Reducing cooldown_months to {drop_months} to equal drop_months."
-                logger.warning(msg)
+                logger.warning(msg, extra={"markup": True})
 
             cooldown_months = drop_months
 
@@ -395,7 +412,9 @@ class BumpMinimumDependencies:
         if self.project_name:
             self.packages_to_skip.append(self.project_name)
 
-        logger.info(f"Bumping minimum dependencies for {pyproject_file}")
+        logger.info(
+            f"Bumping minimum dependencies for {pyproject_file}", extra={"markup": True}
+        )
 
     @property
     def project_name(self) -> str | None:
@@ -416,7 +435,7 @@ class BumpMinimumDependencies:
                 f"{self.pyproject_file!r}; no updates to core project"
                 f"dependencies made."
             )
-            logger.warning(msg)
+            logger.warning(msg, extra={"markup": True})
 
         core_requirements_to_update: set[Requirement] = set()
         for requirement in all_requirements:
@@ -472,12 +491,14 @@ class BumpMinimumDependencies:
             # and is intended as a safeguard.
             if not isinstance(requirement, Requirement):
                 try:
-                    logger.warning(f"{requirement = } is not a Requirement object.")
+                    logger.debug(
+                        f"{requirement = } is not a Requirement object.",
+                    )
                     requirement = Requirement(requirement)
                 except (InvalidRequirement, TypeError):
-                    logger.error(
+                    logger.warning(
                         f"{requirement = } cannot be converted into a "
-                        f"Requirement. Continuing"
+                        f"Requirement. Continuing",
                     )
                     continue
 
@@ -492,10 +513,11 @@ class BumpMinimumDependencies:
 
             requirements_to_update.append(requirement)
 
-        logger.debug(
-            "Requirements to update: "
-            f"{', '.join([str(requirement) for requirement in requirements_to_update])}"
-        )
+        if requirements_to_update:
+            logger.debug(
+                "Requirements to update: "
+                f"{', '.join([str(requirement) for requirement in requirements_to_update])}",
+            )
 
         packages_with_markers: list[str] = []
         for requirement in requirements_to_update:
@@ -505,7 +527,7 @@ class BumpMinimumDependencies:
         new_requirements: list[str] = []
         for requirement in requirements_to_update:
             if requirement.name.lower() in packages_with_markers:
-                logger.debug(str(requirement))
+                logger.debug(str(requirement), extra={"markup": True})
                 continue
 
             try:
@@ -516,20 +538,22 @@ class BumpMinimumDependencies:
                 )
             except NoReleasesError:
                 logger.warning(
-                    f"[{requirement.name}] No releases identified from PyPI; skipping."
+                    f"{package_prefix(requirement.name)} No releases identified from PyPI. Skipping.",
                 )
             except requests.exceptions.JSONDecodeError:
                 logger.warning(
-                    f"[{requirement.name}] Cannot decode JSON metadata from "
-                    f"PyPI; skipping.",
+                    f"{package_prefix(requirement.name)} Cannot decode JSON metadata from "
+                    f"PyPI. Skipping.",
                 )
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
             except Exception as exc_info:
                 warning_message = (
-                    f"[{requirement.name}] Unable to update requirement. Skipping.",
+                    f"{package_prefix(requirement.name)} Unable to update requirement. Skipping.",
                 )
-                logger.warning(warning_message, exc_info=exc_info)
+                logger.warning(
+                    warning_message, exc_info=exc_info, extra={"markup": True}
+                )
             else:
                 if not new_requirement:
                     continue
@@ -550,7 +574,7 @@ class BumpMinimumDependencies:
         *,
         dependency_group: str | None = None,
         extras_category: str | None = None,
-    ):
+    ) -> None:
         if dependency_group and extras_category:
             raise ValueError("Cannot set both dependency_group and extras_category.")
 
@@ -559,14 +583,14 @@ class BumpMinimumDependencies:
             clause = f"dependency group {dependency_group!r}"
         elif extras_category:
             flag = [f"--optional={extras_category}"]
-            clause = f"optional dependencies category {extras_category}"
+            clause = f"optional dependencies category {extras_category!r}"
         else:
             flag = []
             clause = "core dependencies"
 
         if not new_requirements:
             msg = f"No updates to requirements for {clause}."
-            logger.info(msg)
+            logger.info(msg, extra={"markup": True})
             return
 
         for new_requirement in new_requirements:
@@ -582,43 +606,39 @@ class BumpMinimumDependencies:
             ]
 
             command_string = " ".join(command)
-
-            msg = f"Running: {command_string}"
-            logger.info(msg)
+            log_uv_command(command)
 
             try:
-                subprocess.run(
-                    command,
-                    check=True,
-                    capture_output=True,
-                )
+                subprocess.run(command, check=True, capture_output=True)
             except subprocess.CalledProcessError as exc_info:
                 logger.error(
                     f"Command failed: {command_string}",
                     exc_info=exc_info,
                 )
-                logger.warning(f"Update not performed: {new_requirement}. Continuing.")
+                logger.warning(
+                    f"Update not performed: {new_requirement}. Continuing.",
+                )
 
     def bump_core_requirements(self) -> None:
         """Bump the core package requirements."""
         new_requirements = self.get_new_requirements(self.core_requirements_to_update)
         self.run_uv_commands(new_requirements)
 
-    def bump_dependency_groups(self):
+    def bump_dependency_groups(self) -> None:
         """Bump requirements in dependency groups."""
         for dependency_group in self.dependency_groups_to_update:
             requirements = self.pyproject.dependency_groups[dependency_group]
             new_requirements = self.get_new_requirements(requirements)
             self.run_uv_commands(new_requirements, dependency_group=dependency_group)
 
-    def bump_optional_dependencies(self):
+    def bump_optional_dependencies(self) -> None:
         """Bump requirements in optional dependencies."""
         for category in self.optional_categories_to_update:
             requirements = self.pyproject.optional_dependencies[category]
             new_requirements = self.get_new_requirements(requirements)
             self.run_uv_commands(new_requirements, extras_category=category)
 
-    def run(self):
+    def run(self) -> None:
         """Perform all the requested and necessary updates."""
         self.bump_core_requirements()
         self.bump_dependency_groups()

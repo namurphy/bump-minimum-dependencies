@@ -3,10 +3,10 @@ import shutil
 
 from bump_minimum_dependencies import bump
 import pytest
-import logging
 from pathlib import Path
 
-bump.logger.setLevel(logging.DEBUG)
+
+DEFAULT_TEST_VERBOSITY = "DEBUG"
 
 
 def get_errmsg_from_file_comparison(
@@ -48,12 +48,21 @@ def get_errmsg_from_file_comparison(
 @pytest.mark.parametrize(
     "subdir,date,kwargs",
     [
-        ("base_case", "2026-01-01", {"drop_months": 24, "cooldown_months": 21}),
+        (
+            "base_case",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
         (
             "no_project_table",
             "2026-08-18",
             {
                 "group": ["group"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -62,6 +71,7 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 0,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -70,6 +80,7 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 360,
                 "cooldown_months": 360,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -80,32 +91,58 @@ def get_errmsg_from_file_comparison(
                 "cooldown_months": 6,
                 "all_groups": True,
                 "all_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
             "bump_all_dependency_groups",
             "2026-01-01",
-            {"drop_months": 24, "cooldown_months": 21, "all_groups": True},
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "all_groups": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
         ),
         (
             "bump_all_optionals",
             "2026-01-01",
-            {"all_extras": True, "drop_months": 24, "cooldown_months": 12},
+            {
+                "all_extras": True,
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
         ),
         (
             "trailing_dot_zero",
             "2026-01-01",
-            {"all_extras": True, "drop_months": 24, "cooldown_months": 12},
+            {
+                "all_extras": True,
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
         ),
         (
             "bump_one_dependency_group",
             "2026-01-01",
-            {"drop_months": 24, "cooldown_months": 21, "group": ["numpy"]},
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "group": ["numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
         ),
         (
             "bump_two_dependency_groups",
             "2026-01-01",
-            {"drop_months": 24, "cooldown_months": 21, "group": ["astropy", "numpy"]},
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "group": ["astropy", "numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
         ),
         (
             "bump_only_package",
@@ -116,6 +153,7 @@ def get_errmsg_from_file_comparison(
                 "group": ["update"],
                 "extra": ["update"],
                 "only_package": ["numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -126,6 +164,7 @@ def get_errmsg_from_file_comparison(
                 "cooldown_months": 6,
                 "all_groups": True,
                 "all_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -136,6 +175,7 @@ def get_errmsg_from_file_comparison(
                 "cooldown_months": 12,
                 "all_groups": True,
                 "all_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -146,6 +186,7 @@ def get_errmsg_from_file_comparison(
                 "cooldown_months": 360,
                 "all_groups": True,
                 "all_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -156,6 +197,7 @@ def get_errmsg_from_file_comparison(
                 "cooldown_months": 6,
                 "all_groups": True,
                 "all_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
@@ -166,6 +208,7 @@ def get_errmsg_from_file_comparison(
                 "cooldown_months": 0,
                 "all_groups": True,
                 "all_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
     ],

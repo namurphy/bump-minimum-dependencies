@@ -33,6 +33,7 @@ dependencies = [
     { name = "click" },
     { name = "dep-logic" },
     { name = "requests" },
+    { name = "rich" },
     { name = "uv" },
 ]
 
@@ -56,6 +57,7 @@ requires-dist = [
     { name = "click", specifier = ">=8.4.2,<9" },
     { name = "dep-logic", specifier = ">=0.7.1" },
     { name = "requests", specifier = ">=2.34.2" },
+    { name = "rich", specifier = ">=15.0.0" },
     { name = "uv", specifier = ">=0.12.5" },
 ]
 
