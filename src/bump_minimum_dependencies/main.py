@@ -78,6 +78,13 @@ DEFAULT_SKIP_CORE = False
     help="If provided, all optional dependency categories will be updated.",
 )
 @click.option(
+    "--skip-extra",
+    default=[],
+    type=click.STRING,
+    help="Name of an optional dependencies category to skip updating. May be provided multiple times.",
+    multiple=True,
+)
+@click.option(
     "--group",
     default=[],
     type=click.STRING,
@@ -89,6 +96,13 @@ DEFAULT_SKIP_CORE = False
     default=False,
     is_flag=True,
     help="If provided, all dependency groups will be updated.",
+)
+@click.option(
+    "--skip-group",
+    default=[],
+    type=click.STRING,
+    help="Name of a dependency group to skip updating. May be provided multiple times.",
+    multiple=True,
 )
 @click.option(
     "--skip-core",
@@ -116,6 +130,8 @@ def main(
     group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
     only_package: tuple[str, ...] | list[str],
+    skip_group: tuple[str, ...] | list[str],
+    skip_extra: tuple[str, ...] | list[str],
     verbosity: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
 ) -> None:
     """
@@ -148,6 +164,8 @@ def main(
         skip_core=skip_core,
         only_package=only_package,
         verbosity=verbosity,
+        skip_group=skip_group,
+        skip_extra=skip_extra,
     )
 
     bump_minimum_dependencies.run()

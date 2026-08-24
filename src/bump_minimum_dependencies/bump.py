@@ -374,6 +374,8 @@ class BumpMinimumDependencies:
         group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
         only_package: tuple[str, ...] | list[str] = (),
+        skip_group: tuple[str, ...] | list[str] = (),
+        skip_extra: tuple[str, ...] | list[str] = (),
         verbosity: Literal[
             "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
         ] = "WARNING",
@@ -394,14 +396,16 @@ class BumpMinimumDependencies:
         self.skip_core_requirements: bool = skip_core
         self.cooldown_months: float = cooldown_months
         self.drop_months: float = drop_months
-        self.optional_categories: list[str] = [category.lower() for category in extra]
-        self.dependency_groups: list[str] = [
+        self.optional_categories: set[str] = {category.lower() for category in extra}
+        self.dependency_groups: set[str] = {
             dependency_group.lower() for dependency_group in group
-        ]
-        self.packages_to_skip: list[str] = [package.lower() for package in skip_package]
-        self.only_update_these_packages: list[str] = [
+        }
+        self.packages_to_skip: set[str] = {package.lower() for package in skip_package}
+        self.extras_to_skip: set[str] = {extra.lower() for extra in skip_extra}
+        self.groups_to_skip: set[str] = {group.lower() for group in skip_group}
+        self.only_update_these_packages: set[str] = {
             package.lower() for package in only_package
-        ]
+        }
 
         try:
             self.pyproject: PyProject = PyProject(pyproject_file)
@@ -410,7 +414,7 @@ class BumpMinimumDependencies:
             raise click.ClickException(msg) from exc
 
         if self.project_name:
-            self.packages_to_skip.append(self.project_name)
+            self.packages_to_skip.add(self.project_name)
 
         logger.info(
             f"Bumping minimum dependencies for {pyproject_file}", extra={"markup": True}
@@ -436,6 +440,7 @@ class BumpMinimumDependencies:
                 f"dependencies made."
             )
             logger.warning(msg, extra={"markup": True})
+            all_requirements = set()
 
         core_requirements_to_update: set[Requirement] = set()
         for requirement in all_requirements:
@@ -460,26 +465,35 @@ class BumpMinimumDependencies:
         if not self.pyproject.dependency_groups:
             return []
 
-        all_dependency_groups: list[str] = sorted(self.pyproject.dependency_group_names)
+        all_dependency_groups: set[str] = set(self.pyproject.dependency_group_names)
 
-        if undefined := set(self.dependency_groups) - set(all_dependency_groups):
-            msg = f"the following dependency groups are not defined: {undefined}"
-            raise ValueError(msg)
+        if undefined := self.dependency_groups - all_dependency_groups:
+            raise click.ClickException(
+                f"the following dependency groups are undefined: {undefined}"
+            )
+
+        if duplicated := self.dependency_groups & self.groups_to_skip:
+            raise click.ClickException(
+                f"the following dependency groups cannot be provided "
+                f"to both --group and --skip-group: {duplicated}"
+            )
 
         if self.update_all_dependency_groups:
-            return all_dependency_groups
-        return self.dependency_groups
+            return sorted(all_dependency_groups - self.groups_to_skip)
+        return sorted(self.dependency_groups)
 
     @property
     def optional_categories_to_update(self) -> list[str]:
         """Names of categories of optional dependencies to be updated if necessary."""
-        all_optionals: list[str] = self.pyproject.optional_category_names
-        if undefined := set(self.optional_categories) - set(all_optionals):
-            raise ValueError(
+        all_optionals: set[str] = set(self.pyproject.optional_category_names)
+        if undefined := self.optional_categories - all_optionals:
+            raise click.ClickException(
                 f"the following optional dependency categories are not "
                 f"defined: {undefined}"
             )
-        return all_optionals if self.update_all_optionals else self.optional_categories
+        if self.update_all_optionals:
+            return sorted(all_optionals - self.extras_to_skip)
+        return sorted(self.optional_categories)
 
     def get_new_requirements(
         self,
