@@ -1,6 +1,12 @@
 # /// script
 # python_version = ">=3.13"
-# dependencies = ["nox", "nox-uv", "requests"]
+# dependencies = [
+#     "nox",
+#     "nox-uv",
+#     "requests",
+#     "tomli_w",
+#     "distlib==0.4.2,!=0.4.3",
+# ]
 # ///
 
 import difflib
