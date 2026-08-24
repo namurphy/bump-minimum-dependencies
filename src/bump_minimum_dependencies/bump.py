@@ -574,7 +574,7 @@ class BumpMinimumDependencies:
         *,
         dependency_group: str | None = None,
         extras_category: str | None = None,
-    ):
+    ) -> None:
         if dependency_group and extras_category:
             raise ValueError("Cannot set both dependency_group and extras_category.")
 
@@ -624,21 +624,21 @@ class BumpMinimumDependencies:
         new_requirements = self.get_new_requirements(self.core_requirements_to_update)
         self.run_uv_commands(new_requirements)
 
-    def bump_dependency_groups(self):
+    def bump_dependency_groups(self) -> None:
         """Bump requirements in dependency groups."""
         for dependency_group in self.dependency_groups_to_update:
             requirements = self.pyproject.dependency_groups[dependency_group]
             new_requirements = self.get_new_requirements(requirements)
             self.run_uv_commands(new_requirements, dependency_group=dependency_group)
 
-    def bump_optional_dependencies(self):
+    def bump_optional_dependencies(self) -> None:
         """Bump requirements in optional dependencies."""
         for category in self.optional_categories_to_update:
             requirements = self.pyproject.optional_dependencies[category]
             new_requirements = self.get_new_requirements(requirements)
             self.run_uv_commands(new_requirements, extras_category=category)
 
-    def run(self):
+    def run(self) -> None:
         """Perform all the requested and necessary updates."""
         self.bump_core_requirements()
         self.bump_dependency_groups()
