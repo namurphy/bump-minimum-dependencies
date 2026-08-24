@@ -64,7 +64,7 @@ def ty(session: nox.Session) -> None:
 @nox.session(python=supported_python_versions)
 def build(session: nox.Session) -> None:
     """Build the package."""
-    session.run("uv", "build", *session.posargs)
+    session.run("uv", "build", "--verbose", *session.posargs)
 
 
 @nox.session(python=supported_python_versions)
