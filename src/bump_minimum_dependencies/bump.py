@@ -469,13 +469,13 @@ class BumpMinimumDependencies:
 
         if undefined := self.dependency_groups - all_dependency_groups:
             raise click.ClickException(
-                f"the following dependency groups are undefined: {undefined}"
+                f"The following dependency groups are undefined: {', '.join(undefined)}"
             )
 
         if duplicated := self.dependency_groups & self.groups_to_skip:
             raise click.ClickException(
-                f"the following dependency groups cannot be provided "
-                f"to both --group and --skip-group: {duplicated}"
+                f"The following dependency groups cannot be provided "
+                f"to both --group and --skip-group: {', '.join(duplicated)}"
             )
 
         if self.update_all_dependency_groups:
@@ -488,8 +488,7 @@ class BumpMinimumDependencies:
         all_optionals: set[str] = set(self.pyproject.optional_category_names)
         if undefined := self.optional_categories - all_optionals:
             raise click.ClickException(
-                f"the following optional dependency categories are not "
-                f"defined: {undefined}"
+                f"The following extras are not defined: {', '.join(undefined)}"
             )
 
         if duplicated := self.optional_categories & self.extras_to_skip:
