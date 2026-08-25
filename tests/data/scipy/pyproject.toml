@@ -164,8 +164,8 @@ bench = [
 doc = [
     "sphinx>=8.2.0,<8.3.0",
     "intersphinx_registry",
-    "pydata-sphinx-theme>=0.15.2",
-    "sphinx-copybutton",
+    "pydata-sphinx-theme>=0.15.2",  # bump micro version
+    "sphinx-copybutton",  # bump micro version
     "sphinx-design>=0.4.0",
     "matplotlib>=3.5",
     "numpydoc",
@@ -201,7 +201,7 @@ typecheck = [
     # "scikit-umfpack",
     "sphinx",
     "sympy",
-    "uarray",
+    "uarray",  # bump micro version
 ]
 
 lint = [

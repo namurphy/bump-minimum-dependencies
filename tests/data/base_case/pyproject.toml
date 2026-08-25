@@ -9,7 +9,7 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
   "astropy",
-  "docutils!=0.19,<2",
+  "docutils!=0.19,<2",  # bump micro version
   "heliopy<2",
   "nose~=1.0.0",
   "nox>=2025.10.16",

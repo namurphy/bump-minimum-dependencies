@@ -13,7 +13,7 @@ astropy = [
   "astropy",
 ]
 docutils = [
-  "docutils!=0.19,<2",
+  "docutils!=0.19,<2",  # bump micro version
 ]
 heliopy = [
   "heliopy<2",
