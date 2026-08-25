@@ -139,29 +139,6 @@ class BumpPackage:
             else:
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] |= {micro}
 
-        # Packages like pyright have used versioning schemes that
-        # prioritize bumping the micro/patch version number rather than
-        # the minor version number, which is inconsistent with the
-        # versioning practices assumed by bump-minimum-dependencies.
-        if len(epoch_major_minor_to_set_of_micro) <= 5:
-            for x in epoch_major_minor_to_set_of_micro:
-                number_of_micros = len(epoch_major_minor_to_set_of_micro[x])
-                if number_of_micros >= 25:
-                    major_minor = f"{x[1]}.{x[2]}"
-                    first_patch = (
-                        f"{major_minor}.{min(epoch_major_minor_to_set_of_micro[x])}"
-                    )
-                    last_patch = (
-                        f"{major_minor}.{max(epoch_major_minor_to_set_of_micro[x])}"
-                    )
-                    logger.warning(
-                        f"{self.name} has {number_of_micros} identified releases "
-                        f"between {first_patch} and {last_patch}, suggesting a "
-                        f"versioning practice of bumping micro rather than minor "
-                        f"release numbers. Consider adjusting "
-                        f"the minimum allowed version of {self.name} manually.",
-                    )
-
         return epoch_major_minor_to_set_of_micro
 
     @functools.cached_property
@@ -195,6 +172,48 @@ class BumpPackage:
         ]
 
         return max(releases_before_drop_date, default=Version("0"))
+
+    def adjust_micro(self, minimum_minor_version: Version) -> Version:
+        """
+        Drop older micro releases when the major/minor release numbers
+        are too low, in particular when there have been a large number
+        of micro releases.
+        """
+        minimum_micro_version = self.last_release_before_drop_date
+
+        if minimum_minor_version >= minimum_micro_version:
+            return minimum_minor_version
+
+        if minimum_minor_version.major >= 2:
+            return minimum_minor_version
+
+        def log_switch(minor_version, micro_version, reason):
+            minor_date = self.versions_to_release_dates[minor_version].isoformat()
+            micro_date = self.versions_to_release_dates[micro_version].isoformat()
+            logger.warning(
+                         f"{package_prefix(self.name)} "
+                         f"Bumping version from "
+                         f"{str(minor_version)} ({minor_date}) "
+                         f"to {str(micro_version)} ({micro_date}) {reason}."
+            )
+
+        if minimum_minor_version.major == 0 and minimum_minor_version.minor < 5:
+            log_switch(
+                minor_version=minimum_minor_version,
+                micro_version=minimum_micro_version,
+                reason=f"due to pre-0.5 release",
+            )
+            return minimum_micro_version
+
+        if minimum_micro_version.micro >= 15:
+            log_switch(
+                minor_version=minimum_minor_version,
+                micro_version=minimum_micro_version,
+                reason="because of large number of micro releases",
+            )
+            return minimum_micro_version
+
+        return minimum_minor_version
 
     def oldest_supported_release(self) -> str:
         """Get the oldest supported release of the package."""
@@ -257,28 +276,7 @@ class BumpPackage:
             ),
         )
 
-        if new_minimum_version < self.last_release_before_drop_date:
-            older_release_date = self.versions_to_release_dates[
-                new_minimum_version
-            ].isoformat()
-            newer_release_date = self.versions_to_release_dates[
-                self.last_release_before_drop_date
-            ].isoformat()
-
-            logger.info(
-                f"{package_prefix(self.name)} "
-                f"Bumping micro version from "
-                f"{str(new_minimum_version)} "
-                f"({older_release_date}) "
-                f"to {str(self.last_release_before_drop_date)} "
-                f"({newer_release_date})."
-            )
-
-            new_minimum_version = self.last_release_before_drop_date
-
-        release_date: datetime.date = self.versions_to_release_dates[
-            new_minimum_version
-        ]
+        new_minimum_version = self.adjust_micro(new_minimum_version)
 
         logger.info(
             f"{package_prefix(self.name)} "
