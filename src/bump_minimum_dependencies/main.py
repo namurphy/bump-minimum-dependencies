@@ -35,17 +35,14 @@ DEFAULT_SKIP_CORE = False
     "--drop-months",
     default=DEFAULT_DROP_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
-    help=(
-        f"Drop minor releases older than this many months ago."
-    ),
+    help=("Drop minor releases older than this many months ago."),
 )
 @click.option(
     "--cooldown-months",
     default=DEFAULT_COOLDOWN_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=(
-        f"Keep at least one release this old, "
-        f"not to exceed drop-months, if possible."
+        "Keep at least one release this old, not to exceed drop-months, if possible."
     ),
 )
 @click.option(
