@@ -1,0 +1,16 @@
+[project]
+name = "skip-two-dependency-groups"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+skip-this = [
+    "numpy>1.20",
+]
+skip-this-too = [
+    "numpy>1.21",
+]
+update-this = [
+    "numpy>=1.22",
+]

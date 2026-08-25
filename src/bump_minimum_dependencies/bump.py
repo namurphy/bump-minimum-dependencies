@@ -1,3 +1,10 @@
+"""Core functionality for bumping dependencies."""
+
+# Definitions:
+#  - group ≡ a dependency group
+#  - extra ≡ an optional dependencies category
+#  - optional dependency ≡ a dependency in an extra
+
 __all__ = [
     "BumpMinimumDependencies",
     "BumpPackage",
@@ -17,7 +24,7 @@ from dep_logic.specifiers import parse_version_specifier
 import datetime
 
 import packaging.specifiers
-import packaging.version
+from packaging.version import Version
 import packaging.requirements
 from packaging.requirements import InvalidRequirement
 
@@ -50,24 +57,27 @@ class BumpPackage:
         The name of the package.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
-        self.today = datetime.datetime.now().date()
-        self.versions_to_release_dates = utils.make_version_to_release_date_dict(
-            self.response,
-            skip_yanked=True,
-            skip_prerelease=True,
+        self.today: datetime.date = datetime.datetime.now().date()
+        self.versions_to_release_dates: dict[Version, datetime.date] = (
+            utils.make_version_to_release_date_dict(
+                self.response,
+                skip_yanked=True,
+                skip_prerelease=True,
+            )
         )
 
     @functools.cached_property
-    def response(self):
+    def response(self) -> dict:
+        """Representation of JSON file from PyPI."""
         return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
         ).json()
 
     @functools.cached_property
-    def released_versions(self) -> list[packaging.version.Version]:
+    def released_versions(self) -> list[Version]:
         """The versions of all releases."""
         versions = sorted(self.versions_to_release_dates)
         return versions
@@ -128,9 +138,9 @@ class BumpPackage:
         return epoch_major_minor_to_set_of_micro
 
     @functools.cached_property
-    def minor_releases(self) -> list[packaging.version.Version]:
+    def minor_releases(self) -> list[Version]:
         """The first release of each major/minor pair."""
-        minor_releases: list[packaging.version.Version] = []
+        minor_releases: list[Version] = []
 
         for (
             epoch,
@@ -138,7 +148,7 @@ class BumpPackage:
             minor,
         ), micros in self._epoch_major_minor_to_set_of_micro.items():
             version_str = f"{epoch}!{major}.{minor}.{min(micros)}"
-            version = packaging.version.Version(version_str)
+            version = Version(version_str)
             if version in self.released_versions:
                 minor_releases.append(version)
             else:
@@ -149,13 +159,13 @@ class BumpPackage:
 
         return sorted(minor_releases)
 
-    def oldest_supported_minor_release(
+    def oldest_supported_release(
         self,
         drop_months: float,
         cooldown_months: float,
     ) -> str:
         """
-        Get the oldest supported minor release of the package.
+        Get the oldest supported release of the package.
 
         Parameters
         ----------
@@ -183,8 +193,8 @@ class BumpPackage:
         drop_date: datetime.date = self.today - support_window
         cooldown_date: datetime.date = self.today - cooldown_period
 
-        supported_releases_before_cooldown: list[packaging.version.Version] = []
-        releases_before_drop_date: list[packaging.version.Version] = []
+        supported_releases_before_cooldown: list[Version] = []
+        releases_before_drop_date: list[Version] = []
 
         for release in self.minor_releases:
             try:
@@ -295,7 +305,7 @@ def get_new_requirement_for_package(
     logger.debug(
         f"{package_prefix(requirement.name)} Original specifier: {str(requirement.specifier)}",
     )
-    calculated_minimum_version = package.oldest_supported_minor_release(
+    calculated_minimum_version = package.oldest_supported_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
@@ -335,7 +345,7 @@ class BumpMinimumDependencies:
     all_groups: bool, keyword-only, default: False
         Update all dependency groups.
 
-    cooldown_months: int, keyword-only, default: 12
+    cooldown_months: int, keyword-only, default: 18
         The number of months since a package's release before it can
         become the minimum version, when possible.
 
@@ -368,12 +378,14 @@ class BumpMinimumDependencies:
         all_extras: bool = False,
         all_groups: bool = False,
         skip_core: bool = False,
-        cooldown_months: float = 12,
+        cooldown_months: float = 18,
         drop_months: float = 24,
         extra: tuple[str, ...] | list[str] = (),
         group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
         only_package: tuple[str, ...] | list[str] = (),
+        skip_group: tuple[str, ...] | list[str] = (),
+        skip_extra: tuple[str, ...] | list[str] = (),
         verbosity: Literal[
             "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
         ] = "WARNING",
@@ -394,14 +406,16 @@ class BumpMinimumDependencies:
         self.skip_core_requirements: bool = skip_core
         self.cooldown_months: float = cooldown_months
         self.drop_months: float = drop_months
-        self.optional_categories: list[str] = [category.lower() for category in extra]
-        self.dependency_groups: list[str] = [
+        self.optional_categories: set[str] = {category.lower() for category in extra}
+        self.dependency_groups: set[str] = {
             dependency_group.lower() for dependency_group in group
-        ]
-        self.packages_to_skip: list[str] = [package.lower() for package in skip_package]
-        self.only_update_these_packages: list[str] = [
+        }
+        self.packages_to_skip: set[str] = {package.lower() for package in skip_package}
+        self.extras_to_skip: set[str] = {extra.lower() for extra in skip_extra}
+        self.groups_to_skip: set[str] = {group.lower() for group in skip_group}
+        self.only_update_these_packages: set[str] = {
             package.lower() for package in only_package
-        ]
+        }
 
         try:
             self.pyproject: PyProject = PyProject(pyproject_file)
@@ -410,7 +424,7 @@ class BumpMinimumDependencies:
             raise click.ClickException(msg) from exc
 
         if self.project_name:
-            self.packages_to_skip.append(self.project_name)
+            self.packages_to_skip.add(self.project_name)
 
         logger.info(
             f"Bumping minimum dependencies for {pyproject_file}", extra={"markup": True}
@@ -436,6 +450,7 @@ class BumpMinimumDependencies:
                 f"dependencies made."
             )
             logger.warning(msg, extra={"markup": True})
+            all_requirements = set()
 
         core_requirements_to_update: set[Requirement] = set()
         for requirement in all_requirements:
@@ -460,26 +475,41 @@ class BumpMinimumDependencies:
         if not self.pyproject.dependency_groups:
             return []
 
-        all_dependency_groups: list[str] = sorted(self.pyproject.dependency_group_names)
+        all_dependency_groups: set[str] = set(self.pyproject.dependency_group_names)
 
-        if undefined := set(self.dependency_groups) - set(all_dependency_groups):
-            msg = f"the following dependency groups are not defined: {undefined}"
-            raise ValueError(msg)
+        if undefined := self.dependency_groups - all_dependency_groups:
+            raise click.ClickException(
+                f"The following dependency groups are undefined: {', '.join(undefined)}"
+            )
+
+        if duplicated := self.dependency_groups & self.groups_to_skip:
+            raise click.ClickException(
+                f"The following dependency groups cannot be provided "
+                f"to both --group and --skip-group: {', '.join(duplicated)}"
+            )
 
         if self.update_all_dependency_groups:
-            return all_dependency_groups
-        return self.dependency_groups
+            return sorted(all_dependency_groups - self.groups_to_skip)
+        return sorted(self.dependency_groups)
 
     @property
     def optional_categories_to_update(self) -> list[str]:
         """Names of categories of optional dependencies to be updated if necessary."""
-        all_optionals: list[str] = self.pyproject.optional_category_names
-        if undefined := set(self.optional_categories) - set(all_optionals):
-            raise ValueError(
-                f"the following optional dependency categories are not "
-                f"defined: {undefined}"
+        all_optionals: set[str] = set(self.pyproject.optional_category_names)
+        if undefined := self.optional_categories - all_optionals:
+            raise click.ClickException(
+                f"The following extras are not defined: {', '.join(undefined)}"
             )
-        return all_optionals if self.update_all_optionals else self.optional_categories
+
+        if duplicated := self.optional_categories & self.extras_to_skip:
+            raise click.ClickException(
+                "The following extras cannot be provided to both "
+                f"--extra and --skip-extra: {', '.join(duplicated)}"
+            )
+
+        if self.update_all_optionals:
+            return sorted(all_optionals - self.extras_to_skip)
+        return sorted(self.optional_categories)
 
     def get_new_requirements(
         self,

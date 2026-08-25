@@ -1,6 +1,8 @@
 # bump-minimum-dependencies
 
-Automatically bump the minimum allowed minor versions of Python package dependencies based on the time since first release, with a cooldown period.
+Automatically bump the minimum allowed minor versions of Python package dependencies based on the time since first release, with a cooldown period. ⬆️
+
+Inspired by [SPEC 0]. 🧪
 
 ## Usage
 
@@ -24,32 +26,31 @@ Usage: bump-minimum-dependencies [OPTIONS]
   warning.
 
 Options:
-  --pyproject-file FILE           Path to pyproject.toml. Default is
-                                  pyproject.toml in current directory.
+  --pyproject-file FILE           Path to pyproject.toml.  [default:
+                                  pyproject.toml]
   --drop-months FLOAT RANGE       Drop minor releases older than this many
-                                  months ago. Defaults to 24.  [x>=0]
-  --cooldown-months FLOAT RANGE   Ensure that there is at least one release
-                                  this many months old, if possible. Defaults
-                                  to 12 or the value provided to --drop-
-                                  months, whichever is smaller.  [x>=0]
+                                  months ago.  [default: 24; x>=0]
+  --cooldown-months FLOAT RANGE   Keep at least one release this old, not to
+                                  exceed drop-months, if possible.  [default:
+                                  18; x>=0]
   --only-package TEXT             Name of a package to update. May be provided
                                   multiple times. When this option is used,
                                   all other packages will be skipped.
   --skip-package TEXT             Name of a package to skip when performing
-                                  updates. May be provided multiple times.
-  --extra TEXT                    Name of an optional dependencies category to
-                                  update. May be provided multiple times.
-  --all-extras                    If provided, all optional dependency
-                                  categories will be updated.
-  --group TEXT                    Name of a dependency group to update. May be
-                                  provided multiple times.
-  --all-groups                    If provided, all dependency groups will be
-                                  updated.
-  --skip-core                     If provided, core project dependencies will
-                                  not be updated.
+                                  updates. Can be used multiple times.
+  --extra TEXT                    An optional dependencies category (extra) to
+                                  update. Can be used multiple times.
+  --all-extras                    Update all optional dependencies categories.
+  --skip-extra TEXT               An optional dependencies category to skip.
+                                  Can be used multiple times.
+  --group TEXT                    A dependency group to update. Can be used
+                                  multiple times.
+  --all-groups                    Update all dependency groups.
+  --skip-group TEXT               A dependency group to skip. Can be used
+                                  multiple times.
+  --skip-core                     Do not update core project dependencies.
   --verbosity [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]
-                                  Logging verbosity level. Defaults to
-                                  WARNING.
+                                  Logging verbosity level.  [default: WARNING]
   --version                       Show the version and exit.
   --help                          Show this message and exit.
 ```
@@ -86,10 +87,10 @@ To bump all optional dependencies (extras), run:
 bump-minimum-dependencies --all-extras
 ```
 
-To bump all dependency groups, run:
+To bump all dependency groups but skip the `doc` group, run:
 
 ```shell
-bump-minimum-dependencies --all-groups
+bump-minimum-dependencies --all-groups --skip-group doc
 ```
 
 To bump the optional dependency (extras) category 'optionals' and

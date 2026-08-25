@@ -1,0 +1,15 @@
+[project]
+name = "skip-two-extras-categories"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+[project.optional-dependencies]
+skip-this = [
+    "numpy>=1.21",
+]
+skip-this-too = [
+    "numpy>=1.22",
+]
+update-this = [
+    "numpy>=1.20",
+]
