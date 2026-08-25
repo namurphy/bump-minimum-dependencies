@@ -151,7 +151,6 @@ If you discover a bug, please [raise an issue] with a minimal reproducible examp
   uvx --python=3.14 --with=setuptools nep29 --n_minor=1 --n_months=12 scipy
   ```
 
-
 [dep-logic]: https://github.com/pdm-project/dep-logic
 [nep 29]: https://github.com/hmaarrfk/nep29
 [raise an issue]: https://github.com/namurphy/bump-minimum-dependencies/issues/new
