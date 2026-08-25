@@ -491,6 +491,13 @@ class BumpMinimumDependencies:
                 f"the following optional dependency categories are not "
                 f"defined: {undefined}"
             )
+
+        if duplicated := self.optional_categories & self.extras_to_skip:
+            raise click.ClickException(
+                "The following extras cannot be provided to both "
+                f"--extra and --skip-extra: {', '.join(duplicated)}"
+            )
+
         if self.update_all_optionals:
             return sorted(all_optionals - self.extras_to_skip)
         return sorted(self.optional_categories)
