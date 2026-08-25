@@ -1,3 +1,10 @@
+"""Core functionality for bumping dependencies."""
+
+# Definitions:
+#  - group ≡ a dependency group
+#  - extra ≡ an optional dependencies category
+#  - optional dependency ≡ a dependency in an extra
+
 __all__ = [
     "BumpMinimumDependencies",
     "BumpPackage",
