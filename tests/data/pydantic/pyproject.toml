@@ -41,7 +41,7 @@ dev = [
     'pytest',
     'pytest-mock',
     'pytest-pretty',
-    'pytest-examples',
+    'pytest-examples',  # micro number adjustment
     'faker',
     'pytest-benchmark',
     'pytest-codspeed',
@@ -76,19 +76,19 @@ docs-upload = [
 ]
 linting = [
     'ruff',
-    'pyright',
+    'pyright',  # micro number adjustment
 ]
 testing-extra = [
     'cloudpickle',
     'ansi2html',
-    'devtools',
-    'sqlalchemy',
+    'devtools',  # bump micro version
+    'sqlalchemy',  # bump micro version
     'pytest-memray; platform_python_implementation == "CPython" and platform_system != "Windows" and python_version < "3.15"',
     'memray; platform_python_implementation == "CPython" and platform_system != "Windows" and python_version < "3.15"',
 ]
 typechecking = [
     'mypy',
-    'pyright',
+    'pyright',  # micro number adjustment
     'pyrefly',
     'pydantic-settings',
 ]

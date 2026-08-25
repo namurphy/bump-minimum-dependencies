@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 
 
-DEFAULT_TEST_VERBOSITY = "DEBUG"
+DEFAULT_TEST_VERBOSITY = "INFO"
 
 
 def get_errmsg_from_file_comparison(
@@ -274,8 +274,10 @@ def test_bumping_single_package(
     name: str, drop_months: int, cooldown_months: int, expected: str, freezer
 ) -> None:
     freezer.move_to("2026-01-01")
-    package = bump.BumpPackage(name=name)
-    release = package.oldest_supported_release(
-        drop_months=drop_months, cooldown_months=cooldown_months
+    package = bump.BumpPackage(
+        name=name,
+        cooldown_months=cooldown_months,
+        drop_months=drop_months,
     )
+    release = package.oldest_supported_release()
     assert str(release) == expected

@@ -8,12 +8,6 @@ from . import bump
 
 from typing import Literal
 
-DEFAULT_DROP_MONTHS = 24
-DEFAULT_COOLDOWN_MONTHS = 18
-DEFAULT_ALL_EXTRAS = False
-DEFAULT_ALL_GROUPS = False
-DEFAULT_SKIP_CORE = False
-
 
 @click.command(
     "bump-minimum-dependencies",
@@ -33,13 +27,13 @@ DEFAULT_SKIP_CORE = False
 )
 @click.option(
     "--drop-months",
-    default=DEFAULT_DROP_MONTHS,
+    default=bump.DEFAULT_DROP_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=("Drop minor releases older than this many months ago."),
 )
 @click.option(
     "--cooldown-months",
-    default=DEFAULT_COOLDOWN_MONTHS,
+    default=bump.DEFAULT_COOLDOWN_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=(
         "Keep at least one release this old, not to exceed drop-months, if possible."
@@ -133,18 +127,17 @@ def main(
     verbosity: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
 ) -> None:
     """
-    Bump the minimum allowed minor versions of package dependencies.
+    Bump minimum allowed versions of package dependencies in pyproject.toml.
 
     This tool updates pyproject.toml via `uv add --frozen` to drop
     support for minor versions of package dependencies based on the time
     since the minor version was first released, where package versions
-    may be given by `<MAJOR>.<MINOR>` or `<MAJOR>.<MINOR>.<PATCH>`.
-    Additional constraints such as upper limits are preserved.
+    may be given by `<MAJOR>.<MINOR>` or `<MAJOR>.<MINOR>.<MICRO>`.
 
-    For example, if version `3.4.0` of a package dependency was released
-    25 months ago and version `3.5.0` was released 23 months ago,
-    running `bump-minimum-dependencies` will update the requirement from
-    `>=3.4.0` to `>=3.5.0`.
+    When a `<MAJOR>.<MINOR>` release has numerous micro releases or for
+    pre-1.0 releases, `<MICRO>` might also be bumped to the last release
+    prior to the drop date. Additional constraints such as upper limits
+    are preserved.
 
     Requirements with markers or that cannot be updated will be skipped
     with a warning.
