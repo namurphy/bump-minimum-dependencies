@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 
 
-DEFAULT_TEST_VERBOSITY = "DEBUG"
+DEFAULT_TEST_VERBOSITY = "INFO"
 
 
 def get_errmsg_from_file_comparison(
