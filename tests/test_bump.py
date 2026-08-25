@@ -275,7 +275,7 @@ def test_bumping_single_package(
 ) -> None:
     freezer.move_to("2026-01-01")
     package = bump.BumpPackage(name=name)
-    release = package.oldest_supported_minor_release(
+    release = package.oldest_supported_release(
         drop_months=drop_months, cooldown_months=cooldown_months
     )
     assert str(release) == expected

@@ -17,7 +17,7 @@ from dep_logic.specifiers import parse_version_specifier
 import datetime
 
 import packaging.specifiers
-import packaging.version
+from packaging.version import Version
 import packaging.requirements
 from packaging.requirements import InvalidRequirement
 
@@ -50,24 +50,27 @@ class BumpPackage:
         The name of the package.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
-        self.today = datetime.datetime.now().date()
-        self.versions_to_release_dates = utils.make_version_to_release_date_dict(
-            self.response,
-            skip_yanked=True,
-            skip_prerelease=True,
+        self.today: datetime.date = datetime.datetime.now().date()
+        self.versions_to_release_dates: dict[Version, datetime.date] = (
+            utils.make_version_to_release_date_dict(
+                self.response,
+                skip_yanked=True,
+                skip_prerelease=True,
+            )
         )
 
     @functools.cached_property
-    def response(self):
+    def response(self) -> dict:
+        """Representation of JSON file from PyPI."""
         return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
         ).json()
 
     @functools.cached_property
-    def released_versions(self) -> list[packaging.version.Version]:
+    def released_versions(self) -> list[Version]:
         """The versions of all releases."""
         versions = sorted(self.versions_to_release_dates)
         return versions
@@ -128,9 +131,9 @@ class BumpPackage:
         return epoch_major_minor_to_set_of_micro
 
     @functools.cached_property
-    def minor_releases(self) -> list[packaging.version.Version]:
+    def minor_releases(self) -> list[Version]:
         """The first release of each major/minor pair."""
-        minor_releases: list[packaging.version.Version] = []
+        minor_releases: list[Version] = []
 
         for (
             epoch,
@@ -138,7 +141,7 @@ class BumpPackage:
             minor,
         ), micros in self._epoch_major_minor_to_set_of_micro.items():
             version_str = f"{epoch}!{major}.{minor}.{min(micros)}"
-            version = packaging.version.Version(version_str)
+            version = Version(version_str)
             if version in self.released_versions:
                 minor_releases.append(version)
             else:
@@ -149,13 +152,13 @@ class BumpPackage:
 
         return sorted(minor_releases)
 
-    def oldest_supported_minor_release(
+    def oldest_supported_release(
         self,
         drop_months: float,
         cooldown_months: float,
     ) -> str:
         """
-        Get the oldest supported minor release of the package.
+        Get the oldest supported release of the package.
 
         Parameters
         ----------
@@ -183,8 +186,8 @@ class BumpPackage:
         drop_date: datetime.date = self.today - support_window
         cooldown_date: datetime.date = self.today - cooldown_period
 
-        supported_releases_before_cooldown: list[packaging.version.Version] = []
-        releases_before_drop_date: list[packaging.version.Version] = []
+        supported_releases_before_cooldown: list[Version] = []
+        releases_before_drop_date: list[Version] = []
 
         for release in self.minor_releases:
             try:
@@ -295,7 +298,7 @@ def get_new_requirement_for_package(
     logger.debug(
         f"{package_prefix(requirement.name)} Original specifier: {str(requirement.specifier)}",
     )
-    calculated_minimum_version = package.oldest_supported_minor_release(
+    calculated_minimum_version = package.oldest_supported_release(
         drop_months=drop_months,
         cooldown_months=cooldown_months,
     )
