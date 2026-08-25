@@ -9,13 +9,16 @@ from . import bump
 from typing import Literal
 
 DEFAULT_DROP_MONTHS = 24
-DEFAULT_COOLDOWN_MONTHS = 12
+DEFAULT_COOLDOWN_MONTHS = 18
 DEFAULT_ALL_EXTRAS = False
 DEFAULT_ALL_GROUPS = False
 DEFAULT_SKIP_CORE = False
 
 
-@click.command()
+@click.command(
+    "bump-minimum-dependencies",
+    context_settings={"show_default": True},
+)
 @click.option(
     "--pyproject-file",
     default="pyproject.toml",
@@ -26,15 +29,14 @@ DEFAULT_SKIP_CORE = False
         writable=True,
         readable=True,
     ),
-    help="Path to pyproject.toml. Default is pyproject.toml in current directory.",
+    help="Path to pyproject.toml.",
 )
 @click.option(
     "--drop-months",
     default=DEFAULT_DROP_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=(
-        f"Drop minor releases older than this many months ago. Defaults "
-        f"to {DEFAULT_DROP_MONTHS}."
+        f"Drop minor releases older than this many months ago."
     ),
 )
 @click.option(
@@ -42,9 +44,8 @@ DEFAULT_SKIP_CORE = False
     default=DEFAULT_COOLDOWN_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=(
-        f"Ensure that there is at least one release this many months "
-        f"old, if possible. Defaults to {DEFAULT_COOLDOWN_MONTHS} or "
-        f"the value provided to --drop-months, whichever is smaller."
+        f"Keep at least one release this old, "
+        f"not to exceed drop-months, if possible."
     ),
 )
 @click.option(
@@ -61,54 +62,54 @@ DEFAULT_SKIP_CORE = False
     "--skip-package",
     default=[],
     type=click.STRING,
-    help="Name of a package to skip when performing updates. May be provided multiple times.",
+    help="Name of a package to skip when performing updates. Can be used multiple times.",
     multiple=True,
 )
 @click.option(
     "--extra",
     default=[],
     type=click.STRING,
-    help="Name of an optional dependencies category to update. May be provided multiple times.",
+    help="An optional dependencies category (extra) to update. Can be used multiple times.",
     multiple=True,
 )
 @click.option(
     "--all-extras",
     default=False,
     is_flag=True,
-    help="If provided, all optional dependency categories will be updated.",
+    help="Update all optional dependencies categories.",
 )
 @click.option(
     "--skip-extra",
     default=[],
     type=click.STRING,
-    help="Name of an optional dependencies category to skip updating. May be provided multiple times.",
+    help="An optional dependencies category to skip. Can be used multiple times.",
     multiple=True,
 )
 @click.option(
     "--group",
     default=[],
     type=click.STRING,
-    help="Name of a dependency group to update. May be provided multiple times.",
+    help="A dependency group to update. Can be used multiple times.",
     multiple=True,
 )
 @click.option(
     "--all-groups",
     default=False,
     is_flag=True,
-    help="If provided, all dependency groups will be updated.",
+    help="Update all dependency groups.",
 )
 @click.option(
     "--skip-group",
     default=[],
     type=click.STRING,
-    help="Name of a dependency group to skip updating. May be provided multiple times.",
+    help="A dependency group to skip. Can be used multiple times.",
     multiple=True,
 )
 @click.option(
     "--skip-core",
     default=False,
     is_flag=True,
-    help="If provided, core project dependencies will not be updated.",
+    help="Do not update core project dependencies.",
 )
 @click.option(
     "--verbosity",
@@ -116,7 +117,7 @@ DEFAULT_SKIP_CORE = False
     type=click.Choice(
         ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
     ),
-    help="Logging verbosity level. Defaults to WARNING.",
+    help="Logging verbosity level.",
 )
 @click.version_option(package_name="bump_minimum_dependencies")
 def main(

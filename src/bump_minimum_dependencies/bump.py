@@ -345,7 +345,7 @@ class BumpMinimumDependencies:
     all_groups: bool, keyword-only, default: False
         Update all dependency groups.
 
-    cooldown_months: int, keyword-only, default: 12
+    cooldown_months: int, keyword-only, default: 18
         The number of months since a package's release before it can
         become the minimum version, when possible.
 
@@ -378,7 +378,7 @@ class BumpMinimumDependencies:
         all_extras: bool = False,
         all_groups: bool = False,
         skip_core: bool = False,
-        cooldown_months: float = 12,
+        cooldown_months: float = 18,
         drop_months: float = 24,
         extra: tuple[str, ...] | list[str] = (),
         group: tuple[str, ...] | list[str] = (),
