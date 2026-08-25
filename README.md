@@ -119,11 +119,11 @@ bump-minimum-dependencies --extra dev
 
 - This tool invokes `uv add --frozen` to update dependencies in `pyproject.toml` without updating lock files or syncing virtual environments. Requirements may be normalized upon updates.
 
-- If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
+- Using [dep-logic] allows bump-minimum-dependencies to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
+
+  - If the time-based requirement is mutually exclusive with the original requirement, the original requirement will be preserved.
 
 - Requirements that cannot be updated will be skipped.
-
-- Using [dep-logic] allows bump-minimum-dependencies to handle a wide variety of requirements specifiers and perform logical operations to combine multiple requirements specifiers. For example, `>=4.1,<5` and `>=4.2` will be combined into `>=4.2,<5`.
 
 ## Limitations and caveats
 
