@@ -79,6 +79,11 @@ class BumpPackage:
         self.drop_months = drop_months
         self.cooldown_months = cooldown_months
 
+    @property
+    def prefix(self) -> str:
+        """The package prefix for log messages."""
+        return package_prefix(self.name)
+
     @functools.cached_property
     def drop_date(self) -> datetime.date:
         """The date drop_months before today."""
@@ -132,7 +137,7 @@ class BumpPackage:
             if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
                 if version.post is not None:
                     logger.info(
-                        f"{package_prefix(self.name)} Skipping post release: {str(version)}",
+                        f"{self.prefix} Skipping post release: {str(version)}",
                     )
                     continue
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
@@ -157,7 +162,7 @@ class BumpPackage:
                 minor_releases.append(version)
             else:
                 logger.debug(
-                    f"{package_prefix(self.name)} Reconstructed version {version} not found "
+                    f"{self.prefix} Reconstructed version {version} not found "
                     f"in released versions. Skipping.",
                 )
 
@@ -184,32 +189,31 @@ class BumpPackage:
         if minimum_minor_version >= minimum_micro_version:
             return minimum_minor_version
 
-        if minimum_minor_version.major >= 2:
-            return minimum_minor_version
-
         def log_switch(minor_version, micro_version, reason):
             minor_date = self.versions_to_release_dates[minor_version].isoformat()
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
             logger.warning(
-                         f"{package_prefix(self.name)} "
-                         f"Bumping version from "
-                         f"{str(minor_version)} ({minor_date}) "
-                         f"to {str(micro_version)} ({micro_date}) {reason}."
+                f"{self.prefix} Bumping version from "
+                f"{str(minor_version)} ({minor_date}) to "
+                f"{str(micro_version)} ({micro_date}) {reason}."
             )
 
-        if minimum_minor_version.major == 0 and minimum_minor_version.minor < 5:
-            log_switch(
-                minor_version=minimum_minor_version,
-                micro_version=minimum_micro_version,
-                reason=f"due to pre-0.5 release",
-            )
-            return minimum_micro_version
-
-        if minimum_micro_version.micro >= 15:
+        if minimum_micro_version.micro >= 25:
             log_switch(
                 minor_version=minimum_minor_version,
                 micro_version=minimum_micro_version,
                 reason="because of large number of micro releases",
+            )
+            return minimum_micro_version
+
+        if minimum_minor_version.major >= 1 or minimum_minor_version.epoch > 0:
+            return minimum_minor_version
+
+        if minimum_minor_version.major < 1:
+            log_switch(
+                minor_version=minimum_minor_version,
+                micro_version=minimum_micro_version,
+                reason="due to pre-1.0 release number",
             )
             return minimum_micro_version
 
@@ -232,11 +236,11 @@ class BumpPackage:
                 ]
             except KeyError:
                 logger.debug(
-                    f"{package_prefix(self.name)} "
-                    f"Version {str(minor_release)} is not in the "
-                    f"mapping from versions to release dates, possibly due "
-                    f"to non-standard versioning or that the release was "
-                    f"yanked or a prerelease. Continuing.",
+                    f"{self.prefix} Version {str(minor_release)} "
+                    f"is not in the mapping from versions to release "
+                    f"dates, possibly due to non-standard versioning or "
+                    f"that the release was yanked or a prerelease. "
+                    f"Continuing.",
                 )
                 continue
 
@@ -247,14 +251,14 @@ class BumpPackage:
 
         if not supported_minor_releases_before_cooldown:
             logger.debug(
-                f"{package_prefix(self.name)} "
+                f"{self.prefix} "
                 f"No supported releases prior to cooldown. "
                 f"({self.cooldown_date.isoformat()})",
             )
 
         if not minor_releases_before_drop_date:
             logger.debug(
-                f"{package_prefix(self.name)} "
+                f"{self.prefix} "
                 f"No releases prior to drop date ({self.drop_date.isoformat()}).",
             )
 
@@ -264,7 +268,7 @@ class BumpPackage:
             and not minor_releases_before_drop_date
         ):
             logger.debug(
-                f"{package_prefix(self.name)} First release is during the cooldown period.",
+                f"{self.prefix} First release is during the cooldown period.",
             )
             return utils.normalize_requirement_string(min(self.released_versions))
 
@@ -279,7 +283,7 @@ class BumpPackage:
         new_minimum_version = self.adjust_micro(new_minimum_version)
 
         logger.info(
-            f"{package_prefix(self.name)} "
+            f"{self.prefix} "
             f"New minimum version: {str(new_minimum_version)} "
             f"({release_date.isoformat()})",
         )
