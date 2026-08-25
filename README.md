@@ -1,6 +1,8 @@
 # bump-minimum-dependencies
 
-Automatically bump the minimum allowed minor versions of Python package dependencies based on the time since first release, with a cooldown period.
+Automatically bump the minimum allowed minor versions of Python package dependencies based on the time since first release, with a cooldown period. ⬆️
+
+Inspired by [SPEC 0]. 🧪
 
 ## Usage
 
