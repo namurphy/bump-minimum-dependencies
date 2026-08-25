@@ -1,10 +1,5 @@
 """Core functionality for bumping dependencies."""
 
-# Definitions:
-#  - group ≡ a dependency group
-#  - extra ≡ an optional dependencies category
-#  - optional dependency ≡ a dependency in an extra
-
 __all__ = [
     "BumpMinimumDependencies",
     "BumpPackage",
@@ -55,21 +50,51 @@ class BumpPackage:
     ----------
     name : str
         The name of the package.
+
+    drop_months: float
+        The expected support window for dependencies. All minor
+        releases in the last drop_months will be supported.
+
+    cooldown_months: float
+        The number of months to use as a grace period for minor
+        releases.  If possible, the oldest supported minor release
+        will be at least cooldown_months old.
     """
 
-    def __init__(self, name: str):
+    def __init__(
+        self, name: str, drop_months: float, cooldown_months: float, bump_micro: bool
+    ):
         self.name = name
         self.today: datetime.date = datetime.datetime.now().date()
         self.versions_to_release_dates: dict[Version, datetime.date] = (
             utils.make_version_to_release_date_dict(
-                self.response,
+                self.response_from_pypi,
                 skip_yanked=True,
                 skip_prerelease=True,
             )
         )
+        self.drop_months = drop_months
+        self.cooldown_months = cooldown_months
+        self.bump_micro = bump_micro
 
     @functools.cached_property
-    def response(self) -> dict:
+    def drop_date(self) -> datetime.date:
+        """The date drop_months before today."""
+        support_window = datetime.timedelta(
+            days=math.ceil(self.drop_months * DAYS_PER_MONTH)
+        )
+        return self.today - support_window
+
+    @functools.cached_property
+    def cooldown_date(self) -> datetime.date:
+        """The date cooldown_months before today."""
+        cooldown_period = datetime.timedelta(
+            days=math.ceil(self.cooldown_months * DAYS_PER_MONTH)
+        )
+        return self.today - cooldown_period
+
+    @functools.cached_property
+    def response_from_pypi(self) -> dict:
         """Representation of JSON file from PyPI."""
         return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
@@ -159,88 +184,96 @@ class BumpPackage:
 
         return sorted(minor_releases)
 
-    def oldest_supported_release(
-        self,
-        drop_months: float,
-        cooldown_months: float,
-    ) -> str:
-        """
-        Get the oldest supported release of the package.
+    @functools.cached_property
+    def last_release_before_drop_date(self) -> Version:
+        releases_before_drop_date: list[Version] = [
+            version
+            for version, release_date in self.versions_to_release_dates.items()
+            if release_date <= self.drop_date
+        ]
 
-        Parameters
-        ----------
-        drop_months: float
-            The expected support window for dependencies. All minor
-            releases in the last ``drop_months`` will be supported.
+        return max(releases_before_drop_date, default=Version("0"))
 
-        cooldown_months: float
-            The number of months to use as a grace period for minor
-            releases.  If possible, the oldest supported minor release
-            will be at least `cooldown_months` old.
-        """
+    def oldest_supported_release(self) -> str:
+        """Get the oldest supported release of the package."""
 
         if not self.minor_releases:
             msg = f"[{self.name}] No minor releases identified."
             raise NoReleasesError(msg)
 
-        support_window = datetime.timedelta(
-            days=math.ceil(drop_months * DAYS_PER_MONTH)
-        )
-        cooldown_period = datetime.timedelta(
-            days=math.ceil(cooldown_months * DAYS_PER_MONTH)
-        )
+        supported_minor_releases_before_cooldown: list[Version] = []
+        minor_releases_before_drop_date: list[Version] = []
 
-        drop_date: datetime.date = self.today - support_window
-        cooldown_date: datetime.date = self.today - cooldown_period
-
-        supported_releases_before_cooldown: list[Version] = []
-        releases_before_drop_date: list[Version] = []
-
-        for release in self.minor_releases:
+        for minor_release in self.minor_releases:
             try:
-                release_date: datetime.date = self.versions_to_release_dates[release]
+                release_date: datetime.date = self.versions_to_release_dates[
+                    minor_release
+                ]
             except KeyError:
                 logger.debug(
                     f"{package_prefix(self.name)} "
-                    f"Version {str(release)} is not in the "
+                    f"Version {str(minor_release)} is not in the "
                     f"mapping from versions to release dates, possibly due "
                     f"to non-standard versioning or that the release was "
                     f"yanked or a prerelease. Continuing.",
                 )
                 continue
 
-            if drop_date <= release_date < cooldown_date:
-                supported_releases_before_cooldown.append(release)
-            elif release_date < drop_date:
-                releases_before_drop_date.append(release)
+            if self.drop_date <= release_date < self.cooldown_date:
+                supported_minor_releases_before_cooldown.append(minor_release)
+            elif release_date < self.drop_date:
+                minor_releases_before_drop_date.append(minor_release)
 
-        if not supported_releases_before_cooldown:
+        if not supported_minor_releases_before_cooldown:
             logger.debug(
                 f"{package_prefix(self.name)} "
                 f"No supported releases prior to cooldown. "
-                f"({cooldown_date.isoformat()})",
+                f"({self.cooldown_date.isoformat()})",
             )
 
-        if not releases_before_drop_date:
+        if not minor_releases_before_drop_date:
             logger.debug(
                 f"{package_prefix(self.name)} "
-                f"No releases prior to drop date ({drop_date.isoformat()}).",
+                f"No releases prior to drop date ({self.drop_date.isoformat()}).",
             )
 
         # when a package's first release is during the cooldown period
-        if not supported_releases_before_cooldown and not releases_before_drop_date:
+        if (
+            not supported_minor_releases_before_cooldown
+            and not minor_releases_before_drop_date
+        ):
             logger.debug(
                 f"{package_prefix(self.name)} First release is during the cooldown period.",
             )
             return utils.normalize_requirement_string(min(self.released_versions))
 
         new_minimum_version = min(
-            supported_releases_before_cooldown,
+            supported_minor_releases_before_cooldown,
             default=max(
-                releases_before_drop_date,
+                minor_releases_before_drop_date,
                 default=min(self.minor_releases),
             ),
         )
+
+        if self.bump_micro:
+            if new_minimum_version < self.last_release_before_drop_date:
+                older_release_date = self.versions_to_release_dates[
+                    new_minimum_version
+                ].isoformat()
+                newer_release_date = self.versions_to_release_dates[
+                    self.last_release_before_drop_date
+                ].isoformat()
+
+                logger.info(
+                    f"{package_prefix(self.name)} "
+                    f"Bumping micro version from "
+                    f"{str(new_minimum_version)} "
+                    f"({older_release_date}) "
+                    f"to {str(self.last_release_before_drop_date)} "
+                    f"({newer_release_date})."
+                )
+
+                new_minimum_version = self.last_release_before_drop_date
 
         release_date: datetime.date = self.versions_to_release_dates[
             new_minimum_version
@@ -299,16 +332,19 @@ def get_new_requirement_for_package(
     requirement: Requirement,
     drop_months: float | int,
     cooldown_months: float | int,
+    bump_micro: bool,
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
-    package = BumpPackage(requirement.name)
+    package = BumpPackage(
+        requirement.name,
+        drop_months=drop_months,
+        cooldown_months=cooldown_months,
+        bump_micro=bump_micro,
+    )
     logger.debug(
         f"{package_prefix(requirement.name)} Original specifier: {str(requirement.specifier)}",
     )
-    calculated_minimum_version = package.oldest_supported_release(
-        drop_months=drop_months,
-        cooldown_months=cooldown_months,
-    )
+    calculated_minimum_version = package.oldest_supported_release()
     time_based_requirement = f">={calculated_minimum_version}"
     logger.debug(
         f"{package_prefix(requirement.name)} Time-based specifier: {time_based_requirement}",
@@ -386,6 +422,7 @@ class BumpMinimumDependencies:
         only_package: tuple[str, ...] | list[str] = (),
         skip_group: tuple[str, ...] | list[str] = (),
         skip_extra: tuple[str, ...] | list[str] = (),
+        bump_micro: bool = False,
         verbosity: Literal[
             "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
         ] = "WARNING",
@@ -416,6 +453,7 @@ class BumpMinimumDependencies:
         self.only_update_these_packages: set[str] = {
             package.lower() for package in only_package
         }
+        self.bump_micro = bump_micro
 
         try:
             self.pyproject: PyProject = PyProject(pyproject_file)
@@ -565,6 +603,7 @@ class BumpMinimumDependencies:
                     requirement=requirement,
                     drop_months=self.drop_months,
                     cooldown_months=self.cooldown_months,
+                    bump_micro=self.bump_micro,
                 )
             except NoReleasesError:
                 logger.warning(
