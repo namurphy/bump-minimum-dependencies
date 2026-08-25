@@ -8,12 +8,6 @@ from . import bump
 
 from typing import Literal
 
-DEFAULT_DROP_MONTHS = 24
-DEFAULT_COOLDOWN_MONTHS = 18
-DEFAULT_ALL_EXTRAS = False
-DEFAULT_ALL_GROUPS = False
-DEFAULT_SKIP_CORE = False
-
 
 @click.command(
     "bump-minimum-dependencies",
@@ -33,13 +27,13 @@ DEFAULT_SKIP_CORE = False
 )
 @click.option(
     "--drop-months",
-    default=DEFAULT_DROP_MONTHS,
+    default=bump.DEFAULT_DROP_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=("Drop minor releases older than this many months ago."),
 )
 @click.option(
     "--cooldown-months",
-    default=DEFAULT_COOLDOWN_MONTHS,
+    default=bump.DEFAULT_COOLDOWN_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=(
         "Keep at least one release this old, not to exceed drop-months, if possible."
@@ -109,14 +103,6 @@ DEFAULT_SKIP_CORE = False
     help="Do not update core project dependencies.",
 )
 @click.option(
-    "--bump-micro",
-    default=False,
-    is_flag=True,
-    help="Drop support for all but the highest micro release before "
-    "the drop date. Useful for packages that perform "
-    "micro releases in place of minor releases.",
-)
-@click.option(
     "--verbosity",
     default="WARNING",
     type=click.Choice(
@@ -138,7 +124,6 @@ def main(
     only_package: tuple[str, ...] | list[str],
     skip_group: tuple[str, ...] | list[str],
     skip_extra: tuple[str, ...] | list[str],
-    bump_micro: bool,
     verbosity: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
 ) -> None:
     """
@@ -173,7 +158,6 @@ def main(
         verbosity=verbosity,
         skip_group=skip_group,
         skip_extra=skip_extra,
-        bump_micro=bump_micro,
     )
 
     bump_minimum_dependencies.run()

@@ -4,6 +4,8 @@ __all__ = [
     "BumpMinimumDependencies",
     "BumpPackage",
     "combine_requirements",
+    "DEFAULT_COOLDOWN_MONTHS",
+    "DEFAULT_DROP_MONTHS",
     "get_new_requirement_for_package",
     "requirement_already_included",
 ]
@@ -35,6 +37,9 @@ import math
 import subprocess
 import functools
 
+DEFAULT_DROP_MONTHS = 24
+DEFAULT_COOLDOWN_MONTHS = 18
+
 DAYS_PER_MONTH = 30.436875
 
 
@@ -61,9 +66,7 @@ class BumpPackage:
         will be at least cooldown_months old.
     """
 
-    def __init__(
-        self, name: str, drop_months: float, cooldown_months: float, bump_micro: bool
-    ):
+    def __init__(self, name: str, drop_months: float, cooldown_months: float):
         self.name = name
         self.today: datetime.date = datetime.datetime.now().date()
         self.versions_to_release_dates: dict[Version, datetime.date] = (
@@ -75,7 +78,6 @@ class BumpPackage:
         )
         self.drop_months = drop_months
         self.cooldown_months = cooldown_months
-        self.bump_micro = bump_micro
 
     @functools.cached_property
     def drop_date(self) -> datetime.date:
@@ -255,25 +257,24 @@ class BumpPackage:
             ),
         )
 
-        if self.bump_micro:
-            if new_minimum_version < self.last_release_before_drop_date:
-                older_release_date = self.versions_to_release_dates[
-                    new_minimum_version
-                ].isoformat()
-                newer_release_date = self.versions_to_release_dates[
-                    self.last_release_before_drop_date
-                ].isoformat()
+        if new_minimum_version < self.last_release_before_drop_date:
+            older_release_date = self.versions_to_release_dates[
+                new_minimum_version
+            ].isoformat()
+            newer_release_date = self.versions_to_release_dates[
+                self.last_release_before_drop_date
+            ].isoformat()
 
-                logger.info(
-                    f"{package_prefix(self.name)} "
-                    f"Bumping micro version from "
-                    f"{str(new_minimum_version)} "
-                    f"({older_release_date}) "
-                    f"to {str(self.last_release_before_drop_date)} "
-                    f"({newer_release_date})."
-                )
+            logger.info(
+                f"{package_prefix(self.name)} "
+                f"Bumping micro version from "
+                f"{str(new_minimum_version)} "
+                f"({older_release_date}) "
+                f"to {str(self.last_release_before_drop_date)} "
+                f"({newer_release_date})."
+            )
 
-                new_minimum_version = self.last_release_before_drop_date
+            new_minimum_version = self.last_release_before_drop_date
 
         release_date: datetime.date = self.versions_to_release_dates[
             new_minimum_version
@@ -332,14 +333,12 @@ def get_new_requirement_for_package(
     requirement: Requirement,
     drop_months: float | int,
     cooldown_months: float | int,
-    bump_micro: bool,
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(
         requirement.name,
         drop_months=drop_months,
         cooldown_months=cooldown_months,
-        bump_micro=bump_micro,
     )
     logger.debug(
         f"{package_prefix(requirement.name)} Original specifier: {str(requirement.specifier)}",
@@ -367,7 +366,7 @@ def get_new_requirement_for_package(
 
 
 class BumpMinimumDependencies:
-    """
+    f"""
     Bump the minimum core dependencies in `pyproject.toml`.
 
     Parameters
@@ -381,11 +380,11 @@ class BumpMinimumDependencies:
     all_groups: bool, keyword-only, default: False
         Update all dependency groups.
 
-    cooldown_months: int, keyword-only, default: 18
+    cooldown_months: int, keyword-only, default: {DEFAULT_COOLDOWN_MONTHS}
         The number of months since a package's release before it can
         become the minimum version, when possible.
 
-    drop_months: int, keyword-only, default: 24
+    drop_months: int, keyword-only, default: {DEFAULT_DROP_MONTHS}
         The preferred number of months after which a minor release is
         no longer supported.
 
@@ -422,7 +421,6 @@ class BumpMinimumDependencies:
         only_package: tuple[str, ...] | list[str] = (),
         skip_group: tuple[str, ...] | list[str] = (),
         skip_extra: tuple[str, ...] | list[str] = (),
-        bump_micro: bool = False,
         verbosity: Literal[
             "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
         ] = "WARNING",
@@ -431,18 +429,21 @@ class BumpMinimumDependencies:
 
         if cooldown_months > drop_months:
             # issue a warning when cooldown_months ≠ the default value
-            if cooldown_months != 12:
+            if cooldown_months != DEFAULT_COOLDOWN_MONTHS:
                 msg = f"Reducing cooldown_months to {drop_months} to equal drop_months."
                 logger.warning(msg, extra={"markup": True})
 
             cooldown_months = drop_months
 
         self.pyproject_file: str | pathlib.Path = pyproject_file
+
         self.update_all_optionals: bool = all_extras
         self.update_all_dependency_groups: bool = all_groups
         self.skip_core_requirements: bool = skip_core
+
         self.cooldown_months: float = cooldown_months
         self.drop_months: float = drop_months
+
         self.optional_categories: set[str] = {category.lower() for category in extra}
         self.dependency_groups: set[str] = {
             dependency_group.lower() for dependency_group in group
@@ -453,7 +454,6 @@ class BumpMinimumDependencies:
         self.only_update_these_packages: set[str] = {
             package.lower() for package in only_package
         }
-        self.bump_micro = bump_micro
 
         try:
             self.pyproject: PyProject = PyProject(pyproject_file)
@@ -603,7 +603,6 @@ class BumpMinimumDependencies:
                     requirement=requirement,
                     drop_months=self.drop_months,
                     cooldown_months=self.cooldown_months,
-                    bump_micro=self.bump_micro,
                 )
             except NoReleasesError:
                 logger.warning(
