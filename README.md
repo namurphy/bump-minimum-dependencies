@@ -7,7 +7,7 @@ Inspired by [SPEC 0]. 🧪
 ## Motivation
 
 Determining the minimum requirements of a Python package requires balancing competing tradeoffs.
-Lengthly support windows increase maintenance burden, prevent developers from using new features and assuming bugfixes, and lead to more complicated code.
+Lengthy support windows increase maintenance burden, prevent developers from using new features and assuming bugfixes, and lead to more complicated code.
 Short support windows increase the risk of dependency conflicts.
 Automatically bumping minimum requirements in a predictable way saves time and balances these tradeoffs.
 
