@@ -41,7 +41,7 @@ dev = [
     "pytest>=9",
     "pytest-mock>=3.15",
     "pytest-pretty>=1.3",
-    "pytest-examples>=0.0.1",
+    "pytest-examples>=0.0.18",  # micro number adjustment
     "faker>=37.6",
     "pytest-benchmark>=5.2",
     "pytest-codspeed>=4.1",
@@ -76,7 +76,7 @@ docs-upload = [
 ]
 linting = [
     "ruff>=0.13",
-    "pyright>=1.1.225",
+    "pyright>=1.1.403",  # micro number adjustment
 ]
 testing-extra = [
     "cloudpickle>=3.1",
@@ -88,7 +88,7 @@ testing-extra = [
 ]
 typechecking = [
     "mypy>=1.18.1",
-    "pyright>=1.1.225",
+    "pyright>=1.1.403",  # micro number adjustment
     "pyrefly>=0.29",
     "pydantic-settings>=2.11",
 ]

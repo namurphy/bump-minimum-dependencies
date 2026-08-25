@@ -129,7 +129,7 @@ test-docs = [
 test-array-types = [
     { include-group = "test-core" },
     "array-api-strict>=2.4",
-    "marray>=0.0.1",
+    "marray>=0.0.11",  # micro number adjustment
     # for PyPI: 'sparse; sys_platform != "win32" or platform_machine != "ARM64"'
     "sparse>=0.17",
 ]
