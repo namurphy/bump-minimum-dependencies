@@ -87,10 +87,10 @@ To bump all optional dependencies (extras), run:
 bump-minimum-dependencies --all-extras
 ```
 
-To bump all dependency groups, run:
+To bump all dependency groups but skip the `doc` group, run:
 
 ```shell
-bump-minimum-dependencies --all-groups
+bump-minimum-dependencies --all-groups --skip-group doc
 ```
 
 To bump the optional dependency (extras) category 'optionals' and
