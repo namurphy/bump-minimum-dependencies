@@ -430,14 +430,21 @@ class BumpMinimumDependencies:
             )
 
         if self.inputs.update_all_groups:
-            return sorted(all_dependency_groups - self.inputs.groups_to_skip)
-        return sorted(self.inputs.groups_to_update)
+            groups_to_update = sorted(
+                all_dependency_groups - self.inputs.groups_to_skip
+            )
+        else:
+            groups_to_update = sorted(self.inputs.groups_to_update)
+
+        logger.warning(f"Dependency groups to update: {', '.join(groups_to_update)}")
+
+        return groups_to_update
 
     @property
     def optional_categories_to_update(self) -> list[str]:
         """Names of categories of optional dependencies to be updated if necessary."""
-        all_optionals: set[str] = set(self.pyproject.optional_category_names)
-        if undefined := self.inputs.extras_to_update - all_optionals:
+        all_extras: set[str] = set(self.pyproject.optional_category_names)
+        if undefined := self.inputs.extras_to_update - all_extras:
             raise click.ClickException(
                 f"The following extras are not defined: {', '.join(undefined)}"
             )
@@ -449,8 +456,12 @@ class BumpMinimumDependencies:
             )
 
         if self.inputs.update_all_extras:
-            return sorted(all_optionals - self.inputs.extras_to_skip)
-        return sorted(self.inputs.extras_to_update)
+            extras_to_update = sorted(all_extras - self.inputs.extras_to_skip)
+        else:
+            extras_to_update = sorted(self.inputs.extras_to_update)
+
+        logger.info(f"Extras to update: {', '.join(extras_to_update)}")
+        return extras_to_update
 
     def get_new_requirements(
         self,

@@ -30,11 +30,11 @@ class Inputs:
         pyproject_file: str | Path = Path("pyproject.toml"),
         drop_months: float = DEFAULT_DROP_MONTHS,
         cooldown_months: float = DEFAULT_COOLDOWN_MONTHS,
-        all_extras: bool = False,
-        all_groups: bool = False,
+        no_extras: bool = False,
+        no_groups: bool = False,
         skip_core: bool = False,
-        extra: tuple[str, ...] | list[str] = (),
-        group: tuple[str, ...] | list[str] = (),
+        only_extra: tuple[str, ...] | list[str] = (),
+        only_group: tuple[str, ...] | list[str] = (),
         skip_package: tuple[str, ...] | list[str] = (),
         only_package: tuple[str, ...] | list[str] = (),
         skip_group: tuple[str, ...] | list[str] = (),
@@ -42,19 +42,42 @@ class Inputs:
         verbosity: _VerbosityLiteral = "WARNING",
     ):
         """Put the inputs in a more usable form."""
+
+        if only_group or only_extra:
+            no_groups = True
+            no_extras = True
+
         self.pyproject_file: Path = Path(pyproject_file)
         self.drop_months: float = drop_months
         self.cooldown_months: float = cooldown_months
-        self.update_all_groups: bool = all_groups
-        self.update_all_extras: bool = all_extras
+        self.update_all_groups: bool = not no_groups
+        self.update_all_extras: bool = not no_extras
         self.skip_core_requirements: bool = skip_core
         self.verbosity: _VerbosityLiteral = verbosity
         self.packages_to_skip: set[str] = _make_lower_case_set(skip_package)
         self.packages_to_update: set[str] = _make_lower_case_set(only_package)
-        self.extras_to_update: set[str] = _make_lower_case_set(extra)
+        self.extras_to_update: set[str] = _make_lower_case_set(only_extra)
         self.extras_to_skip: set[str] = _make_lower_case_set(skip_extra)
-        self.groups_to_update: set[str] = _make_lower_case_set(group)
+        self.groups_to_update: set[str] = _make_lower_case_set(only_group)
         self.groups_to_skip: set[str] = _make_lower_case_set(skip_group)
+
+        print(self)
+
+    def __str__(self):
+        for attr in dir(self):
+            if attr.startswith("_") or attr in {"today"}:
+                continue
+            val = getattr(self, attr)
+            if val in (set(), "pyproject.toml"):
+                continue
+
+        return "\n".join(
+            [
+                f"{attr}: {getattr(self, attr)}"
+                for attr in sorted(dir(self))
+                if not attr.startswith("_") and getattr(self, attr) not in (set(), None)
+            ]
+        )
 
     @functools.cached_property
     def today(self) -> datetime.date:

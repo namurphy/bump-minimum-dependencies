@@ -53,6 +53,8 @@ def get_errmsg_from_file_comparison(
             "base_case",
             "2026-01-01",
             {
+                "no_groups": True,
+                "no_extras": True,
                 "drop_months": 24,
                 "cooldown_months": 21,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
@@ -62,7 +64,7 @@ def get_errmsg_from_file_comparison(
             "no_project_table",
             "2026-08-18",
             {
-                "group": ["group"],
+                "only_group": ["group"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -72,6 +74,8 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 0,
+                "no_groups": True,
+                "no_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -81,6 +85,8 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 360,
                 "cooldown_months": 360,
+                "no_groups": True,
+                "no_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -90,8 +96,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -101,7 +105,7 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 24,
                 "cooldown_months": 21,
-                "all_groups": True,
+                "no_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -109,7 +113,7 @@ def get_errmsg_from_file_comparison(
             "bump_all_optionals",
             "2026-01-01",
             {
-                "all_extras": True,
+                "no_groups": False,
                 "drop_months": 24,
                 "cooldown_months": 12,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
@@ -119,7 +123,7 @@ def get_errmsg_from_file_comparison(
             "trailing_dot_zero",
             "2026-01-01",
             {
-                "all_extras": True,
+                "no_groups": True,
                 "drop_months": 24,
                 "cooldown_months": 12,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
@@ -131,7 +135,7 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 24,
                 "cooldown_months": 21,
-                "group": ["numpy"],
+                "only_group": ["numpy"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -141,7 +145,27 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 24,
                 "cooldown_months": 21,
-                "group": ["astropy", "numpy"],
+                "only_group": ["astropy", "numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "bump_one_extra",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_extra": ["numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "bump_two_extras",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_extra": ["astropy", "numpy"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -151,8 +175,8 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 0,
                 "cooldown_months": 0,
-                "group": ["update"],
-                "extra": ["update"],
+                "only_group": ["update"],
+                "only_extra": ["update"],
                 "only_package": ["numpy"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
@@ -163,8 +187,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -174,8 +196,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 24,
                 "cooldown_months": 12,
-                "all_groups": True,
-                "all_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -185,8 +205,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 360,
                 "cooldown_months": 360,
-                "all_groups": True,
-                "all_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -196,8 +214,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -207,8 +223,6 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 0,
-                "all_groups": True,
-                "all_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -218,7 +232,7 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_groups": True,
+                "no_extras": True,
                 "skip_group": ["skip-this", "skip-this-too"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
@@ -229,7 +243,7 @@ def get_errmsg_from_file_comparison(
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_extras": True,
+                "no_groups": True,
                 "skip_extra": ["skip-this", "skip-this-too"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
