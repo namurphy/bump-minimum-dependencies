@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 DEFAULT_DROP_MONTHS = 24
-DEFAULT_COOLDOWN_MONTHS = 18
+DEFAULT_COOLDOWN_MONTHS = 21
 
 DAYS_PER_MONTH = 30.44
 
@@ -28,8 +28,8 @@ class Inputs:
         self,
         *,
         pyproject_file: str | Path = Path("pyproject.toml"),
-        drop_months: float = 24,
-        cooldown_months: float = 18,
+        drop_months: float = DEFAULT_DROP_MONTHS,
+        cooldown_months: float = DEFAULT_COOLDOWN_MONTHS,
         all_extras: bool = False,
         all_groups: bool = False,
         skip_core: bool = False,
