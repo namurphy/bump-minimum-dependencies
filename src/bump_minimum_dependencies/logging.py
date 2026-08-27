@@ -4,7 +4,7 @@ import logging
 from rich.logging import RichHandler
 from rich.markup import escape
 
-keywords = [
+keywords: list[str] = [
     "Skipping.",
     "Continuing.",
     "Requirements to update:",
@@ -13,7 +13,7 @@ keywords = [
     "Combined requirement:",
 ]
 
-rich_handler = RichHandler(
+rich_handler: RichHandler = RichHandler(
     rich_tracebacks=False,
     show_time=False,
     markup=True,
@@ -28,7 +28,7 @@ logging.basicConfig(
     handlers=[rich_handler],
 )
 
-logger = logging.getLogger("bump-minimum-dependencies")
+logger: logging.Logger = logging.getLogger("bump-minimum-dependencies")
 
 
 def package_prefix(package: str) -> str:
@@ -36,10 +36,6 @@ def package_prefix(package: str) -> str:
     return f"[magenta]{escape(raw_prefix)}[/magenta]"
 
 
-def log_uv_command(command: list[str]):
+def log_uv_command(command: list[str]) -> None:
     command_string = " ".join(command)
-
-    logger.info(
-        f"Running: [bold]{command_string}[/bold]",
-        extra={"markup": True},
-    )
+    logger.info(f"Running: [bold]{command_string}[/bold]", extra={"markup": True})
