@@ -100,7 +100,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_all_dependency_groups",
+            "bump_all_groups",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -110,7 +110,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_all_optionals",
+            "bump_all_extras",
             "2026-01-01",
             {
                 "no_groups": False,
@@ -130,7 +130,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_one_dependency_group",
+            "bump_one_group",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -140,7 +140,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_two_dependency_groups",
+            "bump_two_groups",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -227,7 +227,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "skip_two_dependency_groups",
+            "skip_two_groups",
             "2026-08-18",
             {
                 "drop_months": 12,
@@ -238,7 +238,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "skip_two_extras_categories",
+            "skip_two_extras",
             "2026-08-18",
             {
                 "drop_months": 12,
