@@ -59,14 +59,14 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-                "no_project_table_24_21",
-                "2026-08-18",
-                {
-                    "drop_months": 24,
-                    "cooldown_months": 21,
-                    "only_group": ["group"],
-                    "verbosity": DEFAULT_TEST_VERBOSITY,
-                },
+            "no_project_table_24_21",
+            "2026-08-18",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_group": ["group"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
         ),
         (
             "only_group_24_21",
@@ -293,6 +293,6 @@ def test_bumping_single_package(
     inputs = Inputs(drop_months=drop_months, cooldown_months=cooldown_months)
 
     freezer.move_to("2026-01-01")
-    package = bump.BumpPackage(name=name, inputs=inputs)
+    package = bump.BumpSinglePackage(name=name, inputs=inputs)
     release = package.oldest_supported_release()
     assert str(release) == expected

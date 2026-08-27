@@ -52,7 +52,7 @@ class Inputs:
         self.cooldown_months: float = cooldown_months
         self.update_all_groups: bool = not no_groups
         self.update_all_extras: bool = not no_extras
-        self.skip_core_requirements: bool = skip_core
+        self.skip_project_dependencies: bool = skip_core
         self.verbosity: _VerbosityLiteral = verbosity
         self.packages_to_skip: set[str] = _make_lower_case_set(skip_package)
         self.packages_to_update: set[str] = _make_lower_case_set(only_package)
