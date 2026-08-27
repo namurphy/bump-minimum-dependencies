@@ -460,7 +460,7 @@ class BumpMinimumDependencies:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
             # The following error-handling code should never be reached.
-            # Once this has become stabilized
+            # Once this has become stabilized, we can remove it.
             if not isinstance(requirement, Requirement):
                 try:
                     logger.debug(
