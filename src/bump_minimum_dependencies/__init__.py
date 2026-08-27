@@ -1,6 +1,7 @@
-__all__ = ["bump", "main", "pyproject", "utils"]
+__all__ = ["bump", "inputs", "main", "pyproject", "utils"]
 
 from . import bump
+from . import inputs
 from . import utils
 from . import main
 from . import pyproject

@@ -2,6 +2,7 @@ import shutil
 
 
 from bump_minimum_dependencies import bump
+from bump_minimum_dependencies.inputs import Inputs
 import pytest
 from pathlib import Path
 
@@ -240,6 +241,8 @@ def test_bumping_minimum_requirements(
 ) -> None:
     freezer.move_to(date)
 
+    inputs = Inputs(**kwargs)
+
     data_dir: Path = Path(__file__).parent / "data" / subdir
     original_pyproject: Path = data_dir / "pyproject.toml"
     expected_pyproject: Path = data_dir / "pyproject.expected.toml"
@@ -248,7 +251,7 @@ def test_bumping_minimum_requirements(
     shutil.copy(original_pyproject, pyproject)
     monkeypatch.chdir(tmp_path)
 
-    bumper = bump.BumpMinimumDependencies(**kwargs)
+    bumper = bump.BumpMinimumDependencies(inputs=inputs)
     bumper.run()
 
     if errmsg := get_errmsg_from_file_comparison(pyproject, expected_pyproject, subdir):
@@ -273,11 +276,9 @@ def test_bumping_minimum_requirements(
 def test_bumping_single_package(
     name: str, drop_months: int, cooldown_months: int, expected: str, freezer
 ) -> None:
+    inputs = Inputs(drop_months=drop_months, cooldown_months=cooldown_months)
+
     freezer.move_to("2026-01-01")
-    package = bump.BumpPackage(
-        name=name,
-        cooldown_months=cooldown_months,
-        drop_months=drop_months,
-    )
+    package = bump.BumpPackage(name=name, inputs=inputs)
     release = package.oldest_supported_release()
     assert str(release) == expected

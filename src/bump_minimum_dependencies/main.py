@@ -4,13 +4,20 @@ import pathlib
 
 import click
 
+from click.core import ParameterSource
+
 from . import bump
+from bump_minimum_dependencies.inputs import (
+    DEFAULT_DROP_MONTHS,
+    DEFAULT_COOLDOWN_MONTHS,
+    Inputs,
+)
 
 from typing import Literal
 
 
 @click.command(
-    "bump-minimum-dependencies",
+    name="bump-minimum-dependencies",
     context_settings={"show_default": True},
 )
 @click.option(
@@ -27,17 +34,15 @@ from typing import Literal
 )
 @click.option(
     "--drop-months",
-    default=bump.DEFAULT_DROP_MONTHS,
+    default=DEFAULT_DROP_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
     help=("Drop minor releases older than this many months ago."),
 )
 @click.option(
     "--cooldown-months",
-    default=bump.DEFAULT_COOLDOWN_MONTHS,
+    default=DEFAULT_COOLDOWN_MONTHS,
     type=click.FloatRange(min=0, max_open=True),
-    help=(
-        "Keep at least one release this old, not to exceed drop-months, if possible."
-    ),
+    help=("Keep at least one minor release this old when possible."),
 )
 @click.option(
     "--only-package",
@@ -111,7 +116,9 @@ from typing import Literal
     help="Logging verbosity level.",
 )
 @click.version_option(package_name="bump_minimum_dependencies")
+@click.pass_context
 def main(
+    ctx: click.Context,
     pyproject_file: str | pathlib.Path,
     drop_months: float,
     cooldown_months: float,
@@ -142,21 +149,32 @@ def main(
     Requirements with markers or that cannot be updated will be skipped
     with a warning.
     """
+    if cooldown_months > drop_months:
+        cooldown_months_was_provided = (
+            ctx.get_parameter_source("cooldown_months") == ParameterSource.COMMANDLINE
+        )
+        if cooldown_months_was_provided:
+            raise click.ClickException(
+                f"--cooldown-months={cooldown_months} cannot "
+                f"exceed --drop-months={drop_months}."
+            )
+        cooldown_months = min(cooldown_months, drop_months)
 
-    bump_minimum_dependencies = bump.BumpMinimumDependencies(
-        pyproject_file=pyproject_file,
-        drop_months=drop_months,
-        cooldown_months=cooldown_months,
+    inputs = Inputs(
         all_extras=all_extras,
         all_groups=all_groups,
+        cooldown_months=cooldown_months,
+        drop_months=drop_months,
         extra=extra,
         group=group,
-        skip_package=skip_package,
-        skip_core=skip_core,
         only_package=only_package,
-        verbosity=verbosity,
-        skip_group=skip_group,
+        pyproject_file=pyproject_file,
+        skip_core=skip_core,
         skip_extra=skip_extra,
+        skip_group=skip_group,
+        skip_package=skip_package,
+        verbosity=verbosity,
     )
 
+    bump_minimum_dependencies = bump.BumpMinimumDependencies(inputs=inputs)
     bump_minimum_dependencies.run()
