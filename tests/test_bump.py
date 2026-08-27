@@ -7,7 +7,7 @@ import pytest
 from pathlib import Path
 
 
-DEFAULT_TEST_VERBOSITY = "INFO"
+DEFAULT_TEST_VERBOSITY = "DEBUG"
 
 
 def get_errmsg_from_file_comparison(
@@ -40,7 +40,7 @@ def get_errmsg_from_file_comparison(
 
     expanded_comparison = (
         f"Mismatch between updated and expected pyproject.toml for {subdir = !r}.\n\n"
-        + "\n".join(error_messages)
+        + "\n".join(error_messages[:12])
     )
 
     return expanded_comparison
@@ -50,7 +50,7 @@ def get_errmsg_from_file_comparison(
     "subdir,date,kwargs",
     [
         (
-            "base_case",
+            "basic_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -59,178 +59,192 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "no_project_table",
+            "no_project_table_24_21",
             "2026-08-18",
             {
-                "group": ["group"],
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_group": ["group"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
-            "bump_pyright",
-            "2026-08-18",
-            {
-                "drop_months": 12,
-                "cooldown_months": 0,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_matplotlib",
-            "2026-08-18",
-            {
-                "drop_months": 360,
-                "cooldown_months": 360,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_certifi",
-            "2026-08-17",
-            {
-                "drop_months": 12,
-                "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_all_dependency_groups",
+            "only_group_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
                 "cooldown_months": 21,
-                "all_groups": True,
+                "only_group": ["numpy"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
-            "bump_all_optionals",
+            "two_groups_24_21",
             "2026-01-01",
             {
-                "all_extras": True,
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_group": ["astropy", "numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "only_extra_24_21",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_extra": ["numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "two_extras_24_21",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "only_extra": ["astropy", "numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "no_extras_24_21",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "no_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "no_groups_24_12",
+            "2026-01-01",
+            {
+                "no_groups": True,
                 "drop_months": 24,
                 "cooldown_months": 12,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
-            "trailing_dot_zero",
-            "2026-01-01",
-            {
-                "all_extras": True,
-                "drop_months": 24,
-                "cooldown_months": 12,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_one_dependency_group",
-            "2026-01-01",
-            {
-                "drop_months": 24,
-                "cooldown_months": 21,
-                "group": ["numpy"],
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_two_dependency_groups",
-            "2026-01-01",
-            {
-                "drop_months": 24,
-                "cooldown_months": 21,
-                "group": ["astropy", "numpy"],
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_only_package",
-            "2026-08-17",
-            {
-                "drop_months": 0,
-                "cooldown_months": 0,
-                "group": ["update"],
-                "extra": ["update"],
-                "only_package": ["numpy"],
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "astropy",
-            "2026-08-17",
-            {
-                "drop_months": 12,
-                "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "astropy2",
-            "2026-08-18",
-            {
-                "drop_months": 24,
-                "cooldown_months": 12,
-                "all_groups": True,
-                "all_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "astropy3",
-            "2026-08-18",
-            {
-                "drop_months": 360,
-                "cooldown_months": 360,
-                "all_groups": True,
-                "all_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "scipy",
+            "skip_two_groups_12_6",
             "2026-08-18",
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_groups": True,
-                "all_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "pydantic",
-            "2026-08-18",
-            {
-                "drop_months": 12,
-                "cooldown_months": 0,
-                "all_groups": True,
-                "all_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "skip_two_dependency_groups",
-            "2026-08-18",
-            {
-                "drop_months": 12,
-                "cooldown_months": 6,
-                "all_groups": True,
+                "no_extras": True,
                 "skip_group": ["skip-this", "skip-this-too"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
-            "skip_two_extras_categories",
+            "skip_two_extras_12_6",
             "2026-08-18",
             {
                 "drop_months": 12,
                 "cooldown_months": 6,
-                "all_extras": True,
+                "no_groups": True,
                 "skip_extra": ["skip-this", "skip-this-too"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "no_unnecessary_normalization_24_12",
+            "2026-01-01",
+            {
+                "no_groups": True,
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "bump_certifi_12_6",
+            "2026-08-17",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "only_package_0_0",
+            "2026-08-17",
+            {
+                "drop_months": 0,
+                "cooldown_months": 0,
+                "only_group": ["update"],
+                "only_extra": ["update"],
+                "only_package": ["numpy"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_astropy_12_6",
+            "2026-08-17",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_astropy_24_12",
+            "2026-08-18",
+            {
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_astropy_360_360",
+            "2026-08-18",
+            {
+                "drop_months": 360,
+                "cooldown_months": 360,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_scipy_12_6",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_pydantic_12_0",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 0,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_pyright_12_0",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 0,
+                "no_groups": True,
+                "no_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "from_matplotlib_360_360",
+            "2026-08-18",
+            {
+                "drop_months": 360,
+                "cooldown_months": 360,
+                "no_groups": True,
+                "no_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
@@ -279,6 +293,6 @@ def test_bumping_single_package(
     inputs = Inputs(drop_months=drop_months, cooldown_months=cooldown_months)
 
     freezer.move_to("2026-01-01")
-    package = bump.BumpPackage(name=name, inputs=inputs)
+    package = bump.BumpSinglePackage(name=name, inputs=inputs)
     release = package.oldest_supported_release()
     assert str(release) == expected

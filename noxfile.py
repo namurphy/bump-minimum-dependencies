@@ -98,6 +98,8 @@ def test_cli(session: nox.Session) -> None:
         "bump-minimum-dependencies",
         "--drop-months=24",
         "--cooldown-months=21",
+        "--no-groups=True",
+        "--no-extras=True",
     ]
 
     session.run(
@@ -360,8 +362,6 @@ def bump_pyproject(session: nox.Session, package: str) -> None:
 
     session.run(
         "bump-minimum-dependencies",
-        "--all-groups",
-        "--all-extras",
         *session.posargs,
     )
 
