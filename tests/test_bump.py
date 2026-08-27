@@ -7,7 +7,7 @@ import pytest
 from pathlib import Path
 
 
-DEFAULT_TEST_VERBOSITY = "INFO"
+DEFAULT_TEST_VERBOSITY = "DEBUG"
 
 
 def get_errmsg_from_file_comparison(
@@ -40,7 +40,7 @@ def get_errmsg_from_file_comparison(
 
     expanded_comparison = (
         f"Mismatch between updated and expected pyproject.toml for {subdir = !r}.\n\n"
-        + "\n".join(error_messages)
+        + "\n".join(error_messages[:12])
     )
 
     return expanded_comparison

@@ -12,6 +12,8 @@ from bump_minimum_dependencies.inputs import (
     DEFAULT_COOLDOWN_MONTHS,
     Inputs,
 )
+from bump_minimum_dependencies.logging import logger
+
 
 from typing import Literal
 
@@ -153,6 +155,8 @@ def main(
     categories of optional dependencies.
     """
 
+    logger.setLevel(verbosity)
+
     if only_group or only_extra:
         no_extras = True
         no_groups = True
@@ -184,6 +188,8 @@ def main(
         skip_package=skip_package,
         verbosity=verbosity,
     )
+
+    logger.debug(str(inputs))
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(inputs=inputs)
     bump_minimum_dependencies.run()

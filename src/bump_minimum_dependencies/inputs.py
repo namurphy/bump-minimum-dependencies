@@ -52,7 +52,9 @@ class Inputs:
         self.cooldown_months: float = cooldown_months
         self.update_all_groups: bool = not no_groups
         self.update_all_extras: bool = not no_extras
-        self.skip_project_dependencies: bool = skip_core
+        self.skip_project_dependencies: bool = bool(
+            skip_core or only_extra or only_group
+        )
         self.verbosity: _VerbosityLiteral = verbosity
         self.packages_to_skip: set[str] = _make_lower_case_set(skip_package)
         self.packages_to_update: set[str] = _make_lower_case_set(only_package)
@@ -60,8 +62,6 @@ class Inputs:
         self.extras_to_skip: set[str] = _make_lower_case_set(skip_extra)
         self.groups_to_update: set[str] = _make_lower_case_set(only_group)
         self.groups_to_skip: set[str] = _make_lower_case_set(skip_group)
-
-        print(self)
 
     def __str__(self):
         for attr in dir(self):

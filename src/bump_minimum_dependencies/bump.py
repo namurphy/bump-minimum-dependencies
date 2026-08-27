@@ -20,7 +20,6 @@ import datetime
 import packaging.specifiers
 from packaging.version import Version
 import packaging.requirements
-from packaging.requirements import InvalidRequirement
 
 from packaging.requirements import Requirement
 
@@ -28,9 +27,7 @@ from packaging.requirements import Requirement
 from bump_minimum_dependencies.pyproject import PyProject
 from bump_minimum_dependencies.logging import logger, package_prefix, log_uv_command
 from bump_minimum_dependencies import utils
-from bump_minimum_dependencies.inputs import (
-    Inputs,
-)
+from bump_minimum_dependencies.inputs import Inputs
 
 
 import subprocess
@@ -367,7 +364,7 @@ class BumpMinimumDependencies:
             self.inputs.packages_to_skip.add(self.project_name)
 
         logger.info(
-            msg=f"Bumping minimum dependencies for {inputs.pyproject_file!r}.",
+            msg=f"Bumping minimum dependencies for {inputs.pyproject_file.resolve()}",
             extra={"markup": True},
         )
 
@@ -430,9 +427,7 @@ class BumpMinimumDependencies:
             )
 
         if self.inputs.update_all_groups:
-            groups_to_update = sorted(
-                all_groups - self.inputs.groups_to_skip
-            )
+            groups_to_update = sorted(all_groups - self.inputs.groups_to_skip)
         else:
             groups_to_update = sorted(self.inputs.groups_to_update)
 
@@ -470,7 +465,6 @@ class BumpMinimumDependencies:
     ) -> list[str]:
         dependencies_to_update: list[Requirement] = []
         for requirement in requirements:
-
             if requirement.name.lower() in self.inputs.packages_to_skip:
                 continue
 
@@ -554,11 +548,11 @@ class BumpMinimumDependencies:
             clause = f"optional dependencies category {extra!r}"
         else:
             flag = []
-            clause = "core dependencies"
+            clause = "project dependencies"
 
         if not new_requirements:
             logger.info(
-                f"No updates to requirements for {clause}.", extra={"markup": True}
+                f"No updates for for {clause}.", extra={"markup": True}
             )
             return
 
@@ -598,10 +592,17 @@ class BumpMinimumDependencies:
 
     def bump_groups(self) -> None:
         """Bump requirements in dependency groups."""
+
+        msg = (
+            "No dependency groups to update."
+            if not self.groups_to_update
+            else f"Dependency groups to update: {', '.join(self.groups_to_update)}."
+        )
+
+        logger.info(msg)
+
         for group in self.groups_to_update:
-            requirements: set[Requirement] = self.pyproject.dependency_groups[
-                group
-            ]
+            requirements: set[Requirement] = self.pyproject.dependency_groups[group]
             new_requirements: list[str] = self.get_new_requirements(
                 requirements=requirements,
                 inputs=self.inputs,
