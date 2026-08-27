@@ -30,14 +30,16 @@ Usage: bump-minimum-dependencies [OPTIONS]
   Requirements with markers or that cannot be updated will be skipped with a
   warning.
 
+  "Groups" refers to dependency groups while "extras" refers to categories of
+  optional dependencies.
+
 Options:
   --pyproject-file FILE           Path to pyproject.toml.  [default:
                                   pyproject.toml]
   --drop-months FLOAT RANGE       Drop minor releases older than this many
                                   months ago.  [default: 24; x>=0]
-  --cooldown-months FLOAT RANGE   Keep at least one release this old, not to
-                                  exceed drop-months, if possible.  [default:
-                                  18; x>=0]
+  --cooldown-months FLOAT RANGE   Keep at least one minor release this old
+                                  when possible.  [default: 18; x>=0]
   --only-package TEXT             Name of a package to update. May be provided
                                   multiple times. When this option is used,
                                   all other packages will be skipped.
@@ -58,6 +60,7 @@ Options:
                                   Logging verbosity level.  [default: WARNING]
   --version                       Show the version and exit.
   --help                          Show this message and exit.
+
 ```
 
 ## Examples
