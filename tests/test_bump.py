@@ -50,87 +50,26 @@ def get_errmsg_from_file_comparison(
     "subdir,date,kwargs",
     [
         (
-            "base_case",
-            "2026-01-01",
-            {
-                "no_groups": True,
-                "no_extras": True,
-                "drop_months": 24,
-                "cooldown_months": 21,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "no_project_table",
-            "2026-08-18",
-            {
-                "only_group": ["group"],
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_pyright",
-            "2026-08-18",
-            {
-                "drop_months": 12,
-                "cooldown_months": 0,
-                "no_groups": True,
-                "no_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_matplotlib",
-            "2026-08-18",
-            {
-                "drop_months": 360,
-                "cooldown_months": 360,
-                "no_groups": True,
-                "no_extras": True,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_certifi",
-            "2026-08-17",
-            {
-                "drop_months": 12,
-                "cooldown_months": 6,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_all_groups",
+            "basic_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
                 "cooldown_months": 21,
-                "no_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
-            "bump_all_extras",
-            "2026-01-01",
-            {
-                "no_groups": False,
-                "drop_months": 24,
-                "cooldown_months": 12,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
+                "no_project_table_24_21",
+                "2026-08-18",
+                {
+                    "drop_months": 24,
+                    "cooldown_months": 21,
+                    "only_group": ["group"],
+                    "verbosity": DEFAULT_TEST_VERBOSITY,
+                },
         ),
         (
-            "trailing_dot_zero",
-            "2026-01-01",
-            {
-                "no_groups": True,
-                "drop_months": 24,
-                "cooldown_months": 12,
-                "verbosity": DEFAULT_TEST_VERBOSITY,
-            },
-        ),
-        (
-            "bump_one_group",
+            "only_group_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -140,7 +79,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_two_groups",
+            "two_groups_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -150,7 +89,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_one_extra",
+            "only_extra_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -160,7 +99,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_two_extras",
+            "two_extras_24_21",
             "2026-01-01",
             {
                 "drop_months": 24,
@@ -170,7 +109,68 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_only_package",
+            "no_extras_24_21",
+            "2026-01-01",
+            {
+                "drop_months": 24,
+                "cooldown_months": 21,
+                "no_extras": True,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "no_groups_24_12",
+            "2026-01-01",
+            {
+                "no_groups": True,
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "skip_two_groups_12_6",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "no_extras": True,
+                "skip_group": ["skip-this", "skip-this-too"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "skip_two_extras_12_6",
+            "2026-08-18",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "no_groups": True,
+                "skip_extra": ["skip-this", "skip-this-too"],
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "no_unnecessary_normalization_24_12",
+            "2026-01-01",
+            {
+                "no_groups": True,
+                "drop_months": 24,
+                "cooldown_months": 12,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "bump_certifi_12_6",
+            "2026-08-17",
+            {
+                "drop_months": 12,
+                "cooldown_months": 6,
+                "verbosity": DEFAULT_TEST_VERBOSITY,
+            },
+        ),
+        (
+            "only_package_0_0",
             "2026-08-17",
             {
                 "drop_months": 0,
@@ -182,7 +182,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "astropy",
+            "from_astropy_12_6",
             "2026-08-17",
             {
                 "drop_months": 12,
@@ -191,7 +191,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "astropy2",
+            "from_astropy_24_12",
             "2026-08-18",
             {
                 "drop_months": 24,
@@ -200,7 +200,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "astropy3",
+            "from_astropy_360_360",
             "2026-08-18",
             {
                 "drop_months": 360,
@@ -209,7 +209,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "scipy",
+            "from_scipy_12_6",
             "2026-08-18",
             {
                 "drop_months": 12,
@@ -218,7 +218,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "pydantic",
+            "from_pydantic_12_0",
             "2026-08-18",
             {
                 "drop_months": 12,
@@ -227,24 +227,24 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "skip_two_groups",
+            "from_pyright_12_0",
             "2026-08-18",
             {
                 "drop_months": 12,
-                "cooldown_months": 6,
+                "cooldown_months": 0,
+                "no_groups": True,
                 "no_extras": True,
-                "skip_group": ["skip-this", "skip-this-too"],
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
         (
-            "skip_two_extras",
+            "from_matplotlib_360_360",
             "2026-08-18",
             {
-                "drop_months": 12,
-                "cooldown_months": 6,
+                "drop_months": 360,
+                "cooldown_months": 360,
                 "no_groups": True,
-                "skip_extra": ["skip-this", "skip-this-too"],
+                "no_extras": True,
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
