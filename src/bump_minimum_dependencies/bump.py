@@ -30,11 +30,8 @@ from bump_minimum_dependencies.logging import logger, package_prefix, log_uv_com
 from bump_minimum_dependencies import utils
 from bump_minimum_dependencies.inputs import (
     Inputs,
-    DAYS_PER_MONTH,
 )
 
-
-import math
 
 import subprocess
 import functools
@@ -74,22 +71,6 @@ class BumpPackage:
         return package_prefix(self.name)
 
     @functools.cached_property
-    def drop_date(self) -> datetime.date:
-        """The date drop_months before today."""
-        support_window = datetime.timedelta(
-            days=math.ceil(self.inputs.drop_months * DAYS_PER_MONTH)
-        )
-        return self.today - support_window
-
-    @functools.cached_property
-    def cooldown_date(self) -> datetime.date:
-        """The date cooldown_months before today."""
-        cooldown_period = datetime.timedelta(
-            days=math.ceil(self.inputs.cooldown_months * DAYS_PER_MONTH)
-        )
-        return self.today - cooldown_period
-
-    @functools.cached_property
     def response_from_pypi(self) -> dict:
         """Representation of JSON file from PyPI."""
         return requests.get(
@@ -100,8 +81,7 @@ class BumpPackage:
     @functools.cached_property
     def released_versions(self) -> list[Version]:
         """The versions of all releases."""
-        versions = sorted(self.versions_to_release_dates)
-        return versions
+        return sorted(self.versions_to_release_dates)
 
     @functools.cached_property
     def _epoch_major_minor_to_set_of_micro(
@@ -162,7 +142,7 @@ class BumpPackage:
         releases_before_drop_date: list[Version] = [
             version
             for version, release_date in self.versions_to_release_dates.items()
-            if release_date <= self.drop_date
+            if release_date <= self.inputs.drop_date
         ]
 
         return max(releases_before_drop_date, default=Version("0"))
@@ -173,7 +153,7 @@ class BumpPackage:
         are too low, in particular when there have been a large number
         of micro releases.
         """
-        minimum_micro_version = self.last_release_before_drop_date
+        minimum_micro_version: Version = self.last_release_before_drop_date
 
         if minimum_minor_version >= minimum_micro_version:
             return minimum_minor_version
@@ -233,22 +213,23 @@ class BumpPackage:
                 )
                 continue
 
-            if self.drop_date <= release_date < self.cooldown_date:
+            if self.inputs.drop_date <= release_date < self.inputs.cooldown_date:
                 supported_minor_releases_before_cooldown.append(minor_release)
-            elif release_date < self.drop_date:
+            elif release_date < self.inputs.drop_date:
                 minor_releases_before_drop_date.append(minor_release)
 
         if not supported_minor_releases_before_cooldown:
             logger.debug(
                 f"{self.prefix} "
                 f"No supported releases prior to cooldown. "
-                f"({self.cooldown_date.isoformat()})",
+                f"({self.inputs.cooldown_date.isoformat()})",
             )
 
         if not minor_releases_before_drop_date:
             logger.debug(
                 f"{self.prefix} "
-                f"No releases prior to drop date ({self.drop_date.isoformat()}).",
+                f"No releases prior to drop date "
+                f"({self.inputs.drop_date.isoformat()}).",
             )
 
         # when a package's first release is during the cooldown period
@@ -421,8 +402,8 @@ class BumpMinimumDependencies:
                 continue
 
             if (
-                self.inputs.only_update_these_packages
-                and requirement.name not in self.inputs.only_update_these_packages
+                self.inputs.packages_to_update
+                and requirement.name not in self.inputs.packages_to_update
             ):
                 continue
             core_requirements_to_update.add(requirement)
@@ -437,39 +418,39 @@ class BumpMinimumDependencies:
 
         all_dependency_groups: set[str] = set(self.pyproject.dependency_group_names)
 
-        if undefined := self.inputs.dependency_groups - all_dependency_groups:
+        if undefined := self.inputs.groups_to_update - all_dependency_groups:
             raise click.ClickException(
                 f"The following dependency groups are undefined: {', '.join(undefined)}"
             )
 
-        if duplicated := self.inputs.dependency_groups & self.inputs.groups_to_skip:
+        if duplicated := self.inputs.groups_to_update & self.inputs.groups_to_skip:
             raise click.ClickException(
                 f"The following dependency groups cannot be provided "
                 f"to both --group and --skip-group: {', '.join(duplicated)}"
             )
 
-        if self.inputs.update_all_dependency_groups:
+        if self.inputs.update_all_groups:
             return sorted(all_dependency_groups - self.inputs.groups_to_skip)
-        return sorted(self.inputs.dependency_groups)
+        return sorted(self.inputs.groups_to_update)
 
     @property
     def optional_categories_to_update(self) -> list[str]:
         """Names of categories of optional dependencies to be updated if necessary."""
         all_optionals: set[str] = set(self.pyproject.optional_category_names)
-        if undefined := self.inputs.optional_categories - all_optionals:
+        if undefined := self.inputs.extras_to_update - all_optionals:
             raise click.ClickException(
                 f"The following extras are not defined: {', '.join(undefined)}"
             )
 
-        if duplicated := self.inputs.optional_categories & self.inputs.extras_to_skip:
+        if duplicated := self.inputs.extras_to_update & self.inputs.extras_to_skip:
             raise click.ClickException(
                 "The following extras cannot be provided to both "
                 f"--extra and --skip-extra: {', '.join(duplicated)}"
             )
 
-        if self.inputs.update_all_optionals:
+        if self.inputs.update_all_extras:
             return sorted(all_optionals - self.inputs.extras_to_skip)
-        return sorted(self.inputs.optional_categories)
+        return sorted(self.inputs.extras_to_update)
 
     def get_new_requirements(
         self,
@@ -478,8 +459,8 @@ class BumpMinimumDependencies:
     ) -> list[str]:
         requirements_to_update: list[Requirement] = []
         for requirement in requirements:
-            # The following error-handling code should never be reached,
-            # and is intended as a safeguard.
+            # The following error-handling code should never be reached.
+            # Once this has become stabilized
             if not isinstance(requirement, Requirement):
                 try:
                     logger.debug(
@@ -497,9 +478,8 @@ class BumpMinimumDependencies:
                 continue
 
             if (
-                self.inputs.only_update_these_packages
-                and requirement.name.lower()
-                not in self.inputs.only_update_these_packages
+                self.inputs.packages_to_update
+                and requirement.name.lower() not in self.inputs.packages_to_update
             ):
                 continue
 

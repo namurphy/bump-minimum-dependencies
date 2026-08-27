@@ -36,7 +36,7 @@ class PyProject:
         Get project.dependencies from pyproject.toml, converting them
         into `packaging.requirements.Requirement` objects.
         """
-        core_requirements = set()
+        core_requirements: set[Requirement] = set()
         for requirement in self.project.get("dependencies", set()):
             with contextlib.suppress(InvalidRequirement, TypeError):
                 core_requirements.add(Requirement(requirement))
@@ -49,7 +49,7 @@ class PyProject:
         them into `packaging.requirements.Requirement` objects.
         """
         optional_dependencies: dict[str, set[Requirement]] = {}
-        original_extras = self.project.get("optional-dependencies", {})
+        original_extras: dict[str, str] = self.project.get("optional-dependencies", {})
         for extra in original_extras:
             optional_dependencies[extra] = set()
             for dependency in original_extras[extra]:
@@ -79,6 +79,7 @@ class PyProject:
         original_groups: dict[str, list[str]] = self.pyproject.get(
             "dependency-groups", {}
         )
+
         for group in original_groups:
             dependency_groups[group] = set()
             for dependency in original_groups[group]:

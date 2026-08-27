@@ -148,16 +148,20 @@ def main(
 
     Requirements with markers or that cannot be updated will be skipped
     with a warning.
+
+    "Groups" refers to dependency groups while "extras" refers to
+    categories of optional dependencies.
     """
     if cooldown_months > drop_months:
-        cooldown_months_was_provided = (
+        cooldown_months_was_provided: bool = (
             ctx.get_parameter_source("cooldown_months") == ParameterSource.COMMANDLINE
         )
         if cooldown_months_was_provided:
-            raise click.ClickException(
+            msg = (
                 f"--cooldown-months={cooldown_months} cannot "
                 f"exceed --drop-months={drop_months}."
             )
+            raise click.ClickException(msg)
         cooldown_months = min(cooldown_months, drop_months)
 
     inputs = Inputs(

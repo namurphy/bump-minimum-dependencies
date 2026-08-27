@@ -11,8 +11,14 @@ from pathlib import Path
 DEFAULT_DROP_MONTHS = 24
 DEFAULT_COOLDOWN_MONTHS = 18
 
+DAYS_PER_MONTH = 30.44
 
-DAYS_PER_MONTH = 30.436875
+
+def _make_lower_case_set(iterable: tuple[str, ...] | list[str]) -> set[str]:
+    return {s.lower() for s in iterable}
+
+
+_VerbosityLiteral = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"]
 
 
 class Inputs:
@@ -33,35 +39,27 @@ class Inputs:
         only_package: tuple[str, ...] | list[str] = (),
         skip_group: tuple[str, ...] | list[str] = (),
         skip_extra: tuple[str, ...] | list[str] = (),
-        verbosity: Literal[
-            "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
-        ] = "WARNING",
+        verbosity: _VerbosityLiteral = "WARNING",
     ):
         """Put the inputs in a more usable form."""
         self.pyproject_file: Path = Path(pyproject_file)
         self.drop_months: float = drop_months
         self.cooldown_months: float = cooldown_months
-        self.update_all_dependency_groups: bool = all_groups
-        self.update_all_optionals: bool = all_extras
+        self.update_all_groups: bool = all_groups
+        self.update_all_extras: bool = all_extras
         self.skip_core_requirements: bool = skip_core
-        self.packages_to_skip: set[str] = {package.lower() for package in skip_package}
-        self.only_update_these_packages: set[str] = {
-            package.lower() for package in only_package
-        }
-        self.optional_categories: set[str] = {extra.lower() for extra in extra}
-        self.extras_to_skip: set[str] = {extra.lower() for extra in skip_extra}
-        self.dependency_groups: set[str] = {group.lower() for group in group}
-        self.groups_to_skip: set[str] = {
-            skipped_group.lower() for skipped_group in skip_group
-        }
-        self.verbosity: Literal[
-            "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"
-        ] = verbosity
+        self.verbosity: _VerbosityLiteral = verbosity
+        self.packages_to_skip: set[str] = _make_lower_case_set(skip_package)
+        self.packages_to_update: set[str] = _make_lower_case_set(only_package)
+        self.extras_to_update: set[str] = _make_lower_case_set(extra)
+        self.extras_to_skip: set[str] = _make_lower_case_set(skip_extra)
+        self.groups_to_update: set[str] = _make_lower_case_set(group)
+        self.groups_to_skip: set[str] = _make_lower_case_set(skip_group)
 
     @functools.cached_property
     def today(self) -> datetime.date:
         """The date for today in the UTC time zone."""
-        return datetime.datetime.now(datetime.timezone.utc).date()
+        return datetime.datetime.now(tz=datetime.timezone.utc).date()
 
     @functools.cached_property
     def drop_date(self) -> datetime.date:
