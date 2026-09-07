@@ -1,12 +1,11 @@
 import datetime
-import packaging.version
+
 import packaging.requirements
-
+import packaging.version
 import pytest
-from bump_minimum_dependencies import utils
-
-
 import requests
+
+from bump_minimum_dependencies import utils
 
 
 @pytest.mark.parametrize(

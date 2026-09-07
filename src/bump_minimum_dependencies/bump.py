@@ -8,33 +8,25 @@ __all__ = [
     "requirement_already_included",
 ]
 
+import datetime
+import functools
 import pathlib
+import subprocess
 
 import click
-import requests
-
-from dep_logic.specifiers import parse_version_specifier
-
-import datetime
-
-import packaging.specifiers
-from packaging.version import Version
 import packaging.requirements
-from packaging.requirements import InvalidRequirement
+import packaging.specifiers
+import requests
+from dep_logic.specifiers import parse_version_specifier
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.version import Version
 
-from packaging.requirements import Requirement
-
-
-from bump_minimum_dependencies.pyproject import PyProject
-from bump_minimum_dependencies.logging import logger, package_prefix, log_uv_command
 from bump_minimum_dependencies import utils
 from bump_minimum_dependencies.inputs import (
     Inputs,
 )
-
-
-import subprocess
-import functools
+from bump_minimum_dependencies.logging import log_uv_command, logger, package_prefix
+from bump_minimum_dependencies.pyproject import PyProject
 
 
 class NoReleasesError(Exception):
@@ -106,7 +98,7 @@ class BumpPackage:
             if (epoch, major, minor) not in epoch_major_minor_to_set_of_micro:
                 if version.post is not None:
                     logger.info(
-                        f"{self.prefix} Skipping post release: {str(version)}",
+                        f"{self.prefix} Skipping post release: {version!s}",
                     )
                     continue
                 epoch_major_minor_to_set_of_micro[(epoch, major, minor)] = {micro}
@@ -163,8 +155,8 @@ class BumpPackage:
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
             logger.warning(
                 f"{self.prefix} Bumping version from "
-                f"{str(minor_version)} ({minor_date}) to "
-                f"{str(micro_version)} ({micro_date}) {reason}."
+                f"{minor_version!s} ({minor_date}) to "
+                f"{micro_version!s} ({micro_date}) {reason}."
             )
 
         if minimum_micro_version.micro >= 25:
@@ -205,7 +197,7 @@ class BumpPackage:
                 ]
             except KeyError:
                 logger.debug(
-                    f"{self.prefix} Version {str(minor_release)} "
+                    f"{self.prefix} Version {minor_release!s} "
                     f"is not in the mapping from versions to release "
                     f"dates, possibly due to non-standard versioning or "
                     f"that the release was yanked or a prerelease. "
@@ -258,7 +250,7 @@ class BumpPackage:
 
         logger.info(
             f"{self.prefix} "
-            f"New minimum version: {str(new_minimum_version)} "
+            f"New minimum version: {new_minimum_version!s} "
             f"({new_minimum_version_release_date.isoformat()})",
         )
 
@@ -311,7 +303,7 @@ def get_new_requirement_for_package(
     """Combine the time-based requirement with the original requirement."""
     package = BumpPackage(requirement.name, inputs=inputs)
     logger.debug(
-        f"{package_prefix(requirement.name)} Original specifier: {str(requirement.specifier)}",
+        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!s}",
     )
     calculated_minimum_version = package.oldest_supported_release()
     time_based_requirement = f">={calculated_minimum_version}"

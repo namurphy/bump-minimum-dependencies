@@ -3,12 +3,13 @@
 __all__ = ["PyProject"]
 
 
-from pathlib import Path
-import tomllib
-import functools
 import contextlib
-from packaging.requirements import Requirement, InvalidRequirement
+import functools
+import tomllib
+from pathlib import Path
 from typing import Any
+
+from packaging.requirements import InvalidRequirement, Requirement
 
 
 class PyProject:

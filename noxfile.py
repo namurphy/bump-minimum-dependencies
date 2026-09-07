@@ -14,18 +14,14 @@ import filecmp
 import shutil
 import tomllib
 import warnings
-
+from pathlib import Path
 
 import nox
 import nox_uv
-from pathlib import Path
-
-
 import requests
+import tomli_w
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-
-import tomli_w
 
 nox.options.default_venv_backend = "uv"
 

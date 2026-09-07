@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 from packaging.requirements import Requirement
 
 from bump_minimum_dependencies.pyproject import PyProject

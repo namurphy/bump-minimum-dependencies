@@ -4,9 +4,10 @@ __all__ = [
     "version_from_pypi_filename",
 ]
 
-from packaging.version import Version, InvalidVersion
-from packaging.requirements import Requirement
 import datetime
+
+from packaging.requirements import Requirement
+from packaging.version import InvalidVersion, Version
 
 _pypi_upload_suffixes = (".bz2", ".tar", ".tar.bz2", ".tar.gz", ".tar.vz2", ".zip")
 
