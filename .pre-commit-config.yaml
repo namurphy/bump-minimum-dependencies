@@ -10,7 +10,7 @@ ci:  # https://pre-commit.ci/#configuration
 repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.2
+  rev: v0.16.6
   hooks:
   - id: ruff-check
     name: ruff-check (see https://docs.astral.sh/ruff/rules)
@@ -42,13 +42,13 @@ repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
   - id: check-yaml
 
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.15.0
+  rev: v2.16.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix]
 
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.34.1
+  rev: 0.38.0
   hooks:
   - id: check-github-workflows
 
@@ -66,7 +66,7 @@ repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
   - id: text-unicode-replacement-char
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.4.1
+  rev: v2.4.3
   hooks:
   - id: codespell
     name: codespell (add false positives to pyproject.toml)
@@ -76,28 +76,28 @@ repos:  # https://pre-commit.com/#adding-pre-commit-plugins-to-your-project
 - repo: https://github.com/adhtruong/mirrors-typos
   # use mirrors-typos because `pre-commit autoupdate` drops the version
   # of the primary typos repo from v1.x.y to v1
-  rev: v1.38.1
+  rev: v1.50.1
   hooks:
   - id: typos
     name: typos (add false positives to _typos.toml)
     exclude: tests/data
 
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.24.1
+  rev: '0.26'
   hooks:
   - id: validate-pyproject
     name: validate pyproject.toml
     additional_dependencies: ['validate-pyproject-schema-store[all]']
 
 - repo: https://github.com/tox-dev/pyproject-fmt
-  rev: v2.11.0
+  rev: v2.29.3
   hooks:
   - id: pyproject-fmt
     name: format pyproject.toml
     exclude: tests/data
 
 - repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.9.6
+  rev: 0.12.10
   hooks:
     # running uv lock requires network access or a warm cache, so it
     # cannot be run via pre-commit.ci, even with the `--offline`,
