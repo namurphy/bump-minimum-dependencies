@@ -1,6 +1,7 @@
 __all__ = ["logger", "package_prefix"]
 
 import logging
+
 from rich.logging import RichHandler
 from rich.markup import escape
 

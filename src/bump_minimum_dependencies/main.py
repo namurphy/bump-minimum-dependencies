@@ -1,19 +1,18 @@
 __all__ = ["main"]
 
 import pathlib
+from typing import Literal
 
 import click
-
 from click.core import ParameterSource
 
-from . import bump
 from bump_minimum_dependencies.inputs import (
-    DEFAULT_DROP_MONTHS,
     DEFAULT_COOLDOWN_MONTHS,
+    DEFAULT_DROP_MONTHS,
     Inputs,
 )
 
-from typing import Literal
+from . import bump
 
 
 @click.command(

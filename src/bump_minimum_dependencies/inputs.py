@@ -1,12 +1,11 @@
 import datetime
 
-__all__ = ["Inputs", "DEFAULT_DROP_MONTHS", "DEFAULT_COOLDOWN_MONTHS", "DAYS_PER_MONTH"]
+__all__ = ["DAYS_PER_MONTH", "DEFAULT_COOLDOWN_MONTHS", "DEFAULT_DROP_MONTHS", "Inputs"]
 
-import math
 import functools
-from typing import Literal
+import math
 from pathlib import Path
-
+from typing import Literal
 
 DEFAULT_DROP_MONTHS = 24
 DEFAULT_COOLDOWN_MONTHS = 21
@@ -59,7 +58,7 @@ class Inputs:
     @functools.cached_property
     def today(self) -> datetime.date:
         """The date for today in the UTC time zone."""
-        return datetime.datetime.now(tz=datetime.timezone.utc).date()
+        return datetime.datetime.now(tz=datetime.UTC).date()
 
     @functools.cached_property
     def drop_date(self) -> datetime.date:
