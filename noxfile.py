@@ -78,7 +78,10 @@ def run(session: nox.Session) -> None:
 
 @nox.session(python=supported_python_versions)
 def test_cli(session: nox.Session) -> None:
-    """Test the command line interface."""
+    """Test the command line interface.
+
+    Install faketime on Ubuntu with `sudo apt install faketime`
+    """
     session.install(".")
 
     session.run_install("bump-minimum-dependencies", "--version")
@@ -96,6 +99,7 @@ def test_cli(session: nox.Session) -> None:
         "--cooldown-months=21",
         "--no-groups",
         "--no-extras",
+        "--verbosity=INFO",
     ]
 
     session.run(
