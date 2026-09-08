@@ -84,7 +84,7 @@ def get_errmsg_from_file_comparison(
             },
         ),
         (
-            "bump_cerfifi",
+            "bump_certifi",
             "2026-08-17",
             {
                 "drop_months": 12,
