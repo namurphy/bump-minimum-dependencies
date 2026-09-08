@@ -85,8 +85,8 @@ def test_cli(session: nox.Session) -> None:
     session.run_install("faketime", "--version", external=True)
 
     tmp_dir = Path(session.create_tmp())
-    source_dir = Path("tests/data/base_case")
-    target_dir = tmp_dir / "base_case"
+    source_dir = Path("tests/data/basic_24_21")
+    target_dir = tmp_dir / "basic_24_21"
     shutil.copytree(source_dir, target_dir)
     session.chdir(target_dir)
 
