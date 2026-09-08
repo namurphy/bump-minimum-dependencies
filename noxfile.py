@@ -28,7 +28,7 @@ nox.options.default_venv_backend = "uv"
 _HERE = Path(__file__).parent
 
 supported_python_versions: tuple[str, ...] = ("3.13", "3.14")
-maxpython: str = sorted(supported_python_versions)[-1]
+maxpython: str = max(supported_python_versions)
 
 
 @nox_uv.session(python=maxpython, uv_groups=["dev"])

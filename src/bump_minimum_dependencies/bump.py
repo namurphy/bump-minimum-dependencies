@@ -47,7 +47,7 @@ class BumpPackage:
 
     def __init__(self, name: str, inputs: Inputs):
         self.name = name
-        self.today: datetime.date = datetime.datetime.now().date()
+        self.today: datetime.date = datetime.datetime.now(tz=datetime.UTC).date()
         self.versions_to_release_dates: dict[Version, datetime.date] = (
             utils.make_version_to_release_date_dict(
                 response=self.response_from_pypi,
@@ -510,13 +510,11 @@ class BumpMinimumDependencies:
                 )
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
-            except Exception as exc_info:
+            except Exception as exc_info:  # noqa: BLE001
                 warning_message = (
                     f"{package_prefix(requirement.name)} Unable to update requirement. Skipping.",
                 )
-                logger.warning(
-                    warning_message, exc_info=exc_info, extra={"markup": True}
-                )
+                logger.error(warning_message, exc_info=exc_info, extra={"markup": True})
             else:
                 if not new_requirement:
                     continue
