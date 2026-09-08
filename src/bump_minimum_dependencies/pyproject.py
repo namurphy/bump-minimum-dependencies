@@ -3,12 +3,13 @@
 __all__ = ["PyProject"]
 
 
-from pathlib import Path
-import tomllib
-import functools
 import contextlib
-from packaging.requirements import Requirement, InvalidRequirement
+import functools
+import tomllib
+from pathlib import Path
 from typing import Any
+
+from packaging.requirements import InvalidRequirement, Requirement
 
 
 class PyProject:
@@ -50,7 +51,7 @@ class PyProject:
         """
         optional_dependencies: dict[str, set[Requirement]] = {}
         original_extras: dict[str, str] = self.project.get("optional-dependencies", {})
-        for extra in original_extras:
+        for extra in original_extras:  # noqa: PLC0206
             optional_dependencies[extra] = set()
             for dependency in original_extras[extra]:
                 with contextlib.suppress(InvalidRequirement, TypeError):
@@ -80,7 +81,7 @@ class PyProject:
             "dependency-groups", {}
         )
 
-        for group in original_groups:
+        for group in original_groups:  # noqa: PLC0206
             dependency_groups[group] = set()
             for dependency in original_groups[group]:
                 with contextlib.suppress(InvalidRequirement, TypeError):

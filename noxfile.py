@@ -14,25 +14,21 @@ import filecmp
 import shutil
 import tomllib
 import warnings
-
+from pathlib import Path
 
 import nox
 import nox_uv
-from pathlib import Path
-
-
 import requests
+import tomli_w
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-
-import tomli_w
 
 nox.options.default_venv_backend = "uv"
 
 _HERE = Path(__file__).parent
 
 supported_python_versions: tuple[str, ...] = ("3.13", "3.14")
-maxpython: str = sorted(supported_python_versions)[-1]
+maxpython: str = max(supported_python_versions)
 
 
 @nox_uv.session(python=maxpython, uv_groups=["dev"])

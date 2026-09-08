@@ -1,11 +1,10 @@
 import shutil
+from pathlib import Path
 
+import pytest
 
 from bump_minimum_dependencies import bump
 from bump_minimum_dependencies.inputs import Inputs
-import pytest
-from pathlib import Path
-
 
 DEFAULT_TEST_VERBOSITY = "DEBUG"
 

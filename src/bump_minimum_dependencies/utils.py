@@ -4,9 +4,10 @@ __all__ = [
     "version_from_pypi_filename",
 ]
 
-from packaging.version import Version, InvalidVersion
-from packaging.requirements import Requirement
 import datetime
+
+from packaging.requirements import Requirement
+from packaging.version import InvalidVersion, Version
 
 _pypi_upload_suffixes = (".bz2", ".tar", ".tar.bz2", ".tar.gz", ".tar.vz2", ".zip")
 
@@ -89,8 +90,9 @@ def make_version_to_release_date_dict(
             continue
 
         date_string: str = file["upload-time"].split("T")[0]
-        release_date: datetime.date = datetime.datetime.strptime(
-            date_string, "%Y-%m-%d"
+        release_date: datetime.date = datetime.datetime.strptime(  # noqa: DTZ007
+            date_string,
+            "%Y-%m-%d",
         ).date()
 
         if version not in version_to_release_dates:
