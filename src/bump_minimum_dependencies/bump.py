@@ -342,7 +342,11 @@ class BumpMinimumDependencies:
     include a `!=` dependency or multiple ranges of dependencies.
     """
 
-    def __init__(self, inputs: Inputs = Inputs()):
+    def __init__(self, inputs: Inputs | None = None):
+
+        if inputs is None:
+            inputs = Inputs()
+
         logger.setLevel(inputs.verbosity)
 
         self.pyproject_file: str | pathlib.Path = inputs.pyproject_file
