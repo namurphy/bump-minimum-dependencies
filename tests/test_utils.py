@@ -9,7 +9,7 @@ from bump_minimum_dependencies import utils
 
 
 @pytest.mark.parametrize(
-    "input,expected",
+    ("input", "expected"),
     [
         ("ASTROPY>=3.0.0.0.0", "astropy>=3"),
         ("PyYAML>4.0.0,<5.0.0", "pyyaml>4,<5"),
@@ -23,7 +23,7 @@ def test_normalize_requirement_string(input, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    "filename,package,version",
+    ("filename", "package", "version"),
     [
         ("plasmapy-0.3.0.tar.gz", "plasmapy", "0.3.0"),
         (

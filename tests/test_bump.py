@@ -46,7 +46,7 @@ def get_errmsg_from_file_comparison(
 
 
 @pytest.mark.parametrize(
-    "subdir,date,kwargs",
+    ("subdir", "date", "kwargs"),
     [
         (
             "basic_24_21",
@@ -272,7 +272,7 @@ def test_bumping_minimum_requirements(
 
 
 @pytest.mark.parametrize(
-    "name, drop_months, cooldown_months, expected",
+    ("name", "drop_months", "cooldown_months", "expected"),
     [
         ("plasmapy", 24, 0, "2024.2"),
         ("plasmapy", 4, 0, "2025.10"),
