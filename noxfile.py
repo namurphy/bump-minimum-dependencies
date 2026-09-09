@@ -272,8 +272,9 @@ def _copy_pyproject_files(
     target_name: str = "pyproject.original.toml",
     root_dir: str | Path = "example_pyprojects",
 ) -> list[Path]:
-    """Recursively search subdirectories for `pyproject.toml` and copy
+    """Search for and copy `pyproject.toml` files.
 
+    Recursively search subdirectories for `pyproject.toml` and copy
     each to `target_name` within the same directory.
 
     Parameters
