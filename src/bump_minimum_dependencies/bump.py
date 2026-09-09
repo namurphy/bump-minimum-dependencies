@@ -184,7 +184,7 @@ class BumpSinglePackage:
             msg = f"[{self.name}] No minor releases identified."
             raise NoReleasesError(msg)
 
-        supported_minor_releases_before_cooldown: list[Version] = []
+        supported_minor_releases_after_drop_date_before_cooldown: list[Version] = []
         minor_releases_before_drop_date: list[Version] = []
 
         for minor_release in self.minor_releases:
@@ -203,11 +203,13 @@ class BumpSinglePackage:
                 continue
 
             if self.inputs.drop_date <= release_date < self.inputs.cooldown_date:
-                supported_minor_releases_before_cooldown.append(minor_release)
+                supported_minor_releases_after_drop_date_before_cooldown.append(
+                    minor_release
+                )
             elif release_date < self.inputs.drop_date:
                 minor_releases_before_drop_date.append(minor_release)
 
-        if not supported_minor_releases_before_cooldown:
+        if not supported_minor_releases_after_drop_date_before_cooldown:
             logger.debug(
                 f"{self.prefix} "
                 f"No supported releases prior to cooldown. "
@@ -223,7 +225,7 @@ class BumpSinglePackage:
 
         # when a package's first release is during the cooldown period
         if (
-            not supported_minor_releases_before_cooldown
+            not supported_minor_releases_after_drop_date_before_cooldown
             and not minor_releases_before_drop_date
         ):
             logger.debug(
@@ -232,7 +234,7 @@ class BumpSinglePackage:
             return utils.normalize_requirement_string(min(self.released_versions))
 
         new_minimum_version: Version = min(
-            supported_minor_releases_before_cooldown,
+            supported_minor_releases_after_drop_date_before_cooldown,
             default=max(
                 minor_releases_before_drop_date,
                 default=min(self.minor_releases),
