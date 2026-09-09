@@ -532,7 +532,7 @@ class BumpMinimumDependencies:
         extra: str | None = None,
     ) -> None:
         if group and extra:
-            raise ValueError("Cannot set both dependency_group and extras_category.")
+            raise ValueError("Cannot set both group and extra in run_uv_commands.")
 
         if group:
             flag = [f"--group={group}"]
