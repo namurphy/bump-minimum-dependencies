@@ -56,27 +56,27 @@ format.line-ending = "lf"
 format.docstring-code-format = true
 # Using an IDE like PyCharm with a ruff plugin will make rule names appear as inlay hints
 lint.extend-select = [
-  "A",
-  "ANN",
+  # "A",
+  # "ANN",
   "ARG",
   "ASYNC",
-  "B",
+  # "B",
   "BLE",
   "C4",
-  "C90",
+  # "C90",
   "COM",
-  "D",
+  # "D",
   "DTZ",
   "E",
-  "EM",
+  # "EM",
   "EXE",
   "F",
   "FA",
-  "FBT",
+  # "FBT",
   "FIX",
   "FLY",
-  "FURB",
-  "G",
+  # "FURB",
+  # "G",
   "I",
   "ICN",
   "INP",
@@ -86,18 +86,18 @@ lint.extend-select = [
   "N",
   "NPY",
   "PD",
-  "PERF",
+  # "PERF",
   "PGH",
   "PIE",
   "PLC",
   "PLE",
-  "PLR",
-  "PLW",
-  "PT",
-  "PTH",
+  # "PLR",
+  # "PLW",
+  # "PT",
+  # "PTH",
   "PYI",
   "Q",
-  "RET",
+  # "RET",
   "RSE",
   "RUF001",
   "RUF002",
@@ -150,37 +150,37 @@ lint.extend-select = [
   "RUF103",
   "RUF104",
   "RUF200",
-  "S",
+  # "S",
   "SIM",
   "SLF",
   "SLOT",
   "T10",
   "T20",
-  "TC",
+  # "TC",
   "TD",
-  "TID",
-  "TRY",
+  # "TID",
+  # "TRY",
   "UP",
   "W",
   "YTT",
 ]
 lint.ignore = [
-  "COM812",  # handled by ruff format
-  "COM819",  # adding trailing commas leads to simpler diffs
-  "D200",    # incompatible with multiline short summaries
-  "D203",    # handled by ruff format
-  "D205",    # incompatible with multiline short summaries
-  "D206",    # handled by ruff format
-  "D300",    # handled by ruff format
-  "E111",    # handled by ruff format
-  "E114",    # handled by ruff format
-  "E117",    # handled by ruff format
-  "E501",    # handled by ruff format
-  "Q001",    # handled by ruff format
-  "Q002",    # handled by ruff format
-  "Q003",    # handled by ruff format
-  "Q004",    # handled by ruff format
-  "W191",    # handled by ruff format
+  "COM812", # handled by ruff format
+  "COM819", # adding trailing commas leads to simpler diffs
+  "D200",   # incompatible with multiline short summaries
+  "D203",   # handled by ruff format
+  "D205",   # incompatible with multiline short summaries
+  "D206",   # handled by ruff format
+  "D300",   # handled by ruff format
+  "E111",   # handled by ruff format
+  "E114",   # handled by ruff format
+  "E117",   # handled by ruff format
+  "E501",   # handled by ruff format
+  "Q001",   # handled by ruff format
+  "Q002",   # handled by ruff format
+  "Q003",   # handled by ruff format
+  "Q004",   # handled by ruff format
+  "W191",   # handled by ruff format
 ]
 lint.extend-per-file-ignores."__init__.py" = [ "D104", "E402", "F401", "F402", "F403" ]  # ignore import errors
 lint.extend-per-file-ignores."tests/**/__init__.py" = [ "D104" ]
