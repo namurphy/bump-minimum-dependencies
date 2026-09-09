@@ -11,6 +11,7 @@ from bump_minimum_dependencies.inputs import (
     DEFAULT_DROP_MONTHS,
     Inputs,
 )
+from bump_minimum_dependencies.logging import logger
 
 from . import bump
 
@@ -57,47 +58,53 @@ from . import bump
     "--skip-package",
     default=[],
     type=click.STRING,
-    help="Name of a package to skip when performing updates. Can be used multiple times.",
+    help="A package to skip when performing updates. Can be used multiple times.",
     multiple=True,
 )
 @click.option(
-    "--extra",
-    default=[],
-    type=click.STRING,
-    help="An optional dependencies category (extra) to update. Can be used multiple times.",
-    multiple=True,
-)
-@click.option(
-    "--all-extras",
+    "--no-extras",
     default=False,
     is_flag=True,
-    help="Update all optional dependencies categories.",
+    help="Do not update extras, except if specified by --only-extra.",
+)
+@click.option(
+    "--only-extra",
+    default=[],
+    type=click.STRING,
+    help=(
+        "An extra to update. Can be used multiple times. "
+        "Implies --no-extras, --no-groups, and --skip-core."
+    ),
+    multiple=True,
 )
 @click.option(
     "--skip-extra",
     default=[],
     type=click.STRING,
-    help="An optional dependencies category to skip. Can be used multiple times.",
+    help="An extra to not be updated. Can use multiple times.",
     multiple=True,
 )
 @click.option(
-    "--group",
+    "--only-group",
     default=[],
     type=click.STRING,
-    help="A dependency group to update. Can be used multiple times.",
+    help=(
+        "A dependency group to update. Can use multiple times. "
+        "Implies --no-groups, --no-extras, and --skip-core."
+    ),
     multiple=True,
 )
 @click.option(
-    "--all-groups",
+    "--no-groups",
     default=False,
     is_flag=True,
-    help="Update all dependency groups.",
+    help="Do not update dependency groups, except if specified by --only-group.",
 )
 @click.option(
     "--skip-group",
     default=[],
     type=click.STRING,
-    help="A dependency group to skip. Can be used multiple times.",
+    help="A dependency group to skip. Can use multiple times.",
     multiple=True,
 )
 @click.option(
@@ -121,11 +128,11 @@ def main(
     pyproject_file: str | pathlib.Path,
     drop_months: float,
     cooldown_months: float,
-    all_extras: bool,
-    all_groups: bool,
+    no_extras: bool,
+    no_groups: bool,
     skip_core: bool,
-    extra: tuple[str, ...] | list[str],
-    group: tuple[str, ...] | list[str],
+    only_extra: tuple[str, ...] | list[str],
+    only_group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
     only_package: tuple[str, ...] | list[str],
     skip_group: tuple[str, ...] | list[str],
@@ -151,6 +158,13 @@ def main(
     "Groups" refers to dependency groups while "extras" refers to
     categories of optional dependencies.
     """
+
+    logger.setLevel(verbosity)
+
+    if only_group or only_extra:
+        no_extras = True
+        no_groups = True
+
     if cooldown_months > drop_months:
         cooldown_months_was_provided: bool = (
             ctx.get_parameter_source("cooldown_months") == ParameterSource.COMMANDLINE
@@ -164,12 +178,12 @@ def main(
         cooldown_months = min(cooldown_months, drop_months)
 
     inputs = Inputs(
-        all_extras=all_extras,
-        all_groups=all_groups,
+        no_extras=no_extras,
+        no_groups=no_groups,
         cooldown_months=cooldown_months,
         drop_months=drop_months,
-        extra=extra,
-        group=group,
+        only_extra=only_extra,
+        only_group=only_group,
         only_package=only_package,
         pyproject_file=pyproject_file,
         skip_core=skip_core,
@@ -178,6 +192,8 @@ def main(
         skip_package=skip_package,
         verbosity=verbosity,
     )
+
+    logger.debug(str(inputs))
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(inputs=inputs)
     bump_minimum_dependencies.run()

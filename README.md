@@ -43,18 +43,22 @@ Options:
   --only-package TEXT             Name of a package to update. May be provided
                                   multiple times. When this option is used,
                                   all other packages will be skipped.
-  --skip-package TEXT             Name of a package to skip when performing
-                                  updates. Can be used multiple times.
-  --extra TEXT                    An optional dependencies category (extra) to
-                                  update. Can be used multiple times.
-  --all-extras                    Update all optional dependencies categories.
-  --skip-extra TEXT               An optional dependencies category to skip.
+  --skip-package TEXT             A package to skip when performing updates.
                                   Can be used multiple times.
-  --group TEXT                    A dependency group to update. Can be used
-                                  multiple times.
-  --all-groups                    Update all dependency groups.
-  --skip-group TEXT               A dependency group to skip. Can be used
-                                  multiple times.
+  --no-extras                     Do not update extras, except if specified by
+                                  --only-extra.
+  --only-extra TEXT               An extra to update. Can be used multiple
+                                  times. Implies --no-extras, --no-groups, and
+                                  --skip-core.
+  --skip-extra TEXT               An extra to not be updated. Can use multiple
+                                  times.
+  --only-group TEXT               A dependency group to update. Can use
+                                  multiple times. Implies --no-groups, --no-
+                                  extras, and --skip-core.
+  --no-groups                     Do not update dependency groups, except if
+                                  specified by --only-group.
+  --skip-group TEXT               A dependency group to skip. Can use multiple
+                                  times.
   --skip-core                     Do not update core project dependencies.
   --verbosity [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]
                                   Logging verbosity level.  [default: WARNING]
