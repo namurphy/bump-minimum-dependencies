@@ -1,7 +1,9 @@
 import shutil
+import typing
 from pathlib import Path
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 
 from bump_minimum_dependencies import bump
 from bump_minimum_dependencies.inputs import Inputs
@@ -10,9 +12,9 @@ DEFAULT_TEST_VERBOSITY = "INFO"
 
 
 def get_errmsg_from_file_comparison(
-    pyproject,
-    expected_pyproject,
-    subdir,
+    pyproject: Path,
+    expected_pyproject: Path,
+    subdir: str,
 ) -> str | None:
     with open(pyproject) as f1:
         actual = f1.readlines()
@@ -250,7 +252,12 @@ def get_errmsg_from_file_comparison(
     ],
 )
 def test_bumping_minimum_requirements(
-    tmp_path, monkeypatch, freezer, subdir, kwargs, date
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+    freezer,  # ruff:ignore[ANN001]
+    subdir: str,
+    kwargs: dict[str, typing.Any],
+    date: str,
 ) -> None:
     freezer.move_to(date)
 
@@ -287,7 +294,11 @@ def test_bumping_minimum_requirements(
     ],
 )
 def test_bumping_single_package(
-    name: str, drop_months: int, cooldown_months: int, expected: str, freezer
+    name: str,
+    drop_months: int,
+    cooldown_months: int,
+    expected: str,
+    freezer,  # ruff:ignore[ANN001]
 ) -> None:
     inputs = Inputs(drop_months=drop_months, cooldown_months=cooldown_months)
 

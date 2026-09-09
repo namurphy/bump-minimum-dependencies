@@ -151,7 +151,11 @@ class BumpSinglePackage:
         if minimum_minor_version >= minimum_micro_version:
             return minimum_minor_version
 
-        def log_switch(minor_version, micro_version, reason) -> None:
+        def log_switch(
+            minor_version: Version,
+            micro_version: Version,
+            reason: str,
+        ) -> None:
             minor_date = self.versions_to_release_dates[minor_version].isoformat()
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
             logger.warning(
@@ -283,7 +287,10 @@ def combine_requirements(
     return utils.normalize_requirement_string(new_specifier)
 
 
-def requirement_already_included(new_requirement: str, old_requirements):
+def requirement_already_included(
+    new_requirement: str,
+    old_requirements: list[Requirement],
+):
     old_requirements_set: set[Requirement] = set()
 
     for requirement in old_requirements:

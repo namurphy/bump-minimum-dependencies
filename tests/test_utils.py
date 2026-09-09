@@ -4,6 +4,7 @@ import packaging.requirements
 import packaging.version
 import pytest
 import requests
+from packaging import requirements
 
 from bump_minimum_dependencies import utils
 
@@ -17,7 +18,10 @@ from bump_minimum_dependencies import utils
         (packaging.requirements.Requirement("a<0.6.0,>=0.3.0"), "a<0.6,>=0.3"),
     ],
 )
-def test_normalize_requirement_string(input_, expected) -> None:  # ruff:ignore[D103]
+def test_normalize_requirement_string(
+    input_: str | packaging.version.Version | requirements.Requirement,
+    expected: str,
+) -> None:  # ruff:ignore[D103]
     result = utils.normalize_requirement_string(input_)
     assert result == expected
 
