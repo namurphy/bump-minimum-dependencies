@@ -9,7 +9,7 @@ from bump_minimum_dependencies import utils
 
 
 @pytest.mark.parametrize(
-    "input,expected",
+    ("input", "expected"),
     [
         ("ASTROPY>=3.0.0.0.0", "astropy>=3"),
         ("PyYAML>4.0.0,<5.0.0", "pyyaml>4,<5"),
@@ -17,13 +17,13 @@ from bump_minimum_dependencies import utils
         (packaging.requirements.Requirement("a<0.6.0,>=0.3.0"), "a<0.6,>=0.3"),
     ],
 )
-def test_normalize_requirement_string(input, expected):
+def test_normalize_requirement_string(input, expected) -> None:
     result = utils.normalize_requirement_string(input)
     assert result == expected
 
 
 @pytest.mark.parametrize(
-    "filename,package,version",
+    ("filename", "package", "version"),
     [
         ("plasmapy-0.3.0.tar.gz", "plasmapy", "0.3.0"),
         (
@@ -58,7 +58,7 @@ def test_normalize_requirement_string(input, expected):
         ("certifi-2025.10.5.tar.gz", "certifi", "2025.10.5"),
     ],
 )
-def test_version_from_pypi_filename(filename: str, package: str, version: str):
+def test_version_from_pypi_filename(filename: str, package: str, version: str) -> None:
     result = utils.version_from_pypi_filename(filename, package)
     expected = packaging.version.Version(version)
     assert result == expected
@@ -70,7 +70,7 @@ v011 = packaging.version.Version("0.1.1")
 yanked_release = packaging.version.Version("0.2.0")
 
 
-def test_make_version_to_release_date_dict_skip():
+def test_make_version_to_release_date_dict_skip() -> None:
     package = "bump-minimum-dependencies"
 
     response = requests.get(
@@ -92,7 +92,7 @@ def test_make_version_to_release_date_dict_skip():
     assert yanked_release not in result
 
 
-def test_make_version_to_release_date_dict_keep():
+def test_make_version_to_release_date_dict_keep() -> None:
     package = "bump-minimum-dependencies"
 
     response = requests.get(
@@ -111,7 +111,7 @@ def test_make_version_to_release_date_dict_keep():
     assert result[yanked_release] == datetime.date(2026, 8, 20)
 
 
-def test_make_version_to_release_date_dict_certifi():
+def test_make_version_to_release_date_dict_certifi() -> None:
     package = "certifi"
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",

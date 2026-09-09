@@ -6,14 +6,13 @@ from typing import Literal
 import click
 from click.core import ParameterSource
 
+from bump_minimum_dependencies import bump
 from bump_minimum_dependencies.inputs import (
     DEFAULT_COOLDOWN_MONTHS,
     DEFAULT_DROP_MONTHS,
     Inputs,
 )
 from bump_minimum_dependencies.logging import logger
-
-from . import bump
 
 
 @click.command(

@@ -25,7 +25,9 @@ def get_errmsg_from_file_comparison(
     if len(actual) != len(expected):
         error_messages.append("Length of files do not match.")
 
-    for line, (actual_line, expected_line) in enumerate(zip(actual, expected)):
+    for line, (actual_line, expected_line) in enumerate(
+        zip(actual, expected, strict=False)
+    ):
         if actual_line != expected_line:
             actual_line = actual_line.removesuffix("\n")
             expected_line = expected_line.removesuffix("\n")
@@ -37,16 +39,14 @@ def get_errmsg_from_file_comparison(
     if not error_messages:
         return None
 
-    expanded_comparison = (
+    return (
         f"Mismatch between updated and expected pyproject.toml for {subdir = !r}.\n\n"
         + "\n".join(error_messages[:12])
     )
 
-    return expanded_comparison
-
 
 @pytest.mark.parametrize(
-    "subdir,date,kwargs",
+    ("subdir", "date", "kwargs"),
     [
         (
             "basic_24_21",
@@ -272,7 +272,7 @@ def test_bumping_minimum_requirements(
 
 
 @pytest.mark.parametrize(
-    "name, drop_months, cooldown_months, expected",
+    ("name", "drop_months", "cooldown_months", "expected"),
     [
         ("plasmapy", 24, 0, "2024.2"),
         ("plasmapy", 4, 0, "2025.10"),

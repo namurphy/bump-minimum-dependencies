@@ -15,7 +15,7 @@ from packaging.requirements import InvalidRequirement, Requirement
 class PyProject:
     """A class to access requirements information in pyproject.toml."""
 
-    def __init__(self, pyproject_file: Path | str):
+    def __init__(self, pyproject_file: Path | str) -> None:
         self.pyproject_file = Path(pyproject_file)
 
         with open(self.pyproject_file, "rb") as f:
