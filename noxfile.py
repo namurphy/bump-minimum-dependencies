@@ -307,6 +307,7 @@ def _copy_pyproject_files(
 
 @nox.session()
 def download_pyprojects(session: nox.Session) -> None:
+    """Download `pyproject.toml` from public repositories."""
     repositories = [
         "apache/airflow",
         "astropy/astropy",
@@ -354,6 +355,7 @@ else:
 @nox.session()
 @nox.parametrize("package", projects)
 def bump_pyproject(session: nox.Session, package: str) -> None:
+    """Bump pyproject.toml on downloaded public repositories."""
     session.install(".")
 
     path = pyprojects_dir / package

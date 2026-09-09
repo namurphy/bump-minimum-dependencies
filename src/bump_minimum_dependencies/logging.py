@@ -33,6 +33,7 @@ logger: logging.Logger = logging.getLogger("bump-minimum-dependencies")
 
 
 def package_prefix(package: str) -> str:
+    """Create a formatted prefix logger messages for a package."""
     raw_prefix = f"[{package}]"
     return f"[magenta]{escape(raw_prefix)}[/magenta]"
 

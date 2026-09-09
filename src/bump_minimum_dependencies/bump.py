@@ -290,7 +290,8 @@ def combine_requirements(
 def requirement_already_included(
     new_requirement: str,
     old_requirements: list[Requirement],
-):
+) -> bool:
+    """Return `True` if the new requirement exists among the old requirements."""
     old_requirements_set: set[Requirement] = set()
 
     for requirement in old_requirements:
