@@ -68,6 +68,7 @@ class BumpSinglePackage:
         return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+            timeout=10,
         ).json()
 
     @functools.cached_property

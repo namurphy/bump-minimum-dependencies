@@ -76,6 +76,7 @@ def test_make_version_to_release_date_dict_skip() -> None:  # ruff:ignore[D103]
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",
         headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+        timeout=30,
     ).json()
 
     result = utils.make_version_to_release_date_dict(
@@ -98,6 +99,7 @@ def test_make_version_to_release_date_dict_keep() -> None:  # ruff:ignore[D103]
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",
         headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+        timeout=30,
     ).json()
 
     result = utils.make_version_to_release_date_dict(
@@ -116,6 +118,7 @@ def test_make_version_to_release_date_dict_certifi() -> None:  # ruff:ignore[D10
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",
         headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+        timeout=30,
     ).json()
 
     result = utils.make_version_to_release_date_dict(
