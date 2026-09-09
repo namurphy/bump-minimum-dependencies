@@ -64,6 +64,7 @@ def version_from_pypi_filename(
 
 def make_version_to_release_date_dict(
     response: dict,
+    *,
     skip_prerelease: bool = True,
     skip_yanked: bool = True,
 ) -> dict[Version, datetime.date]:
