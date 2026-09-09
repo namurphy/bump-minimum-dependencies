@@ -31,8 +31,8 @@ def get_errmsg_from_file_comparison(  # noqa: D103
         zip(actual, expected, strict=False)
     ):
         if actual_line != expected_line:
-            actual_line = actual_line.removesuffix("\n")
-            expected_line = expected_line.removesuffix("\n")
+            actual_line = actual_line.removesuffix("\n")  # ruff: ignore[PLW2901]
+            expected_line = expected_line.removesuffix("\n")  # ruff: ignore[PLW2901]
             error_messages.append(
                 f"Line {line + 1}\n"
                 f"  Result:   {actual_line}\n  Expected: {expected_line}\n"
@@ -251,7 +251,7 @@ def get_errmsg_from_file_comparison(  # noqa: D103
         ),
     ],
 )
-def test_bumping_minimum_requirements(  # noqa: D103
+def test_bumping_minimum_requirements(  # ruff:ignore[D103,PLR0913]
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
     freezer,  # ruff:ignore[ANN001]
