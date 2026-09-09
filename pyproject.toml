@@ -45,14 +45,13 @@ dev = [
 
 [tool.ruff]
 target-version = "py313"
-namespace-packages = [ ".github/workflows", "docs" ]
+namespace-packages = [ ".github/workflows" ]
 extend-exclude = [
   ".code",
   ".idea",
   "__pycache__",
 ]
 show-fixes = true
-# output-format = "grouped"
 format.line-ending = "lf"
 format.docstring-code-format = true
 # Using an IDE like PyCharm with a ruff plugin will make rule names appear as inlay hints
@@ -184,7 +183,6 @@ lint.ignore = [
   "W191",    # handled by ruff format
 ]
 lint.extend-per-file-ignores."__init__.py" = [ "D104", "E402", "F401", "F402", "F403" ]  # ignore import errors
-lint.extend-per-file-ignores."docs/conf.py" = [ "D100", "D103", "E402", "EXE001", "EXE005", "F401" ]
 lint.extend-per-file-ignores."tests/**/__init__.py" = [ "D104" ]
 lint.extend-per-file-ignores."tests/**/test_*.py" = [
   "DOC201",
@@ -194,31 +192,11 @@ lint.extend-per-file-ignores."tests/**/test_*.py" = [
   "S101",
   "SLF001",
 ]
-lint.flake8-import-conventions.aliases."astropy.constants" = "const"
-lint.flake8-import-conventions.aliases."astropy.units" = "u"
-lint.flake8-import-conventions.aliases."matplotlib.pyplot" = "plt"
-lint.flake8-import-conventions.aliases.matplotlib = "mpl"
-lint.flake8-import-conventions.aliases.numpy = "np"
-lint.flake8-import-conventions.aliases.pandas = "pd"
 lint.flake8-import-conventions.banned-from = [
   "pytest",
   "warnings",
 ]
 lint.flake8-tidy-imports.ban-relative-imports = "all"
-lint.flake8-tidy-imports.banned-api."typing.Callable".msg = "Deprecated alias. Change to collections.abc.Callable"
-lint.flake8-tidy-imports.banned-api."typing.Collection".msg = "Deprecated alias. Change to collections.abc.Collection"
-lint.flake8-tidy-imports.banned-api."typing.DefaultDict".msg = "Deprecated alias. Change to collections.defaultdict"
-lint.flake8-tidy-imports.banned-api."typing.Dict".msg = "Deprecated alias. Change to dict"
-lint.flake8-tidy-imports.banned-api."typing.Generator".msg = "Deprecated alias. Change to collections.abc.Generator"
-lint.flake8-tidy-imports.banned-api."typing.Iterable".msg = "Deprecated alias. Change to collections.abc.Iterable"
-lint.flake8-tidy-imports.banned-api."typing.Iterator".msg = "Deprecated alias. Change to collections.abc.Iterator"
-lint.flake8-tidy-imports.banned-api."typing.List".msg = "Deprecated alias. Change to list"
-lint.flake8-tidy-imports.banned-api."typing.Mapping".msg = "Deprecated alias. Change to collections.abc.mapping"
-lint.flake8-tidy-imports.banned-api."typing.MutableMapping".msg = "Deprecated alias. Change to collections.abc.MutableMapping"
-lint.flake8-tidy-imports.banned-api."typing.Sequence".msg = "Deprecated alias. Change to collections.abc.Sequence"
-lint.flake8-tidy-imports.banned-api."typing.Set".msg = "Deprecated alias. Change to set"
-lint.flake8-tidy-imports.banned-api."typing.Tuple".msg = "Deprecated alias. Change to tuple"
-lint.flake8-tidy-imports.banned-api."typing.Type".msg = "Deprecated alias. Change to type"
-lint.isort.known-first-party = [ "pyfaradaycup" ]
+lint.isort.known-first-party = [ "bump_minimum_dependencies" ]
 lint.pydocstyle.convention = "numpy"
 lint.pylint.max-positional-args = 6
