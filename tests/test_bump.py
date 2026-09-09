@@ -1,3 +1,5 @@
+"""Test bump.py."""
+
 import shutil
 import typing
 from pathlib import Path
@@ -16,10 +18,10 @@ def get_errmsg_from_file_comparison(  # noqa: D103
     expected_pyproject: Path,
     subdir: str,
 ) -> str | None:
-    with open(pyproject) as f1:
+    with pyproject.open() as f1:
         actual = f1.readlines()
 
-    with open(expected_pyproject) as f2:
+    with expected_pyproject.open() as f2:
         expected = f2.readlines()
 
     error_messages = []
