@@ -9,6 +9,8 @@
 # ]
 # ///
 
+"""Test runner for bump-minimum-dependencies."""
+
 import difflib
 import filecmp
 import shutil
@@ -183,7 +185,7 @@ def _download_pyproject(
         )
         return []
 
-    if response.status_code == 404:
+    if response.status_code == 404:  # ruff:ignore[PLR2004]
         warnings.warn(
             f"'{file_name}' not found in repository '{repo_slug}'. Skipping download.",
             UserWarning,
@@ -272,8 +274,9 @@ def _copy_pyproject_files(
     target_name: str = "pyproject.original.toml",
     root_dir: str | Path = "example_pyprojects",
 ) -> list[Path]:
-    """Recursively search subdirectories for `pyproject.toml` and copy
+    """Search for and copy `pyproject.toml` files.
 
+    Recursively search subdirectories for `pyproject.toml` and copy
     each to `target_name` within the same directory.
 
     Parameters
@@ -306,6 +309,7 @@ def _copy_pyproject_files(
 
 @nox.session()
 def download_pyprojects(session: nox.Session) -> None:
+    """Download `pyproject.toml` from public repositories."""
     repositories = [
         "apache/airflow",
         "astropy/astropy",
@@ -353,6 +357,7 @@ else:
 @nox.session()
 @nox.parametrize("package", projects)
 def bump_pyproject(session: nox.Session, package: str) -> None:
+    """Bump pyproject.toml on downloaded public repositories."""
     session.install(".")
 
     path = pyprojects_dir / package

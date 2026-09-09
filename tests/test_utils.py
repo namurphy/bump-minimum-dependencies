@@ -1,15 +1,18 @@
+"""Test utils.py."""
+
 import datetime
 
 import packaging.requirements
 import packaging.version
 import pytest
 import requests
+from packaging import requirements
 
 from bump_minimum_dependencies import utils
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("input_", "expected"),
     [
         ("ASTROPY>=3.0.0.0.0", "astropy>=3"),
         ("PyYAML>4.0.0,<5.0.0", "pyyaml>4,<5"),
@@ -17,8 +20,11 @@ from bump_minimum_dependencies import utils
         (packaging.requirements.Requirement("a<0.6.0,>=0.3.0"), "a<0.6,>=0.3"),
     ],
 )
-def test_normalize_requirement_string(input, expected) -> None:
-    result = utils.normalize_requirement_string(input)
+def test_normalize_requirement_string(  # ruff:ignore[D103]
+    input_: str | packaging.version.Version | requirements.Requirement,
+    expected: str,
+) -> None:
+    result = utils.normalize_requirement_string(input_)
     assert result == expected
 
 
@@ -58,7 +64,7 @@ def test_normalize_requirement_string(input, expected) -> None:
         ("certifi-2025.10.5.tar.gz", "certifi", "2025.10.5"),
     ],
 )
-def test_version_from_pypi_filename(filename: str, package: str, version: str) -> None:
+def test_version_from_pypi_filename(filename: str, package: str, version: str) -> None:  # ruff:ignore[D103]
     result = utils.version_from_pypi_filename(filename, package)
     expected = packaging.version.Version(version)
     assert result == expected
@@ -70,12 +76,13 @@ v011 = packaging.version.Version("0.1.1")
 yanked_release = packaging.version.Version("0.2.0")
 
 
-def test_make_version_to_release_date_dict_skip() -> None:
+def test_make_version_to_release_date_dict_skip() -> None:  # ruff:ignore[D103]
     package = "bump-minimum-dependencies"
 
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",
         headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+        timeout=30,
     ).json()
 
     result = utils.make_version_to_release_date_dict(
@@ -92,12 +99,13 @@ def test_make_version_to_release_date_dict_skip() -> None:
     assert yanked_release not in result
 
 
-def test_make_version_to_release_date_dict_keep() -> None:
+def test_make_version_to_release_date_dict_keep() -> None:  # ruff:ignore[D103]
     package = "bump-minimum-dependencies"
 
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",
         headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+        timeout=30,
     ).json()
 
     result = utils.make_version_to_release_date_dict(
@@ -111,11 +119,12 @@ def test_make_version_to_release_date_dict_keep() -> None:
     assert result[yanked_release] == datetime.date(2026, 8, 20)
 
 
-def test_make_version_to_release_date_dict_certifi() -> None:
+def test_make_version_to_release_date_dict_certifi() -> None:  # ruff:ignore[D103]
     package = "certifi"
     response = requests.get(
         url=f"https://pypi.org/simple/{package}",
         headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+        timeout=30,
     ).json()
 
     result = utils.make_version_to_release_date_dict(

@@ -1,3 +1,5 @@
+"""Define storage of the inputs."""
+
 import datetime
 
 __all__ = ["DAYS_PER_MONTH", "DEFAULT_COOLDOWN_MONTHS", "DEFAULT_DROP_MONTHS", "Inputs"]
@@ -23,7 +25,7 @@ _VerbosityLiteral = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NO
 class Inputs:
     """Inputs provided to bump-minimum-dependencies (see main.py for meanings)."""
 
-    def __init__(
+    def __init__(  # ruff:ignore[PLR0913]
         self,
         *,
         pyproject_file: str | Path = Path("pyproject.toml"),
@@ -62,6 +64,7 @@ class Inputs:
         self.groups_to_skip: set[str] = _make_lower_case_set(skip_group)
 
     def __str__(self) -> str:
+        """Stringify the inputs, as stored."""
         for attr in dir(self):
             if attr.startswith("_") or attr == "today":
                 continue

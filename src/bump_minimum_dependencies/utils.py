@@ -1,3 +1,5 @@
+"""Package utilities."""
+
 __all__ = [
     "make_version_to_release_date_dict",
     "normalize_requirement_string",
@@ -62,6 +64,7 @@ def version_from_pypi_filename(
 
 def make_version_to_release_date_dict(
     response: dict,
+    *,
     skip_prerelease: bool = True,
     skip_yanked: bool = True,
 ) -> dict[Version, datetime.date]:
@@ -90,7 +93,7 @@ def make_version_to_release_date_dict(
             continue
 
         date_string: str = file["upload-time"].split("T")[0]
-        release_date: datetime.date = datetime.datetime.strptime(  # noqa: DTZ007
+        release_date: datetime.date = datetime.datetime.strptime(  # ruff:ignore[DTZ007]
             date_string,
             "%Y-%m-%d",
         ).date()

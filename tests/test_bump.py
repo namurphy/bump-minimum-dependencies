@@ -1,7 +1,11 @@
+"""Test bump.py."""
+
 import shutil
+import typing
 from pathlib import Path
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 
 from bump_minimum_dependencies import bump
 from bump_minimum_dependencies.inputs import Inputs
@@ -9,15 +13,15 @@ from bump_minimum_dependencies.inputs import Inputs
 DEFAULT_TEST_VERBOSITY = "INFO"
 
 
-def get_errmsg_from_file_comparison(
-    pyproject,
-    expected_pyproject,
-    subdir,
+def get_errmsg_from_file_comparison(  # ruff:ignore[D103]
+    pyproject: Path,
+    expected_pyproject: Path,
+    subdir: str,
 ) -> str | None:
-    with open(pyproject) as f1:
+    with pyproject.open() as f1:
         actual = f1.readlines()
 
-    with open(expected_pyproject) as f2:
+    with expected_pyproject.open() as f2:
         expected = f2.readlines()
 
     error_messages = []
@@ -29,8 +33,8 @@ def get_errmsg_from_file_comparison(
         zip(actual, expected, strict=False)
     ):
         if actual_line != expected_line:
-            actual_line = actual_line.removesuffix("\n")
-            expected_line = expected_line.removesuffix("\n")
+            actual_line = actual_line.removesuffix("\n")  # ruff: ignore[PLW2901]
+            expected_line = expected_line.removesuffix("\n")  # ruff: ignore[PLW2901]
             error_messages.append(
                 f"Line {line + 1}\n"
                 f"  Result:   {actual_line}\n  Expected: {expected_line}\n"
@@ -249,8 +253,13 @@ def get_errmsg_from_file_comparison(
         ),
     ],
 )
-def test_bumping_minimum_requirements(
-    tmp_path, monkeypatch, freezer, subdir, kwargs, date
+def test_bumping_minimum_requirements(  # ruff:ignore[D103,PLR0913]
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+    freezer,  # ruff:ignore[ANN001]
+    subdir: str,
+    kwargs: dict[str, typing.Any],
+    date: str,
 ) -> None:
     freezer.move_to(date)
 
@@ -286,8 +295,12 @@ def test_bumping_minimum_requirements(
         ("pyproject-fmt", 100, 100, "0.1"),
     ],
 )
-def test_bumping_single_package(
-    name: str, drop_months: int, cooldown_months: int, expected: str, freezer
+def test_bumping_single_package(  # ruff:ignore[D103]
+    name: str,
+    drop_months: int,
+    cooldown_months: int,
+    expected: str,
+    freezer,  # ruff:ignore[ANN001]
 ) -> None:
     inputs = Inputs(drop_months=drop_months, cooldown_months=cooldown_months)
 

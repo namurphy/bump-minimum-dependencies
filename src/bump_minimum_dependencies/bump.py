@@ -68,6 +68,7 @@ class BumpSinglePackage:
         return requests.get(
             url=f"https://pypi.org/simple/{self.name}",
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
+            timeout=10,
         ).json()
 
     @functools.cached_property
@@ -131,6 +132,7 @@ class BumpSinglePackage:
 
     @functools.cached_property
     def last_release_before_drop_date(self) -> Version:
+        """Get the Version for the last release prior to the drop date."""
         releases_before_drop_date: list[Version] = [
             version
             for version, release_date in self.versions_to_release_dates.items()
@@ -150,7 +152,11 @@ class BumpSinglePackage:
         if minimum_minor_version >= minimum_micro_version:
             return minimum_minor_version
 
-        def log_switch(minor_version, micro_version, reason) -> None:
+        def log_switch(
+            minor_version: Version,
+            micro_version: Version,
+            reason: str,
+        ) -> None:
             minor_date = self.versions_to_release_dates[minor_version].isoformat()
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
             logger.warning(
@@ -159,7 +165,8 @@ class BumpSinglePackage:
                 f"{micro_version!s} ({micro_date}) {reason}."
             )
 
-        if minimum_micro_version.micro >= 25:
+        arbitrary_cutoff = 25
+        if minimum_micro_version.micro >= arbitrary_cutoff:
             log_switch(
                 minor_version=minimum_minor_version,
                 micro_version=minimum_micro_version,
@@ -282,7 +289,11 @@ def combine_requirements(
     return utils.normalize_requirement_string(new_specifier)
 
 
-def requirement_already_included(new_requirement: str, old_requirements):
+def requirement_already_included(
+    new_requirement: str,
+    old_requirements: list[Requirement],
+) -> bool:
+    """Return `True` if the new requirement exists among the old requirements."""
     old_requirements_set: set[Requirement] = set()
 
     for requirement in old_requirements:
@@ -457,11 +468,13 @@ class BumpMinimumDependencies:
         logger.info(f"Extras to update: {', '.join(extras_to_update)}")
         return extras_to_update
 
-    def get_new_requirements(
+    def get_new_requirements(  # ruff:ignore[PLR0912,C901]
         self,
         requirements: set[Requirement],
         inputs: Inputs,
     ) -> list[str]:
+        """Get the new requirements for a particular category."""
+        # This method should be refactored to reduce complexity.
         dependencies_to_update: list[Requirement] = []
         for requirement in requirements:
             if requirement.name.lower() in self.inputs.packages_to_skip:
@@ -484,7 +497,7 @@ class BumpMinimumDependencies:
         packages_with_markers: list[str] = []
         for requirement in dependencies_to_update:
             if requirement.marker:
-                packages_with_markers.append(requirement.name.lower())
+                packages_with_markers.append(requirement.name.lower())  # ruff:ignore[PERF401]
 
         new_requirements: list[str] = []
         for requirement in dependencies_to_update:
@@ -508,7 +521,7 @@ class BumpMinimumDependencies:
                 )
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
-            except Exception as exc_info:  # noqa: BLE001
+            except Exception as exc_info:  # ruff:ignore[BLE001]
                 warning_message = (
                     f"{package_prefix(requirement.name)} Unable to update requirement. Skipping.",
                 )
@@ -534,6 +547,7 @@ class BumpMinimumDependencies:
         group: str | None = None,
         extra: str | None = None,
     ) -> None:
+        """Run the uv add commands for bumping dependencies."""
         if group and extra:
             msg = "Cannot set both group and extra in run_uv_commands."
             raise ValueError(msg)
@@ -568,7 +582,7 @@ class BumpMinimumDependencies:
             log_uv_command(command)
 
             try:
-                subprocess.run(command, check=True, capture_output=True)
+                subprocess.run(command, check=True, capture_output=True)  # ruff:ignore[S603]
             except subprocess.CalledProcessError as exc_info:
                 logger.error(
                     f"Command failed: {command_string}",

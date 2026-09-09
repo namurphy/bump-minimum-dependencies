@@ -1,3 +1,5 @@
+"""Define logger tools."""
+
 __all__ = ["logger", "package_prefix"]
 
 import logging
@@ -33,10 +35,12 @@ logger: logging.Logger = logging.getLogger("bump-minimum-dependencies")
 
 
 def package_prefix(package: str) -> str:
+    """Create a formatted prefix logger messages for a package."""
     raw_prefix = f"[{package}]"
     return f"[magenta]{escape(raw_prefix)}[/magenta]"
 
 
 def log_uv_command(command: list[str]) -> None:
     command_string = " ".join(command)
-    logger.info(f"Running: [bold]{command_string}[/bold]", extra={"markup": True})
+    msg = f"Running: [bold]{command_string}[/bold]"
+    logger.info(msg, extra={"markup": True})
