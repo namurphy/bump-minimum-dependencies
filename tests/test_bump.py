@@ -35,7 +35,7 @@ def get_errmsg_from_file_comparison(
             )
 
     if not error_messages:
-        return
+        return None
 
     expanded_comparison = (
         f"Mismatch between updated and expected pyproject.toml for {subdir = !r}.\n\n"
