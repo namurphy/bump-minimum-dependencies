@@ -25,7 +25,9 @@ def get_errmsg_from_file_comparison(
     if len(actual) != len(expected):
         error_messages.append("Length of files do not match.")
 
-    for line, (actual_line, expected_line) in enumerate(zip(actual, expected)):
+    for line, (actual_line, expected_line) in enumerate(
+        zip(actual, expected, strict=False)
+    ):
         if actual_line != expected_line:
             actual_line = actual_line.removesuffix("\n")
             expected_line = expected_line.removesuffix("\n")
@@ -37,12 +39,10 @@ def get_errmsg_from_file_comparison(
     if not error_messages:
         return None
 
-    expanded_comparison = (
+    return (
         f"Mismatch between updated and expected pyproject.toml for {subdir = !r}.\n\n"
         + "\n".join(error_messages[:12])
     )
-
-    return expanded_comparison
 
 
 @pytest.mark.parametrize(

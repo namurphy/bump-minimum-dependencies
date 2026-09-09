@@ -39,7 +39,7 @@ class Inputs:
         skip_group: tuple[str, ...] | list[str] = (),
         skip_extra: tuple[str, ...] | list[str] = (),
         verbosity: _VerbosityLiteral = "WARNING",
-    ):
+    ) -> None:
         """Put the inputs in a more usable form."""
         if only_group or only_extra:
             no_groups = True
@@ -61,9 +61,9 @@ class Inputs:
         self.groups_to_update: set[str] = _make_lower_case_set(only_group)
         self.groups_to_skip: set[str] = _make_lower_case_set(skip_group)
 
-    def __str__(self):
+    def __str__(self) -> str:
         for attr in dir(self):
-            if attr.startswith("_") or attr in {"today"}:
+            if attr.startswith("_") or attr == "today":
                 continue
             val = getattr(self, attr)
             if val in (set(), "pyproject.toml"):

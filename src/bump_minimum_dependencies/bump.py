@@ -10,8 +10,8 @@ __all__ = [
 
 import datetime
 import functools
-import pathlib
 import subprocess
+from typing import TYPE_CHECKING
 
 import click
 import packaging.specifiers
@@ -24,6 +24,9 @@ from bump_minimum_dependencies import utils
 from bump_minimum_dependencies.inputs import Inputs
 from bump_minimum_dependencies.logging import log_uv_command, logger, package_prefix
 from bump_minimum_dependencies.pyproject import PyProject
+
+if TYPE_CHECKING:
+    import pathlib
 
 
 class NoReleasesError(Exception):
@@ -42,7 +45,7 @@ class BumpSinglePackage:
     inputs : bump_minimum_dependencies.inputs.Inputs
     """
 
-    def __init__(self, name: str, inputs: Inputs):
+    def __init__(self, name: str, inputs: Inputs) -> None:
         self.name = name
         self.today: datetime.date = datetime.datetime.now(tz=datetime.UTC).date()
         self.versions_to_release_dates: dict[Version, datetime.date] = (
@@ -147,7 +150,7 @@ class BumpSinglePackage:
         if minimum_minor_version >= minimum_micro_version:
             return minimum_minor_version
 
-        def log_switch(minor_version, micro_version, reason):
+        def log_switch(minor_version, micro_version, reason) -> None:
             minor_date = self.versions_to_release_dates[minor_version].isoformat()
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
             logger.warning(
@@ -276,9 +279,7 @@ def combine_requirements(
         )
         return None
 
-    new_specifier = utils.normalize_requirement_string(new_specifier)
-
-    return new_specifier
+    return utils.normalize_requirement_string(new_specifier)
 
 
 def requirement_already_included(new_requirement: str, old_requirements):
@@ -341,7 +342,7 @@ class BumpMinimumDependencies:
     include a `!=` dependency or multiple ranges of dependencies.
     """
 
-    def __init__(self, inputs: Inputs | None = None):
+    def __init__(self, inputs: Inputs | None = None) -> None:
 
         if inputs is None:
             inputs = Inputs()
@@ -414,15 +415,17 @@ class BumpMinimumDependencies:
         all_groups: set[str] = set(self.pyproject.dependency_group_names)
 
         if undefined := self.inputs.groups_to_update - all_groups:
-            raise click.ClickException(
+            msg = (
                 f"The following dependency groups are undefined: {', '.join(undefined)}"
             )
+            raise click.ClickException(msg)
 
         if duplicated := self.inputs.groups_to_update & self.inputs.groups_to_skip:
-            raise click.ClickException(
+            msg = (
                 f"The following dependency groups cannot be provided "
                 f"to both --group and --skip-group: {', '.join(duplicated)}"
             )
+            raise click.ClickException(msg)
 
         if self.inputs.update_all_groups:
             groups_to_update = sorted(all_groups - self.inputs.groups_to_skip)
@@ -436,15 +439,15 @@ class BumpMinimumDependencies:
         """Names of categories of optional dependencies to be updated if necessary."""
         all_extras: set[str] = set(self.pyproject.optional_category_names)
         if undefined := self.inputs.extras_to_update - all_extras:
-            raise click.ClickException(
-                f"The following extras are not defined: {', '.join(undefined)}"
-            )
+            msg = f"The following extras are not defined: {', '.join(undefined)}"
+            raise click.ClickException(msg)
 
         if duplicated := self.inputs.extras_to_update & self.inputs.extras_to_skip:
-            raise click.ClickException(
+            msg = (
                 "The following extras cannot be provided to both "
                 f"--extra and --skip-extra: {', '.join(duplicated)}"
             )
+            raise click.ClickException(msg)
 
         if self.inputs.update_all_extras:
             extras_to_update = sorted(all_extras - self.inputs.extras_to_skip)
@@ -532,7 +535,8 @@ class BumpMinimumDependencies:
         extra: str | None = None,
     ) -> None:
         if group and extra:
-            raise ValueError("Cannot set both group and extra in run_uv_commands.")
+            msg = "Cannot set both group and extra in run_uv_commands."
+            raise ValueError(msg)
 
         if group:
             flag = [f"--group={group}"]
