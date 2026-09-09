@@ -56,6 +56,7 @@ format.line-ending = "lf"
 format.docstring-code-format = true
 # Using an IDE like PyCharm with a ruff plugin will make rule names appear as inlay hints
 lint.extend-select = [
+  # The commented out rulesets are to be enabled later
   # "A",
   # "ANN",
   "ARG",
