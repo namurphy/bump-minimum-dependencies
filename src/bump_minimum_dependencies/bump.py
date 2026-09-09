@@ -132,6 +132,7 @@ class BumpSinglePackage:
 
     @functools.cached_property
     def last_release_before_drop_date(self) -> Version:
+        """Get the Version for the last release prior to the drop date."""
         releases_before_drop_date: list[Version] = [
             version
             for version, release_date in self.versions_to_release_dates.items()
@@ -471,6 +472,8 @@ class BumpMinimumDependencies:
         requirements: set[Requirement],
         inputs: Inputs,
     ) -> list[str]:
+        """Get the new requirements for a particular category."""
+        # This method should be refactored to reduce complexity.
         dependencies_to_update: list[Requirement] = []
         for requirement in requirements:
             if requirement.name.lower() in self.inputs.packages_to_skip:
@@ -543,6 +546,7 @@ class BumpMinimumDependencies:
         group: str | None = None,
         extra: str | None = None,
     ) -> None:
+        """Run the uv add commands for bumping dependencies."""
         if group and extra:
             msg = "Cannot set both group and extra in run_uv_commands."
             raise ValueError(msg)

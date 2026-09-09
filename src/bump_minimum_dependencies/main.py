@@ -1,3 +1,5 @@
+"""Define the command line tool."""
+
 __all__ = ["main"]
 
 import pathlib

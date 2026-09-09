@@ -9,6 +9,8 @@
 # ]
 # ///
 
+"""Test runner for bump-minimum-dependencies."""
+
 import difflib
 import filecmp
 import shutil

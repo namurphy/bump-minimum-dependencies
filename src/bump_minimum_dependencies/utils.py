@@ -1,3 +1,5 @@
+"""Package utilities."""
+
 __all__ = [
     "make_version_to_release_date_dict",
     "normalize_requirement_string",

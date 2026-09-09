@@ -1,3 +1,5 @@
+"""Define logger tools."""
+
 __all__ = ["logger", "package_prefix"]
 
 import logging
