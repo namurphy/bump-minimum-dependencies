@@ -11,7 +11,7 @@ from bump_minimum_dependencies.inputs import Inputs
 DEFAULT_TEST_VERBOSITY = "INFO"
 
 
-def get_errmsg_from_file_comparison(
+def get_errmsg_from_file_comparison(  # noqa: D103
     pyproject: Path,
     expected_pyproject: Path,
     subdir: str,
@@ -251,7 +251,7 @@ def get_errmsg_from_file_comparison(
         ),
     ],
 )
-def test_bumping_minimum_requirements(
+def test_bumping_minimum_requirements(  # noqa: D103
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
     freezer,  # ruff:ignore[ANN001]
@@ -293,7 +293,7 @@ def test_bumping_minimum_requirements(
         ("pyproject-fmt", 100, 100, "0.1"),
     ],
 )
-def test_bumping_single_package(
+def test_bumping_single_package(  # noqa: D103
     name: str,
     drop_months: int,
     cooldown_months: int,
