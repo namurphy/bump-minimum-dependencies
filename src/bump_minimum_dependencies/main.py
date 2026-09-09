@@ -71,9 +71,10 @@ from . import bump
     "--only-extra",
     default=[],
     type=click.STRING,
-    help=("An extra to update. Can be used multiple times. "
-          "Implies --no-extras, --no-groups, and --skip-core."
-          ),
+    help=(
+        "An extra to update. Can be used multiple times. "
+        "Implies --no-extras, --no-groups, and --skip-core."
+    ),
     multiple=True,
 )
 @click.option(
@@ -87,8 +88,10 @@ from . import bump
     "--only-group",
     default=[],
     type=click.STRING,
-    help=("A dependency group to update. Can use multiple times. "
-         "Implies --no-groups, --no-extras, and --skip-core."),
+    help=(
+        "A dependency group to update. Can use multiple times. "
+        "Implies --no-groups, --no-extras, and --skip-core."
+    ),
     multiple=True,
 )
 @click.option(
