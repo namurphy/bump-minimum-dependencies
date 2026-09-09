@@ -9,7 +9,7 @@ from bump_minimum_dependencies import utils
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("input_", "expected"),
     [
         ("ASTROPY>=3.0.0.0.0", "astropy>=3"),
         ("PyYAML>4.0.0,<5.0.0", "pyyaml>4,<5"),
@@ -17,8 +17,8 @@ from bump_minimum_dependencies import utils
         (packaging.requirements.Requirement("a<0.6.0,>=0.3.0"), "a<0.6,>=0.3"),
     ],
 )
-def test_normalize_requirement_string(input, expected) -> None:
-    result = utils.normalize_requirement_string(input)
+def test_normalize_requirement_string(input_, expected) -> None:  # ruff:ignore[D103]
+    result = utils.normalize_requirement_string(input_)
     assert result == expected
 
 
