@@ -538,7 +538,7 @@ class BumpMinimumDependencies:
             flag = [f"--group={group}"]
             clause = f"dependency group {group!r}"
         elif extra:
-            flag = [f"--extra={extra}"]
+            flag = [f"--optional={extra}"]
             clause = f"optional dependencies category {extra!r}"
         else:
             flag = []
