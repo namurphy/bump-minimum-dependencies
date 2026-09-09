@@ -18,7 +18,7 @@ class PyProject:
     def __init__(self, pyproject_file: Path | str) -> None:
         self.pyproject_file = Path(pyproject_file)
 
-        with open(self.pyproject_file, "rb") as f:
+        with self.pyproject_file.open("rb") as f:
             self.pyproject = tomllib.load(f)
 
     @property
