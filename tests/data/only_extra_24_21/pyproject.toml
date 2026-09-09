@@ -11,7 +11,7 @@ dependencies = [
   "plasmapy",
 ]
 
-[project.optional_dependencies]
+[project.optional-dependencies]
 astropy = [
   "astropy",
 ]
