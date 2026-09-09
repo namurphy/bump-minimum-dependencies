@@ -70,7 +70,7 @@ class Inputs:
             if val in (set(), "pyproject.toml"):
                 continue
 
-        return "\n".join(
+        return ", ".join(
             [
                 f"{attr}: {getattr(self, attr)}"
                 for attr in sorted(dir(self))

@@ -80,7 +80,7 @@ def run(session: nox.Session) -> None:
 def test_cli(session: nox.Session) -> None:
     """Test the command line interface.
 
-    Install faketime on Ubuntu with `sudo apt install faketime`
+    Install faketime on Ubuntu with `sudo apt install faketime`.
     """
     session.install(".")
 

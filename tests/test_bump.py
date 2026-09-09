@@ -6,7 +6,7 @@ import pytest
 from bump_minimum_dependencies import bump
 from bump_minimum_dependencies.inputs import Inputs
 
-DEFAULT_TEST_VERBOSITY = "DEBUG"
+DEFAULT_TEST_VERBOSITY = "INFO"
 
 
 def get_errmsg_from_file_comparison(
