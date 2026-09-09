@@ -466,7 +466,7 @@ class BumpMinimumDependencies:
         logger.info(f"Extras to update: {', '.join(extras_to_update)}")
         return extras_to_update
 
-    def get_new_requirements(
+    def get_new_requirements(  # ruff:ignore[PLR0912,C901]
         self,
         requirements: set[Requirement],
         inputs: Inputs,
@@ -493,7 +493,7 @@ class BumpMinimumDependencies:
         packages_with_markers: list[str] = []
         for requirement in dependencies_to_update:
             if requirement.marker:
-                packages_with_markers.append(requirement.name.lower())
+                packages_with_markers.append(requirement.name.lower())  # ruff:ignore[PERF401]
 
         new_requirements: list[str] = []
         for requirement in dependencies_to_update:
@@ -517,7 +517,7 @@ class BumpMinimumDependencies:
                 )
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
-            except Exception as exc_info:  # noqa: BLE001
+            except Exception as exc_info:  # ruff:ignore[BLE001]
                 warning_message = (
                     f"{package_prefix(requirement.name)} Unable to update requirement. Skipping.",
                 )
@@ -577,7 +577,7 @@ class BumpMinimumDependencies:
             log_uv_command(command)
 
             try:
-                subprocess.run(command, check=True, capture_output=True)
+                subprocess.run(command, check=True, capture_output=True)  # ruff:ignore[S603]
             except subprocess.CalledProcessError as exc_info:
                 logger.error(
                     f"Command failed: {command_string}",

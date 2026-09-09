@@ -23,7 +23,7 @@ _VerbosityLiteral = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NO
 class Inputs:
     """Inputs provided to bump-minimum-dependencies (see main.py for meanings)."""
 
-    def __init__(
+    def __init__(  # ruff:ignore[PLR0913]
         self,
         *,
         pyproject_file: str | Path = Path("pyproject.toml"),

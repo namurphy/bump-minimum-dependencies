@@ -183,7 +183,7 @@ def _download_pyproject(
         )
         return []
 
-    if response.status_code == 404:
+    if response.status_code == 404:  # ruff:ignore[PLR2004]
         warnings.warn(
             f"'{file_name}' not found in repository '{repo_slug}'. Skipping download.",
             UserWarning,

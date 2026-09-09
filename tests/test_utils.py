@@ -20,7 +20,7 @@ from bump_minimum_dependencies import utils
         (packaging.requirements.Requirement("a<0.6.0,>=0.3.0"), "a<0.6,>=0.3"),
     ],
 )
-def test_normalize_requirement_string(  # noqa: D103
+def test_normalize_requirement_string(  # ruff:ignore[D103]
     input_: str | packaging.version.Version | requirements.Requirement,
     expected: str,
 ) -> None:

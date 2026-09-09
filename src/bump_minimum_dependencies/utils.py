@@ -90,7 +90,7 @@ def make_version_to_release_date_dict(
             continue
 
         date_string: str = file["upload-time"].split("T")[0]
-        release_date: datetime.date = datetime.datetime.strptime(  # noqa: DTZ007
+        release_date: datetime.date = datetime.datetime.strptime(  # ruff:ignore[DTZ007]
             date_string,
             "%Y-%m-%d",
         ).date()
