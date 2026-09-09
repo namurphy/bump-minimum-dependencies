@@ -165,7 +165,8 @@ class BumpSinglePackage:
                 f"{micro_version!s} ({micro_date}) {reason}."
             )
 
-        if minimum_micro_version.micro >= 25:
+        arbitrary_cutoff = 25
+        if minimum_micro_version.micro >= arbitrary_cutoff:
             log_switch(
                 minor_version=minimum_minor_version,
                 micro_version=minimum_micro_version,
