@@ -179,7 +179,6 @@ class BumpSinglePackage:
 
     def oldest_supported_release(self) -> str:
         """Get the oldest supported release of the package."""
-
         if not self.minor_releases:
             msg = f"[{self.name}] No minor releases identified."
             raise NoReleasesError(msg)
@@ -585,7 +584,6 @@ class BumpMinimumDependencies:
 
     def bump_groups(self) -> None:
         """Bump requirements in dependency groups."""
-
         msg = (
             "No dependency groups to update."
             if not self.groups_to_update

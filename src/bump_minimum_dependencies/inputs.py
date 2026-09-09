@@ -41,7 +41,6 @@ class Inputs:
         verbosity: _VerbosityLiteral = "WARNING",
     ):
         """Put the inputs in a more usable form."""
-
         if only_group or only_extra:
             no_groups = True
             no_extras = True

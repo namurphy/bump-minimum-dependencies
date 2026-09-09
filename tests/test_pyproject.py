@@ -6,7 +6,7 @@ from packaging.requirements import Requirement
 from bump_minimum_dependencies.pyproject import PyProject
 
 
-@pytest.fixture()
+@pytest.fixture
 def simple_pyproject() -> PyProject:
     data_dir = Path(__file__).parent / "data"
     pyproject_file = data_dir / "simple_pyproject" / "pyproject.toml"

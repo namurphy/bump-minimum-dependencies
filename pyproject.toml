@@ -42,3 +42,162 @@ dev = [
   "tomli-w>=1.2",
   "ty>=0.0.69",
 ]
+
+[tool.ruff]
+target-version = "py313"
+namespace-packages = [ ".github/workflows" ]
+extend-exclude = [
+  ".code",
+  ".idea",
+  "__pycache__",
+]
+show-fixes = true
+format.line-ending = "lf"
+format.docstring-code-format = true
+# Using an IDE like PyCharm with a ruff plugin will make rule names appear as inlay hints
+lint.extend-select = [
+  # The commented out rulesets are to be enabled later
+  # "A",
+  # "ANN",
+  "ARG",
+  "ASYNC",
+  # "B",
+  "BLE",
+  "C4",
+  # "C90",
+  "COM",
+  # "D",
+  "DTZ",
+  "E",
+  # "EM",
+  "EXE",
+  "F",
+  "FA",
+  # "FBT",
+  "FIX",
+  "FLY",
+  # "FURB",
+  # "G",
+  "I",
+  "ICN",
+  "INP",
+  "INT",
+  "ISC",
+  "LOG",
+  "N",
+  "NPY",
+  "PD",
+  # "PERF",
+  "PGH",
+  "PIE",
+  "PLC",
+  "PLE",
+  # "PLR",
+  # "PLW",
+  # "PT",
+  # "PTH",
+  "PYI",
+  "Q",
+  # "RET",
+  "RSE",
+  "RUF001",
+  "RUF002",
+  "RUF003",
+  "RUF005",
+  "RUF006",
+  "RUF007",
+  "RUF008",
+  "RUF009",
+  "RUF010",
+  "RUF012",
+  "RUF013",
+  "RUF015",
+  "RUF016",
+  "RUF017",
+  "RUF018",
+  "RUF019",
+  "RUF020",
+  "RUF021",
+  "RUF022",
+  "RUF023",
+  "RUF024",
+  "RUF026",
+  "RUF028",
+  "RUF030",
+  "RUF032",
+  "RUF033",
+  "RUF034",
+  "RUF036",
+  "RUF037",
+  "RUF040",
+  "RUF041",
+  "RUF043",
+  "RUF046",
+  "RUF048",
+  "RUF049",
+  "RUF051",
+  "RUF053",
+  "RUF057",
+  "RUF058",
+  "RUF059",
+  "RUF060",
+  "RUF061",
+  "RUF063",
+  "RUF064",
+  "RUF068",
+  "RUF100",
+  "RUF101",
+  "RUF102",
+  "RUF103",
+  "RUF104",
+  "RUF200",
+  # "S",
+  "SIM",
+  "SLF",
+  "SLOT",
+  "T10",
+  "T20",
+  # "TC",
+  "TD",
+  # "TID",
+  # "TRY",
+  "UP",
+  "W",
+  "YTT",
+]
+lint.ignore = [
+  "COM812", # handled by ruff format
+  "COM819", # adding trailing commas leads to simpler diffs
+  "D200",   # incompatible with multiline short summaries
+  "D203",   # handled by ruff format
+  "D205",   # incompatible with multiline short summaries
+  "D206",   # handled by ruff format
+  "D300",   # handled by ruff format
+  "E111",   # handled by ruff format
+  "E114",   # handled by ruff format
+  "E117",   # handled by ruff format
+  "E501",   # handled by ruff format
+  "Q001",   # handled by ruff format
+  "Q002",   # handled by ruff format
+  "Q003",   # handled by ruff format
+  "Q004",   # handled by ruff format
+  "W191",   # handled by ruff format
+]
+lint.extend-per-file-ignores."__init__.py" = [ "D104", "E402", "F401", "F402", "F403" ]  # ignore import errors
+lint.extend-per-file-ignores."tests/**/__init__.py" = [ "D104" ]
+lint.extend-per-file-ignores."tests/**/test_*.py" = [
+  "DOC201",
+  "DOC501",
+  "INP001",
+  "PLC2701",
+  "S101",
+  "SLF001",
+]
+lint.flake8-import-conventions.banned-from = [
+  "pytest",
+  "warnings",
+]
+lint.flake8-tidy-imports.ban-relative-imports = "all"
+lint.isort.known-first-party = [ "bump_minimum_dependencies" ]
+lint.pydocstyle.convention = "numpy"
+lint.pylint.max-positional-args = 6

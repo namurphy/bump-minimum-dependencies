@@ -158,7 +158,6 @@ def main(
     "Groups" refers to dependency groups while "extras" refers to
     categories of optional dependencies.
     """
-
     logger.setLevel(verbosity)
 
     if only_group or only_extra:

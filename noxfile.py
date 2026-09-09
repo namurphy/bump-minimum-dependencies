@@ -122,7 +122,7 @@ def test_cli(session: nox.Session) -> None:
     )
 
     for x in diff[2:]:
-        print(x.removesuffix("\n"))
+        print(x.removesuffix("\n"))  # ruff:ignore[T201]
 
     session.error(
         "The resulting pyproject.toml does not match pyproject.expected.toml."
