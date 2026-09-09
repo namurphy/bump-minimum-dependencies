@@ -129,9 +129,9 @@ def main(  # ruff:ignore[PLR0913,PLR0917]
     pyproject_file: str | pathlib.Path,
     drop_months: float,
     cooldown_months: float,
-    no_extras: bool,  # noqa: FBT001
-    no_groups: bool,  # noqa: FBT001
-    skip_core: bool,  # noqa: FBT001
+    no_extras: bool,  # ruff:ignore[FBT001]
+    no_groups: bool,  # ruff:ignore[FBT001]
+    skip_core: bool,  # ruff:ignore[FBT001]
     only_extra: tuple[str, ...] | list[str],
     only_group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
