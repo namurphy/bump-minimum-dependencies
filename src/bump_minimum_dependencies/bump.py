@@ -212,7 +212,8 @@ class BumpSinglePackage:
         if not supported_minor_releases_after_drop_date_before_cooldown:
             logger.debug(
                 f"{self.prefix} "
-                f"No supported releases prior to cooldown. "
+                f"No supported releases after drop date "
+                f"({self.inputs.drop_date.isoformat()}) and before cooldown "
                 f"({self.inputs.cooldown_date.isoformat()})",
             )
 
@@ -429,8 +430,6 @@ class BumpMinimumDependencies:
         else:
             groups_to_update = sorted(self.inputs.groups_to_update)
 
-        logger.warning(f"Dependency groups to update: {', '.join(groups_to_update)}")
-
         return groups_to_update
 
     @property
@@ -590,10 +589,10 @@ class BumpMinimumDependencies:
         msg = (
             "No dependency groups to update."
             if not self.groups_to_update
-            else f"Dependency groups to update: {', '.join(self.groups_to_update)}."
+            else f"Dependency groups to update: {', '.join(self.groups_to_update)}"
         )
 
-        logger.info(msg)
+        logger.debug(msg)
 
         for group in self.groups_to_update:
             requirements: set[Requirement] = self.pyproject.dependency_groups[group]
@@ -605,6 +604,7 @@ class BumpMinimumDependencies:
 
     def bump_extras(self) -> None:
         """Bump requirements in optional dependencies (extras)."""
+        logger.debug(f"extras_to_update: {self.extras_to_update}")
         for category in self.extras_to_update:
             requirements: set[Requirement] = self.pyproject.optional_dependencies[
                 category
