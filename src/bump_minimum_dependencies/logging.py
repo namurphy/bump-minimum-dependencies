@@ -42,4 +42,5 @@ def package_prefix(package: str) -> str:
 
 def log_uv_command(command: list[str]) -> None:
     command_string = " ".join(command)
-    logger.info(f"Running: [bold]{command_string}[/bold]", extra={"markup": True})
+    msg = f"Running: [bold]{command_string}[/bold]"
+    logger.info(msg, extra={"markup": True})
