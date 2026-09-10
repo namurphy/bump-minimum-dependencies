@@ -65,8 +65,13 @@ class BumpSinglePackage:
     @functools.cached_property
     def response_from_pypi(self) -> dict:
         """Representation of JSON file from PyPI."""
+        url =f"https://pypi.org/simple/{self.name}"
+        msg = (
+            f"{self.prefix} Retrieving package metadata from {url}"
+        )
+        logger.debug(msg)
         return requests.get(
-            url=f"https://pypi.org/simple/{self.name}",
+            url=url,
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
             timeout=10,
         ).json()
