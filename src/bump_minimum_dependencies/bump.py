@@ -578,7 +578,6 @@ class BumpMinimumDependencies:
                 "uv",
                 "add",
                 "--frozen",
-                "--quiet",
                 *flag,
                 new_requirement,
             ]
@@ -587,8 +586,9 @@ class BumpMinimumDependencies:
             log_uv_command(command)
 
             try:
-                subprocess.run(command, check=True, capture_output=True)  # ruff:ignore[S603]
+                subprocess.run(command, check=True)  # ruff:ignore[S603]
             except subprocess.CalledProcessError as exc_info:
+                # logger.error(str(exc_info))
                 logger.error(
                     f"Command failed: {command_string}",
                     exc_info=exc_info,
