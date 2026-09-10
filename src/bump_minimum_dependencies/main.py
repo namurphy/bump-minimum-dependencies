@@ -193,7 +193,7 @@ def main(  # ruff:ignore[PLR0913,PLR0917]
         verbosity=verbosity,
     )
 
-    logger.debug(str(inputs))
+    logger.debug(f"{inputs = !s}" )
 
     bump_minimum_dependencies = bump.BumpMinimumDependencies(inputs=inputs)
     bump_minimum_dependencies.run()

@@ -319,8 +319,9 @@ def get_new_requirement_for_package(
     """Combine the time-based requirement with the original requirement."""
     package = BumpSinglePackage(requirement.name, inputs=inputs)
     logger.debug(
-        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!s}",
+        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!r} {bool(requirement.specifier)}",
     )
+
     calculated_minimum_version = package.oldest_supported_release()
     time_based_requirement = f">={calculated_minimum_version}"
     logger.debug(
@@ -568,8 +569,8 @@ class BumpMinimumDependencies:
             clause = "project dependencies"
 
         if not new_requirements:
-            logger.info(f"No updates for for {clause}.", extra={"markup": True})
-            return
+            logger.info(f"No updates for {clause}.", extra={"markup": True})
+            return None
 
         for new_requirement in new_requirements:
             # Run a separate `uv add` command for each requirement
@@ -625,7 +626,6 @@ class BumpMinimumDependencies:
 
     def bump_extras(self) -> None:
         """Bump requirements in optional dependencies (extras)."""
-        logger.debug(f"extras_to_update: {self.extras_to_update}")
         for category in self.extras_to_update:
             requirements: set[Requirement] = self.pyproject.optional_dependencies[
                 category
