@@ -42,6 +42,7 @@ class BrokenSpecifierError(Exception):
     multiple `!=` specifiers.
     """
 
+
 class BumpSinglePackage:
     """
     A class used to bump minimum dependencies for a Python package.
@@ -288,15 +289,19 @@ def combine_requirements(
     """
     parsed_original = parse_version_specifier(str(original))
     parsed_new = parse_version_specifier(str(new))
+
     if parsed_new == parsed_original:
         return str(original)
+
     combined = parsed_original & parsed_new
     new_specifier = str(original) if combined.is_empty() else str(combined)
+
     if "||" in new_specifier:
-        logger.warning(
-            "Cannot update versions with multiple != in supported range. Skipping.",
+        msg = (
+            "Cannot update versions with multiple != specifiers in "
+            "the combined requirement due to limitations in dep_logic."
         )
-        raise BrokenSpecifierError
+        raise BrokenSpecifierError(msg)
 
     return utils.normalize_requirement_string(new_specifier)
 
@@ -524,21 +529,29 @@ class BumpMinimumDependencies:
                     inputs=inputs,
                 )
             except NoReleasesError:
-                logger.warning(
-                    f"{package_prefix(requirement.name)} No releases identified from PyPI. Skipping.",
+                msg = (
+                    f"{package_prefix(requirement.name)} "
+                    f"No releases identified from PyPI. Skipping."
                 )
+                logger.warning(msg)
             except requests.exceptions.JSONDecodeError:
-                logger.warning(
-                    f"{package_prefix(requirement.name)} Cannot decode JSON metadata from "
-                    f"PyPI. Skipping.",
+                msg = (
+                    f"{package_prefix(requirement.name)} Cannot decode "
+                    f"JSON metadata from PyPI. Skipping."
                 )
+                logger.warning(msg)
+            except BrokenSpecifierError:
+                # See https://github.com/pdm-project/dep-logic/issues/20
+                msg = (
+                    f"{package_prefix(requirement.name)} Unable to update requirements "
+                    f"with multiple != specifiers. Skipping."
+                )
+                logger.warning(msg)
             # Catch all other exceptions since if a package cannot be updated
             # for whatever reason, it should be skipped with a warning issued.
             except Exception as exc_info:  # ruff:ignore[BLE001]
-                warning_message = (
-                    f"{package_prefix(requirement.name)} Unable to update requirement. Skipping.",
-                )
-                logger.error(warning_message, exc_info=exc_info, extra={"markup": True})
+                msg = f"{package_prefix(requirement.name)} Unable to update requirement. Skipping."
+                logger.error(msg, exc_info=exc_info, extra={"markup": True})
             else:
                 if not new_requirement:
                     continue
