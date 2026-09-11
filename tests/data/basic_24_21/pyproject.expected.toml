@@ -9,6 +9,7 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
   "astropy>=6",
+  "distlib>=0.4.2,!=0.4.3,!=0.4.4",  # https://github.com/pdm-project/dep-logic/issues/20
   "docutils>=0.20.1,<2",  # bump micro version
   "heliopy>=1,<2",
   "nose~=1.0.0",
