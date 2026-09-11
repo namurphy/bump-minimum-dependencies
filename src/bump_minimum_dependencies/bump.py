@@ -164,7 +164,7 @@ class BumpSinglePackage:
         ) -> None:
             minor_date = self.versions_to_release_dates[minor_version].isoformat()
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
-            logger.warning(
+            logger.info(
                 f"{self.prefix} Bumping micro version from "
                 f"{minor_version!s} ({minor_date}) to "
                 f"{micro_version!s} ({micro_date}) {reason}."
