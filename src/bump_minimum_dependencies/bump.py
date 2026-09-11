@@ -589,7 +589,6 @@ class BumpMinimumDependencies:
             try:
                 subprocess.run(command, check=True)  # ruff:ignore[S603]
             except subprocess.CalledProcessError as exc_info:
-                # logger.error(str(exc_info))
                 logger.error(
                     f"Command failed: {command_string}",
                     exc_info=exc_info,
