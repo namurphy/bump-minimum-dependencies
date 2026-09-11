@@ -1,0 +1,25 @@
+[build-system]
+build-backend = "uv_build"
+requires = [ "uv-build>=0.12.2,<0.13" ]
+
+[project]
+name = "bump-only-package"
+version = "0.1.0"
+requires-python = ">=3.13"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
+]
+dependencies = [
+  "numpy>=1.15",
+]
+optional-dependencies.extra = [
+  "numpy>=1.15",
+]
+
+[dependency-groups]
+update = [
+  "numpy>=1.15",
+]

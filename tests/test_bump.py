@@ -251,6 +251,7 @@ def get_errmsg_from_file_comparison(  # ruff:ignore[D103]
                 "verbosity": DEFAULT_TEST_VERBOSITY,
             },
         ),
+        ("dry_run", "2026-08-18", {"dry_run": True}),
     ],
 )
 def test_bumping_minimum_requirements(  # ruff:ignore[D103,PLR0913]

@@ -40,6 +40,7 @@ class Inputs:
         only_package: tuple[str, ...] | list[str] = (),
         skip_group: tuple[str, ...] | list[str] = (),
         skip_extra: tuple[str, ...] | list[str] = (),
+        dry_run: bool = False,
         verbosity: _VerbosityLiteral = "WARNING",
     ) -> None:
         """Put the inputs in a more usable form."""
@@ -62,6 +63,7 @@ class Inputs:
         self.extras_to_skip: set[str] = _make_lower_case_set(skip_extra)
         self.groups_to_update: set[str] = _make_lower_case_set(only_group)
         self.groups_to_skip: set[str] = _make_lower_case_set(skip_group)
+        self.dry_run = dry_run
 
     def __str__(self) -> str:
         """Stringify the inputs, as stored."""
