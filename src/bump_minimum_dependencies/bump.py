@@ -65,8 +65,11 @@ class BumpSinglePackage:
     @functools.cached_property
     def response_from_pypi(self) -> dict:
         """Representation of JSON file from PyPI."""
+        url = f"https://pypi.org/simple/{self.name}"
+        msg = f"{self.prefix} Retrieving package metadata from {url}"
+        logger.debug(msg)
         return requests.get(
-            url=f"https://pypi.org/simple/{self.name}",
+            url=url,
             headers={"Accept": "application/vnd.pypi.simple.v1+json"},
             timeout=10,
         ).json()
@@ -159,8 +162,8 @@ class BumpSinglePackage:
         ) -> None:
             minor_date = self.versions_to_release_dates[minor_version].isoformat()
             micro_date = self.versions_to_release_dates[micro_version].isoformat()
-            logger.warning(
-                f"{self.prefix} Bumping version from "
+            logger.info(
+                f"{self.prefix} Bumping micro version from "
                 f"{minor_version!s} ({minor_date}) to "
                 f"{micro_version!s} ({micro_date}) {reason}."
             )
@@ -314,8 +317,9 @@ def get_new_requirement_for_package(
     """Combine the time-based requirement with the original requirement."""
     package = BumpSinglePackage(requirement.name, inputs=inputs)
     logger.debug(
-        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!s}",
+        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!r} {bool(requirement.specifier)}",
     )
+
     calculated_minimum_version = package.oldest_supported_release()
     time_based_requirement = f">={calculated_minimum_version}"
     logger.debug(
@@ -563,7 +567,7 @@ class BumpMinimumDependencies:
             clause = "project dependencies"
 
         if not new_requirements:
-            logger.info(f"No updates for for {clause}.", extra={"markup": True})
+            logger.info(f"No updates for {clause}.", extra={"markup": True})
             return
 
         for new_requirement in new_requirements:
@@ -573,7 +577,6 @@ class BumpMinimumDependencies:
                 "uv",
                 "add",
                 "--frozen",
-                "--quiet",
                 *flag,
                 new_requirement,
             ]
@@ -582,7 +585,7 @@ class BumpMinimumDependencies:
             log_uv_command(command)
 
             try:
-                subprocess.run(command, check=True, capture_output=True)  # ruff:ignore[S603]
+                subprocess.run(command, check=True)  # ruff:ignore[S603]
             except subprocess.CalledProcessError as exc_info:
                 logger.error(
                     f"Command failed: {command_string}",
@@ -620,7 +623,6 @@ class BumpMinimumDependencies:
 
     def bump_extras(self) -> None:
         """Bump requirements in optional dependencies (extras)."""
-        logger.debug(f"extras_to_update: {self.extras_to_update}")
         for category in self.extras_to_update:
             requirements: set[Requirement] = self.pyproject.optional_dependencies[
                 category
