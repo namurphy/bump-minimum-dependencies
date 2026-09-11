@@ -33,6 +33,14 @@ class NoReleasesError(Exception):
     """When no releases of a package can be identified."""
 
 
+class BrokenSpecifierError(Exception):
+    """
+    When a specifier coming out of dep_logic is invalid.
+
+    This is used when there is a `||` in the specifier set related to
+    multiple `!=` specifiers.
+    """
+
 class BumpSinglePackage:
     """
     A class used to bump minimum dependencies for a Python package.
@@ -287,7 +295,7 @@ def combine_requirements(
         logger.warning(
             "Cannot update versions with multiple != in supported range. Skipping.",
         )
-        return str(original)
+        raise BrokenSpecifierError
 
     return utils.normalize_requirement_string(new_specifier)
 
