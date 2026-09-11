@@ -156,6 +156,7 @@ def main(  # ruff:ignore[PLR0913,PLR0917]
     Existing requirements will not be changed when the new minimum
     version is incompatible with old requirements, a requirement has
     markers, or there are multiple `!=` exclusions in the combined
+    requirement.
 
     "Groups" refers to dependency groups while "extras" refers to
     categories of optional dependencies.

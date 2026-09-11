@@ -16,19 +16,21 @@ Automatically bumping minimum requirements in a predictable way saves time and b
 ```groff
 Usage: bump-minimum-dependencies [OPTIONS]
 
-  Bump minimum allowed versions of package dependencies in pyproject.toml.
+  Bump minimum versions of dependencies in pyproject.toml.
 
   This tool updates pyproject.toml via `uv add --frozen` to drop support for
   minor versions of package dependencies based on the time since the minor
   version was first released, where package versions may be given by
-  `<MAJOR>.<MINOR>` or `<MAJOR>.<MINOR>.<MICRO>`.
+  `<MAJOR>.<MINOR>` or `<MAJOR>.<MINOR>.<MICRO>`. Exact version specifiers and
+  upper limits are preserved.
 
-  When a `<MAJOR>.<MINOR>` release has numerous micro releases or for pre-1.0
-  releases, `<MICRO>` might also be bumped to the last release prior to the
-  drop date. Additional constraints such as upper limits are preserved.
+  For pre-1.0 version numbers or when a `<MAJOR>.<MINOR>` release has numerous
+  micro releases, `<MICRO>` will be bumped to the last micro release prior to
+  the drop date.
 
-  Requirements with markers or that cannot be updated will be skipped with a
-  warning.
+  Existing requirements will not be changed when the new minimum version is
+  incompatible with old requirements, a requirement has markers, or there are
+  multiple `!=` exclusions in the combined requirement.
 
   "Groups" refers to dependency groups while "extras" refers to categories of
   optional dependencies.
