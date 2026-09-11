@@ -102,7 +102,6 @@ bump-minimum-dependencies --no-extras --no-groups
 
 To bump project dependencies, optional dependencies, and all but the `doc` dependency group, run:
 
-
 ```shell
 bump-minimum-dependencies --skip-group doc
 ```
