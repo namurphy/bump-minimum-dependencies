@@ -65,10 +65,8 @@ class BumpSinglePackage:
     @functools.cached_property
     def response_from_pypi(self) -> dict:
         """Representation of JSON file from PyPI."""
-        url =f"https://pypi.org/simple/{self.name}"
-        msg = (
-            f"{self.prefix} Retrieving package metadata from {url}"
-        )
+        url = f"https://pypi.org/simple/{self.name}"
+        msg = f"{self.prefix} Retrieving package metadata from {url}"
         logger.debug(msg)
         return requests.get(
             url=url,
@@ -570,7 +568,7 @@ class BumpMinimumDependencies:
 
         if not new_requirements:
             logger.info(f"No updates for {clause}.", extra={"markup": True})
-            return None
+            return
 
         for new_requirement in new_requirements:
             # Run a separate `uv add` command for each requirement
