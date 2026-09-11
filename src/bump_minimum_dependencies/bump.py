@@ -10,6 +10,7 @@ __all__ = [
 
 import datetime
 import functools
+import shlex
 import subprocess
 from typing import TYPE_CHECKING
 
@@ -581,8 +582,12 @@ class BumpMinimumDependencies:
                 new_requirement,
             ]
 
-            command_string = " ".join(command)
+            command_string = shlex.join(command)
             log_uv_command(command)
+
+            if self.inputs.dry_run:
+                click.echo(command_string)
+                continue
 
             try:
                 subprocess.run(command, check=True)  # ruff:ignore[S603]
