@@ -70,7 +70,7 @@ Options:
 
 ## Examples
 
-To bump core package dependencies using default settings, run:
+To bump core project dependencies, optional dependencies, and dependency groups with the default settings, run:
 
 ```shell
 bump-minimum-dependencies
@@ -94,29 +94,29 @@ To drop minor versions older than 36 months with a cooldown of 24 months, run:
 bump-minimum-dependencies --drop-months 36 --cooldown-months 24
 ```
 
-To bump all optional dependencies (extras), run:
+To bump core project dependencies but skip bumping optional dependencies and dependency groups, run:
 
 ```shell
-bump-minimum-dependencies --all-extras
+bump-minimum-dependencies --no-extras --no-groups
 ```
 
-To bump all dependency groups but skip the `doc` group, run:
+To bump project dependencies, optional dependencies, and all but the `doc` dependency group, run:
+
 
 ```shell
-bump-minimum-dependencies --all-groups --skip-group doc
+bump-minimum-dependencies --skip-group doc
 ```
 
-To bump the optional dependency (extras) category 'optionals' and
-skip updates of core dependencies, run:
+To bump only dependency groups, run:
 
 ```shell
-bump-minimum-dependencies --skip-core --extra optionals
+bump-minimum-dependencies --skip-core --no-extras
 ```
 
-To bump the dependency group named dev and core dependencies, run:
+To bump only the `test` dependency group and skip updates to core project dependencies, optional dependencies, and other dependency groups, run:
 
 ```shell
-bump-minimum-dependencies --extra dev
+bump-minimum-dependencies --only-group=test
 ```
 
 ## Usage notes
