@@ -272,7 +272,7 @@ class BumpSinglePackage:
 def combine_requirements(
     original: packaging.specifiers.SpecifierSet,
     new: str,
-) -> str | None:
+) -> str:
     """
     Combine two version specifiers, falling back to `original` if the
     two specifiers are mutually incompatible.
@@ -287,7 +287,7 @@ def combine_requirements(
         logger.warning(
             "Cannot update versions with multiple != in supported range. Skipping.",
         )
-        return None
+        return str(original)
 
     return utils.normalize_requirement_string(new_specifier)
 
