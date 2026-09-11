@@ -62,6 +62,8 @@ Options:
   --skip-group TEXT               A dependency group to skip. Can use multiple
                                   times.
   --skip-core                     Do not update core project dependencies.
+  --dry-run                       Instead of performing updates, print the uv
+                                  commands that would be run.
   --verbosity [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]
                                   Logging verbosity level.  [default: WARNING]
   --version                       Show the version and exit.

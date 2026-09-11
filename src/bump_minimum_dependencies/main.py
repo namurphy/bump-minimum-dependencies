@@ -115,6 +115,12 @@ from bump_minimum_dependencies.logging import logger
     help="Do not update core project dependencies.",
 )
 @click.option(
+    "--dry-run",
+    default=False,
+    is_flag=True,
+    help="Instead of performing updates, print the uv commands that would be run.",
+)
+@click.option(
     "--verbosity",
     default="WARNING",
     type=click.Choice(
@@ -124,20 +130,22 @@ from bump_minimum_dependencies.logging import logger
 )
 @click.version_option(package_name="bump_minimum_dependencies")
 @click.pass_context
-def main(  # ruff:ignore[PLR0913,PLR0917]
+def main(  # ruff:ignore[PLR0913]
     ctx: click.Context,
+    *,
     pyproject_file: str | pathlib.Path,
     drop_months: float,
     cooldown_months: float,
-    no_extras: bool,  # ruff:ignore[FBT001]
-    no_groups: bool,  # ruff:ignore[FBT001]
-    skip_core: bool,  # ruff:ignore[FBT001]
+    no_extras: bool,
+    no_groups: bool,
+    skip_core: bool,
     only_extra: tuple[str, ...] | list[str],
     only_group: tuple[str, ...] | list[str],
     skip_package: tuple[str, ...] | list[str],
     only_package: tuple[str, ...] | list[str],
     skip_group: tuple[str, ...] | list[str],
     skip_extra: tuple[str, ...] | list[str],
+    dry_run: bool,
     verbosity: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "NOTSET"],
 ) -> None:
     """
@@ -193,6 +201,7 @@ def main(  # ruff:ignore[PLR0913,PLR0917]
         skip_group=skip_group,
         skip_package=skip_package,
         verbosity=verbosity,
+        dry_run=dry_run,
     )
 
     logger.debug(f"{inputs = !s}")
