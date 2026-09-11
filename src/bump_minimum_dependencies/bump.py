@@ -316,12 +316,12 @@ def get_new_requirement_for_package(
     requirement: Requirement, inputs: Inputs
 ) -> str | None:
     """Combine the time-based requirement with the original requirement."""
-    package = BumpSinglePackage(requirement.name, inputs=inputs)
+    package_bumper = BumpSinglePackage(requirement.name, inputs=inputs)
     logger.debug(
         f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!r} {bool(requirement.specifier)}",
     )
 
-    calculated_minimum_version = package.oldest_supported_release()
+    calculated_minimum_version = package_bumper.oldest_supported_release()
     time_based_requirement = f">={calculated_minimum_version}"
     logger.debug(
         f"{package_prefix(requirement.name)} Time-based specifier: {time_based_requirement}",
