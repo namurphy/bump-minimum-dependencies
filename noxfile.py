@@ -294,7 +294,7 @@ else:
     projects = []
 
 
-@nox.session()
+@nox.session(python=maxpython)
 @nox.parametrize("package", projects)
 def bump_pyproject(session: nox.Session, package: str) -> None:
     """Bump pyproject.toml on downloaded public repositories."""
