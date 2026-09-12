@@ -211,65 +211,6 @@ def _download_pyproject(
     return [dest_file]
 
 
-def _clean_pyproject_files(root_dir: str | Path = "example_pyprojects") -> list[Path]:
-    """
-    Recursively find pyproject.toml files in subdirectories and remove
-    `project.license-files`, `project.readme`, `project.license.file`,
-    and `project.authors` fields.
-
-    Parameters
-    ----------
-    root_dir : str or Path, default="."
-        The root directory to search from.
-
-    Returns
-    -------
-    list of Path
-        List of paths to files that were modified.
-    """
-    root_path = Path(root_dir).resolve()
-    modified_files: list[Path] = []
-
-    for file_path in root_path.rglob("pyproject.toml"):
-        if file_path.parent == root_path:
-            continue
-
-        with file_path.open("rb") as f:
-            data = tomllib.load(f)
-
-        project_table = data.get("project")
-        if not isinstance(project_table, dict):
-            continue
-
-        modified = False
-
-        # Remove top-level project keys
-        for key in ("license-files", "readme", "authors"):
-            if key in project_table:
-                project_table.pop(key)
-                modified = True
-
-        # Remove project.license.file if project.license is a dict/table
-        license_table = project_table.get("license")
-        if isinstance(license_table, dict) and "file" in license_table:
-            license_table.pop("file")
-            modified = True
-
-            # Clean up project.license table if it is now empty
-            if not license_table:
-                project_table.pop("license")
-
-        if not modified:
-            continue
-
-        with file_path.open("wb") as f:
-            tomli_w.dump(data, f)
-
-        modified_files.append(file_path)
-
-    return modified_files
-
-
 def _copy_pyproject_files(
     target_name: str = "pyproject.original.toml",
     root_dir: str | Path = "example_pyprojects",
@@ -338,7 +279,6 @@ def download_pyprojects(session: nox.Session) -> None:
         downloaded = _download_pyproject(repo_slug=repository)
         session.log("\n".join([str(d) for d in downloaded]))
 
-    _clean_pyproject_files()
     _copy_pyproject_files()
 
 
