@@ -596,9 +596,12 @@ class BumpMinimumDependencies:
             logger.info(f"No updates for {clause}.", extra={"markup": True})
             return
 
+        # Run a separate `uv add` command for each requirement so that
+        # when one package update fails, other package updates will still
+        # be made. This is necessary, for example, when a single package
+        # has multiple requirements spread out over multiple lines.
+
         for new_requirement in new_requirements:
-            # Run a separate `uv add` command for each requirement
-            # so that the other updates will be performed.
             command = [
                 "uv",
                 "add",
@@ -606,7 +609,6 @@ class BumpMinimumDependencies:
                 *flag,
                 new_requirement,
             ]
-
             command_string = shlex.join(command)
 
             if self.inputs.dry_run:
