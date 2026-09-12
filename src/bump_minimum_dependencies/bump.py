@@ -235,8 +235,7 @@ class BumpSinglePackage:
             logger.debug(
                 f"{self.prefix} "
                 f"No supported releases after drop date "
-                f"({self.inputs.drop_date.isoformat()}) and before cooldown "
-                f"({self.inputs.cooldown_date.isoformat()})",
+                f"and before cooldown date.",
             )
 
         if not minor_releases_before_drop_date:
@@ -331,14 +330,11 @@ def get_new_requirement_for_package(
     """Combine the time-based requirement with the original requirement."""
     package_bumper = BumpSinglePackage(requirement.name, inputs=inputs)
     logger.debug(
-        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!r} {bool(requirement.specifier)}",
+        f"{package_prefix(requirement.name)} Original specifier: {requirement.specifier!s}",
     )
 
     calculated_minimum_version = package_bumper.oldest_supported_release()
     time_based_requirement = f">={calculated_minimum_version}"
-    logger.debug(
-        f"{package_prefix(requirement.name)} Time-based specifier: {time_based_requirement}",
-    )
     combined_requirement = combine_requirements(
         original=requirement.specifier,
         new=time_based_requirement,
@@ -349,7 +345,7 @@ def get_new_requirement_for_package(
     else:
         new_requirement = f"{requirement.name}{combined_requirement}"
 
-    logger.info(
+    logger.debug(
         f"{package_prefix(requirement.name)} Combined requirement: {new_requirement}",
     )
 
@@ -391,10 +387,16 @@ class BumpMinimumDependencies:
         if isinstance(self.project_name, str):
             self.inputs.packages_to_skip.add(self.project_name)
 
-        logger.info(
-            msg=f"Bumping minimum dependencies for {inputs.pyproject_file.resolve()}",
-            extra={"markup": True},
+        first_message = (
+            f"Bumping minimum dependencies for {inputs.pyproject_file.resolve()}"
         )
+        second_message = (
+            f"Dropping minor releases made before {inputs.drop_date} "
+            f"with a cooldown date of {inputs.cooldown_date}."
+        )
+
+        logger.info(first_message, extra={"markup": True})
+        logger.info(second_message, extra={"markup": True})
 
     @property
     def project_name(self) -> str | None:
@@ -483,7 +485,9 @@ class BumpMinimumDependencies:
         else:
             extras_to_update = sorted(self.inputs.extras_to_update)
 
-        logger.info(f"Extras to update: {', '.join(extras_to_update)}")
+        if extras_to_update:
+            logger.debug(f"Extras to update: {', '.join(extras_to_update)}")
+
         return extras_to_update
 
     def get_new_requirements(  # ruff:ignore[PLR0912,C901]
@@ -604,11 +608,12 @@ class BumpMinimumDependencies:
             ]
 
             command_string = shlex.join(command)
-            log_uv_command(command)
 
             if self.inputs.dry_run:
                 click.echo(command_string)
                 continue
+
+            log_uv_command(command)
 
             try:
                 subprocess.run(command, check=True)  # ruff:ignore[S603]
@@ -634,12 +639,15 @@ class BumpMinimumDependencies:
         msg = (
             "No dependency groups to update."
             if not self.groups_to_update
-            else f"Dependency groups to update: {', '.join(self.groups_to_update)}"
+            else f"Dependency groups slated for updates: {shlex.join(self.groups_to_update)}"
         )
 
-        logger.debug(msg)
+        logger.info(msg)
 
         for group in self.groups_to_update:
+            msg = f"Bumping dependency group {group!r}."
+            logger.info(msg)
+
             requirements: set[Requirement] = self.pyproject.dependency_groups[group]
             new_requirements: list[str] = self.get_new_requirements(
                 requirements=requirements,
