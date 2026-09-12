@@ -387,8 +387,9 @@ class BumpMinimumDependencies:
         if isinstance(self.project_name, str):
             self.inputs.packages_to_skip.add(self.project_name)
 
-        first_message = (f"Bumping minimum dependencies "
-                         f"for {inputs.pyproject_file.resolve()}")
+        first_message = (
+            f"Bumping minimum dependencies for {inputs.pyproject_file.resolve()}"
+        )
         second_message = (
             f"Dropping minor releases made before {inputs.drop_date} "
             f"with a cooldown date of {inputs.cooldown_date}."
