@@ -502,6 +502,10 @@ class BumpMinimumDependencies:
             if requirement.name.lower() in self.inputs.packages_to_skip:
                 continue
 
+            # Skip bumping requirements like git+https://github.com/python-poetry/poetry-core.git"
+            if requirement.url:
+                continue
+
             if (
                 self.inputs.packages_to_update
                 and requirement.name.lower() not in self.inputs.packages_to_update
