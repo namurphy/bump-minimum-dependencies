@@ -1,11 +1,11 @@
 # /// script
 # python_version = ">=3.13"
 # dependencies = [
-#     "nox",
-#     "nox-uv",
-#     "requests",
-#     "tomli_w",
-#     "distlib",
+#     "nox[uv]>=2026.8.17",
+#     "nox-uv>=0.8",
+#     "requests>=2.34",
+#     "tomli_w>=1.2",
+#     "distlib>=0.4",
 # ]
 # ///
 
