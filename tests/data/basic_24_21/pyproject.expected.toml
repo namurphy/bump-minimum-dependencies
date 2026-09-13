@@ -16,6 +16,7 @@ dependencies = [
   "nox>=2025.10.16",
   "numpy>=1.26",
   "plasmapy>=2024.2",
+  "poetry-core @ git+https://github.com/python-poetry/poetry-core.git",
   "requests>=2.31",
   "spacepy==0.2.2",
   "sunpy>=5.1",
