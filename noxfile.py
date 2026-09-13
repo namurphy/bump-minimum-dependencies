@@ -268,7 +268,7 @@ def download_pyprojects(session: nox.Session) -> None:
         "scikit-image/scikit-image",
         "scikit-learn/scikit-learn",
         "scipy/scipy",
-        "sqlalchemy/sqlalchemy",  # failed to parse pyproject.toml
+        "sqlalchemy/sqlalchemy",  # has had TOML parse errors
         "sunpy/sunpy",
         "yt-project/yt",
     ]
@@ -295,7 +295,10 @@ else:
 @nox.session(python=maxpython)
 @nox.parametrize("package", projects)
 def bump_pyproject(session: nox.Session, package: str) -> None:
-    """Bump pyproject.toml on downloaded public repositories."""
+    """Bump pyproject.toml on downloaded public repositories.
+
+    Before running this session, run the `download_pyprojects` session.
+    """
     session.install(".")
 
     path = pyprojects_dir / package
