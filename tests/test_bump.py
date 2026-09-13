@@ -10,7 +10,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from bump_minimum_dependencies import bump
 from bump_minimum_dependencies.inputs import Inputs
 
-DEFAULT_TEST_VERBOSITY = "INFO"
+DEFAULT_TEST_VERBOSITY = "DEBUG"
 
 
 def get_errmsg_from_file_comparison(  # ruff:ignore[D103]
