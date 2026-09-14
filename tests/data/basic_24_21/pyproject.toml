@@ -16,9 +16,22 @@ dependencies = [
   "nox>=2025.10.16",
   "numpy>=1.22.4",
   "plasmapy>=0.3.1",
+  "poetry-core @ git+https://github.com/python-poetry/poetry-core.git",
   "requests>=2.19.1",
   "spacepy==0.2.2",
   "sunpy>=1",
   "xarray!=2024.3",
   "zarr==3.1.3",
+]
+
+[project.optional-dependencies]
+group = [
+  "numpy>=1.22.4",
+  "poetry-core @ git+https://github.com/python-poetry/poetry-core.git",
+]
+
+[dependency-groups]
+group = [
+  "numpy>=1.22.4",
+  "poetry-core @ git+https://github.com/python-poetry/poetry-core.git",
 ]
