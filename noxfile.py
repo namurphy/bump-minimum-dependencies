@@ -97,8 +97,6 @@ def test_cli(session: nox.Session) -> None:
         "bump-minimum-dependencies",
         "--drop-months=24",
         "--cooldown-months=21",
-        "--no-groups",
-        "--no-extras",
         "--verbosity=INFO",
     ]
 
