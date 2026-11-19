@@ -25,4 +25,4 @@ Create a file for what `pyproject.toml` should change into. It must be exact.
 cp pyproject.toml pyproject.expected.toml
 ```
 
-Add the test case to the parametrization for `test_pyproject` in `tests/test_bump.py`, including the options to pass to it.
+Add the test case to the parametrization for `test_bumping_minimum_requirements` in `tests/test_bump.py`, including the options to pass to it.
